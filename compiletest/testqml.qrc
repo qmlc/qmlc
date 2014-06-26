@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/testqml">
+        <file>testitem.qml</file>
+        <file>testbinding1.qml</file>
+        <file>testfunction1.qml</file>
+        <file>testscript1.js</file>
+        <file>testscript1.qml</file>
+        <file>testsubitem1.qml</file>
+        <file>SubItem.qml</file>
+        <file>SubItemWithScript.qml</file>
+        <file>testscript2.js</file>
+        <file>testsubitem2.qml</file>
+        <file>testalias1.qml</file>
+        <file>testcomponent1.qml</file>
+        <file>testsignal1.qml</file>
+        <file>testsignal2.qml</file>
+        <file>testsignal3.qml</file>
+        <file>testlistview1.qml</file>
+    </qresource>
+</RCC>
