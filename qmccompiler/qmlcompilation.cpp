@@ -137,7 +137,12 @@ bool QmlCompilation::checkData(int *sizeInBytes) const
 
     size += objectIndexToIdRoot.size() * sizeof (QmcUnitObjectIndexToId);
 
-    size += objectIndexToIdComponent.size() * sizeof (QmcUnitObjectIndexToIdComponent);
+    size += objectIndexToIdComponent.size() * sizeof (quint32);
+    foreach (const QmcUnitObjectIndexToIdComponent &componentMap, objectIndexToIdComponent) {
+        if (componentMap.mappings.size() > QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_COMPONENT_MAPPINGS)
+            return false;
+        size += componentMap.mappings.size() * sizeof (QmcUnitObjectIndexToId);
+    }
 
     size += aliases.size() * sizeof (QmcUnitAlias);
 

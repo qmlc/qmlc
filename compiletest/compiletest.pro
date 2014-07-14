@@ -18,7 +18,8 @@ LIBS += -lqmcloader
 
 # Input
 SOURCES += \
-    testsimpleqmlload.cpp
+    testsimpleqmlload.cpp \
+    testobject.cpp
 
 OTHER_FILES += \
     testitem.qml \
@@ -41,4 +42,5 @@ OTHER_FILES += \
 RESOURCES += \
     testqml.qrc
 
-HEADERS +=
+HEADERS += \
+    testobject.h

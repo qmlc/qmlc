@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function compile {
+	LD_LIBRARY_PATH=../../qmccompiler ../../qmc/qmc $1
+	if [ $? -ne 0 ]; then
+		echo "Error compiling";
+		exit;
+	fi
+}
+
+compile view.qml
+

@@ -26,6 +26,7 @@
 #include "jsc.h"
 #include "qmcloader.h"
 #include "compiler.h"
+#include "testobject.h"
 
 class SignalTester : public QObject
 {
@@ -121,13 +122,17 @@ void TestSimpleQmlLoad::loadListView1()
 {
     QQmlEngine *engine = new QQmlEngine;
     const QString TEST_FILE(":/testqml/testlistview1.qml");
+
+    QList<QObject*> l;
+    l.append(new TestObject(1));
+
+    engine->rootContext()->setContextProperty("model1", QVariant::fromValue(l));
+
     QQmlComponent* component = load(engine, TEST_FILE);
     QVERIFY(component);
 
     QObject *myObject = component->create();
     QVERIFY(myObject != NULL);
-
-
 
     delete component;
     delete engine;
@@ -137,6 +142,12 @@ void TestSimpleQmlLoad::compileAndLoadListView1()
 {
     QQmlEngine *engine = new QQmlEngine;
     const QString TEST_FILE(":/testqml/testlistview1.qml");
+
+    QList<QObject*> l;
+    l.append(new TestObject(1));
+
+    engine->rootContext()->setContextProperty("model1", QVariant::fromValue(l));
+
     QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
     QVERIFY(component);
 

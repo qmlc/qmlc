@@ -22,8 +22,9 @@ ListView {
     property bool s1: false;
     width: 100
     height: 62
-    delegate: Item {
-        width: 100;
+    model: model1
+    delegate: Rectangle {
+        width: model.modelData.width;
         height: 100;
     }
 }

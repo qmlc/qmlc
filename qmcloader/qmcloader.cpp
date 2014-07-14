@@ -65,6 +65,20 @@ QmcLoader::QmcLoader(QQmlEngine *engine, QObject *parent) :
 {
 }
 
+QQmlComponent *QmcLoader::loadComponent(const QString &file)
+{
+    QFile f(file);
+    if (!f.open(QFile::ReadOnly)) {
+        QQmlError error;
+        error.setDescription("Could not open file for reading");
+        appendError(error);
+        return NULL;
+    }
+
+    QDataStream in(&f);
+    return loadComponent(in);
+}
+
 QQmlComponent *QmcLoader::loadComponent(QDataStream &stream)
 {
     clearError();

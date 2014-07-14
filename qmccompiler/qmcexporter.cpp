@@ -196,7 +196,14 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
 
     // component index + object index -> id
     foreach (const QmcUnitObjectIndexToIdComponent &mapping, c->objectIndexToIdComponent) {
-        if (!writeData(stream, (const char *)&mapping, sizeof (QmcUnitObjectIndexToIdComponent)))
+        if (!writeData(stream, (const char *)&mapping.componentIndex, sizeof (quint32)))
+            return false;
+        quint32 len = mapping.mappings.size();
+        if (!writeData(stream, (const char *)&len, sizeof (quint32)))
+            return false;
+        if (mapping.mappings.size() == 0)
+            continue;
+        if (!writeData(stream, (const char *)mapping.mappings.data(), mapping.mappings.size() * sizeof (QmcUnitObjectIndexToId)))
             return false;
     }
 

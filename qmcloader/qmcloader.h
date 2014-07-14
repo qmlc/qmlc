@@ -41,6 +41,7 @@ class QMCLOADERSHARED_EXPORT QmcLoader : public QObject
 public:
     explicit QmcLoader(QQmlEngine *engine, QObject *parent = 0);
     QQmlComponent *loadComponent(QDataStream &stream);
+    QQmlComponent *loadComponent(const QString &file);
     bool loadDependency(QDataStream &stream);
     const QList<QQmlError>& errors() const;
     QmcScriptUnit *getScript(const QString &url, const QUrl &loaderUrl);

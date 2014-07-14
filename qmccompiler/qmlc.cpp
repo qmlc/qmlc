@@ -98,15 +98,21 @@ bool QmlC::compileData(QmlCompilation *compilation)
     for (QHash<int, QHash<int, int> >::ConstIterator componentRef = objectIdListComponent.constBegin(), end = objectIdListComponent.constEnd();
          componentRef != end; componentRef++) {
         const QHash<int, int>& componentRefTable = componentRef.value();
-        for (QHash<int, int>::ConstIterator objectRef = componentRefTable.constBegin(), componentEnd = componentRefTable.constEnd();
-             objectRef != componentEnd; objectRef++) {
-            QmcUnitObjectIndexToIdComponent mapping;
-            //qDebug() << "Component" << componentRef.key() << "Object mapping" << objectRef.key() << " -> " << objectRef.value();
-            mapping.componentIndex = componentRef.key();
-            mapping.mapping.index = objectRef.key();
-            mapping.mapping.id = objectRef.value();
-            compilation->objectIndexToIdComponent.append(mapping);
+        QmcUnitObjectIndexToIdComponent mapping;
+        int mappingCount = componentRefTable.size();
+        mapping.componentIndex = componentRef.key();
+        if (mappingCount > 0) {
+            mapping.mappings.resize(mappingCount);
+            int i = 0;
+            for (QHash<int, int>::ConstIterator objectRef = componentRefTable.constBegin(), componentEnd = componentRefTable.constEnd();
+                 objectRef != componentEnd; objectRef++) {
+                //qDebug() << "Component" << componentRef.key() << "Object mapping" << objectRef.key() << " -> " << objectRef.value() << "i" << i;
+                QmcUnitObjectIndexToId& objectMapping = mapping.mappings[i++];
+                objectMapping.index = objectRef.key();
+                objectMapping.id = objectRef.value();
+            }
         }
+        compilation->objectIndexToIdComponent.append(mapping);
     }
 
     // collect aliases

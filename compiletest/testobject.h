@@ -13,36 +13,32 @@
  * give you certain additional rights.  These rights are described in
  * the Digia Qt LGPL Exception version 1.1, included in the file
  * LGPL_EXCEPTION.txt in this package.
- *
- * Author: Mikko Hurskainen <mikko.hurskainen@nomovok.com>
  */
 
-#ifndef QMLC_H
-#define QMLC_H
+#ifndef TESTOBJECT_H
+#define TESTOBJECT_H
 
 #include <QObject>
-#include <QUrl>
-#include <QDataStream>
 
-#include "compiler.h"
-#include "qmccompiler_global.h"
-
-class QmlCPrivate;
-
-class QMCCOMPILERSHARED_EXPORT QmlC : public Compiler
+class TestObject : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlC)
+
+    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
 
 public:
-    QmlC(QObject *parent = 0);
-    virtual ~QmlC();
+    TestObject(int width, QObject *parent = 0);
+    virtual ~TestObject();
 
-protected:
-    virtual bool compileData(QmlCompilation *compilation);
+    int width() const;
+    void setWidth(int width);
+
+signals:
+    void widthChanged();
 
 private:
-    Q_DISABLE_COPY(QmlC)
+    int w;
+
 };
 
-#endif // QMLC_H
+#endif // TESTOBJECT_H

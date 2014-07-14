@@ -37,8 +37,10 @@ bool QmcTypeUnitComponentAndAliasResolver::resolve()
     // foreach (component) -> addAliases
     foreach (const QmcUnitObjectIndexToIdComponent &mapping, qmcTypeUnit->qmcUnit()->objectIndexToIdComponent) {
        QHash<int,int> &map = qmcTypeUnit->compiledData->objectIndexToIdPerComponent[mapping.componentIndex];
-       if (!addMapping(mapping.mapping, map))
-           return false;
+       foreach (const QmcUnitObjectIndexToId &componentMapping, mapping.mappings) {
+            if (!addMapping(componentMapping, map))
+                return false;
+       }
     }
 
     // add mappings for root object

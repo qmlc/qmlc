@@ -199,8 +199,18 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
     // component index + object index -> id
     for (uint i = 0; i < header->objectIndexToIdComponent; i++) {
         QmcUnitObjectIndexToIdComponent mapping;
-        if (!readData((char *)&mapping, sizeof (QmcUnitObjectIndexToIdComponent), stream))
+        if (!readData((char *)&mapping.componentIndex, sizeof (quint32), stream))
             return false;
+        quint32 len;
+        if (!readData((char *)&len, sizeof (quint32), stream))
+            return false;
+        if (len > QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_COMPONENT_MAPPINGS)
+            return false;
+        if (len > 0) {
+            mapping.mappings.resize(len);
+            if (!readData((char *)mapping.mappings.data(), sizeof (QmcUnitObjectIndexToId) * len, stream))
+                return false;
+        }
         objectIndexToIdComponent.append(mapping);
     }
 

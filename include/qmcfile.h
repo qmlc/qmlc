@@ -58,6 +58,7 @@ static const char QMC_UNIT_MAGIC_STR[] = "qmcunit1";
 #define QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_ROOT 256
 
 #define QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_COMPONENT 256
+#define QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_COMPONENT_MAPPINGS 256
 
 #define QMC_UNIT_MAX_ALIASES 256
 
@@ -110,7 +111,7 @@ struct QmcUnitObjectIndexToId {
 
 struct QmcUnitObjectIndexToIdComponent {
     quint32 componentIndex;
-    QmcUnitObjectIndexToId mapping;
+    QVector<QmcUnitObjectIndexToId> mappings;
 };
 
 struct QmcUnitAlias { // need to be sorted by objectIndex, propertyIndex
