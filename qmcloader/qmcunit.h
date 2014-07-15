@@ -74,6 +74,7 @@ struct QmcUnit
     QHash<int, QQmlCompiledData::CustomParserData> customParsers;
     QVector<int> customParserBindings;
     QHash<int, QBitArray> deferredBindings;
+    QVector<int> codeRefSizes;
 
     bool makeExecutable();
 

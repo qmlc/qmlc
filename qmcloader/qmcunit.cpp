@@ -144,12 +144,14 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
     }
 
     // coderefs
+    codeRefSizes.resize(header->codeRefs);
     for (int i = 0; i < (int)header->codeRefs; i++) {
         quint32 codeRefLen = 0;
         if (!readData((char *)&codeRefLen, sizeof(quint32), stream))
             return false;
         if (codeRefLen > QMC_UNIT_MAX_CODE_REF_SIZE)
             return false;
+        //qDebug() << "Codereflen" << QString("%1").arg(codeRefLen, 0, 16);
         if (codeRefLen == 0) {
             JSC::MacroAssemblerCodeRef codeRef;
             compilationUnit->codeRefs.append(codeRef);
@@ -171,6 +173,7 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         JSC::MacroAssemblerCodeRef codeRef = JSC::MacroAssemblerCodeRef::createSelfManagedCodeRef(codePtr);
 
         compilationUnit->codeRefs.append(codeRef);
+        codeRefSizes[i] = codeRefLen;
     }
 
     // constants
@@ -396,20 +399,24 @@ QString QmcUnit::stringAt(int index) const
 
 bool QmcUnit::makeExecutable()
 {
+    int i = 0;
     foreach (const JSC::MacroAssemblerCodeRef &codeRef, compilationUnit->codeRefs) {
         //JSC::ExecutableAllocator::makeExecutable(code, codeRefLen);
 
+        size_t codeRefSize = codeRefSizes[i++];
         size_t pageSize = PAGE_SIZE;
         size_t iaddr = reinterpret_cast<size_t>(codeRef.code().executableAddress());
         size_t roundAddr = iaddr & ~(pageSize - static_cast<size_t>(1));
-        size_t len = codeRef.size() + (iaddr - roundAddr);
+        size_t len = codeRefSize + (iaddr - roundAddr);
         if (len == 0)
             len++;
         int mode = PROT_READ | PROT_EXEC;
 #if 0
         QString roundAddrAsHex = QString("%1").arg(roundAddr, 0, 16);
         QString codeAddrAsHex = QString("%1").arg((size_t)codeRef.code().executableAddress(), 0, 16);
-        qDebug() << "set executable addr" << roundAddrAsHex << codeAddrAsHex << "len" << len << "mode" << mode;
+        QString sizeAsHex = QString("%1").arg(codeRefSize, 0, 16);
+        QString lenAsHex = QString("%1").arg(len, 0, 16);
+        qDebug() << "set executable addr" << roundAddrAsHex << codeAddrAsHex << "size" << sizeAsHex << "len" << lenAsHex;
 #endif
         if (mprotect(reinterpret_cast<void *>(roundAddr), len, mode))
             return false;
