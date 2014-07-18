@@ -43,7 +43,8 @@ SOURCES += \
     jscodegenerator.cpp \
     propertyvalidator.cpp \
     componentandaliasresolver.cpp \
-    irfunctioncleanser.cpp
+    irfunctioncleanser.cpp \
+    qmcinstructionselection.cpp
 
 
 HEADERS += qmccompiler_global.h \
@@ -64,7 +65,8 @@ HEADERS += qmccompiler_global.h \
     jscodegenerator.h \
     propertyvalidator.h \
     componentandaliasresolver.h \
-    irfunctioncleanser.h
+    irfunctioncleanser.h \
+    qmcinstructionselection.h
 
 
 unix {

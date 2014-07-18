@@ -35,6 +35,7 @@
 #include "jsbindingexpressionsimplifier.h"
 #include "componentandaliasresolver.h"
 #include "scriptstringscanner.h"
+#include "qmcinstructionselection.h"
 
 #define tr(x) QString(x)
 
@@ -404,8 +405,13 @@ bool QmcTypeCompiler::precompile()
         QQmlEnginePrivate *enginePrivate = QQmlEnginePrivate::get(compilation->engine);
         QV4::ExecutionEngine *v4 = enginePrivate->v4engine();
         // TBD: store unlinked binaries
+#if 0
         QScopedPointer<QV4::EvalInstructionSelection> isel(
                     v4->iselFactory->create(enginePrivate, v4->executableAllocator,
+                                            &compilation->document->jsModule, &compilation->document->jsGenerator));
+#endif
+        QScopedPointer<QmcInstructionSelection> isel(
+                    new QmcInstructionSelection(enginePrivate, v4->executableAllocator,
                                             &compilation->document->jsModule, &compilation->document->jsGenerator));
         isel->setUseFastLookups(false);
         compilation->document->javaScriptCompilationUnit = isel->compile(/*generated unit data*/false);
