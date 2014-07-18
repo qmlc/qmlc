@@ -21,6 +21,7 @@
 #include "qmcfile.h"
 #include "qmcexporter.h"
 #include "qmlcompilation.h"
+#include "qmctypecompiler.h"
 
 #include <private/qv4global_p.h>
 #include <private/qqmlcompiler_p.h>
@@ -31,70 +32,264 @@
 #include <private/qqmldebugserver_p.h>
 #include <private/qqmlvmemetaobject_p.h>
 
+int QmlC::MAX_RECURSION = 10;
+
 QmlC::QmlC(QObject *parent) :
-    Compiler(parent)
+    Compiler(parent),
+    recursion(0)
 {
 }
 
 QmlC::~QmlC()
 {
+    foreach (QmlCompilation *compilation, components) {
+        delete compilation;
+    }
+    components.clear();
 }
 
-bool QmlC::compileData(QmlCompilation *compilation)
+bool QmlC::dataReceived()
 {
-    compilation->type = QMC_QML;
-    QQmlTypeData *typeData = QQmlEnginePrivate::get(compilation->engine)->typeLoader.getType(compilation->code.toUtf8(), compilation->url);
-    if (!typeData)
-        return false;
+    // qqmltypeloader.cpp:2207
+    compilation()->document = new QmlIR::Document(false);
+    QmlIR::IRBuilder compiler(QV8Engine::get(compilation()->engine)->illegalNames());
 
-    if (typeData->isError()) {
-        appendErrors(typeData->errors());
-        typeData->release();
+    if (!compiler.generateFromQml(compilation()->code, compilation()->name, compilation()->name, compilation()->document)) {
+        QList<QQmlError> errors;
+        foreach (const QQmlJS::DiagnosticMessage &msg, compiler.errors) {
+            QQmlError e;
+            e.setUrl(compilation()->url);
+            e.setLine(msg.loc.startLine);
+            e.setColumn(msg.loc.startColumn);
+            e.setDescription(msg.message);
+            errors << e;
+        }
+        appendErrors(errors);
         return false;
     }
 
-    if (!typeData->isComplete()) {
-        typeData->release();
+    return continueLoadFromIR();
+}
+
+bool QmlC::continueLoadFromIR()
+{
+    compilation()->document->collectTypeReferences();
+    compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
+
+    // TBD: implicit import qqmltypeloader.cpp:2248
+
+    QList<QQmlError> errors;
+
+    foreach (const QV4::CompiledData::Import *import, compilation()->document->imports) {
+        if (!addImport(import, &errors)) {
+            Q_ASSERT(errors.size());
+            QQmlError error(errors.takeFirst());
+            error.setUrl(compilation()->importCache->baseUrl());
+            error.setLine(import->location.line);
+            error.setColumn(import->location.column);
+            errors.prepend(error); // put it back on the list after filling out information.
+            appendError(error);
+            return false;
+        }
+    }
+
+    foreach (QmlIR::Pragma *pragma, compilation()->document->pragmas) {
+        if (pragma->type != QmlIR::Pragma::PragmaSingleton) {
+            QQmlError error;
+            error.setDescription("Pragma singleton not supported");
+            appendError(error);
+            // TBD: qqmltypeloader.cpp:1413
+            return false;
+        } else {
+            QQmlError error;
+            error.setDescription("Pragma not supported");
+            appendError(error);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool QmlC::loadImplicitImport()
+{
+    // qqmltypeloader.cpp:2186
+    implicitImportLoaded = true; // Even if we hit an error, count as loaded (we'd just keep hitting the error)
+
+    compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
+
+    QQmlImportDatabase *importDatabase = compilation()->importDatabase;
+    // For local urls, add an implicit import "." as most overridden lookup.
+    // This will also trigger the loading of the qmldir and the import of any native
+    // types from available plugins.
+    QList<QQmlError> implicitImportErrors;
+    compilation()->importCache->addImplicitImport(importDatabase, &implicitImportErrors);
+
+    if (!implicitImportErrors.isEmpty()) {
+        appendErrors(implicitImportErrors);
         return false;
     }
 
-    compilation->compiledData = typeData->compiledData();
-    compilation->compiledData->addref();
-    compilation->typeData = typeData;
-    compilation->name = compilation->compiledData->name;
-    compilation->qmlUnit = compilation->compiledData->qmlUnit;
-    compilation->unit = compilation->compiledData->compilationUnit;
-    compilation->unit->ref();
-    foreach (const QString &ns, typeData->namespaces()) {
-        compilation->namespaces.append(ns);
+    return true;
+
+}
+
+bool QmlC::resolveTypes()
+{
+    // script references
+    // qqmltypeloader.cpp:2356
+    // TBD
+    foreach (const QQmlImports::ScriptReference &scriptRef, compilation()->importCache->resolvedScripts()) {
+        if (!scriptRef.nameSpace.isEmpty()) {
+            QString qualifier = scriptRef.nameSpace;
+            qualifier.prepend(scriptRef.qualifier + ".");
+            compilation()->namespaces.append(qualifier);
+        }
     }
 
-    const QHash<int, QQmlCompiledData::TypeReference*> &typeRefHash = compilation->compiledData->resolvedTypes;
+    // TBD: qqmltypeloader.cpp:2377 resolved composite singletons
+
+    // qqmltypeloader.cpp:2402 resolve type references
+    const QV4::CompiledData::TypeReferenceMap &typeReferences = compilation()->document->typeReferences;
+    for (QV4::CompiledData::TypeReferenceMap::ConstIterator unresolvedRef = typeReferences.constBegin(), end = typeReferences.constEnd();
+         unresolvedRef != end; ++unresolvedRef) {
+
+        int majorVersion = -1;
+        int minorVersion = -1;
+        QQmlImportNamespace *typeNamespace = 0;
+        QList<QQmlError> errors;
+
+        QmlCompilation::TypeReference ref;
+        ref.name = stringAt(unresolvedRef.key());
+
+        // check that exists
+        bool typeFound = compilation()->importCache->resolveType(ref.name, &ref.type,
+                &majorVersion, &minorVersion, &typeNamespace, &errors);
+        if (!typeNamespace && !typeFound && !implicitImportLoaded) {
+            // qqmltypeloader.cpp:2419 implicit import
+            if (loadImplicitImport()) {
+                // Try again to find the type
+                errors.clear();
+                typeFound = compilation()->importCache->resolveType(ref.name, &ref.type,
+                    &majorVersion, &minorVersion, &typeNamespace, &errors);
+            } else {
+                appendErrors(errors);
+                return false; //loadImplicitImport() hit an error, and called setError already
+            }
+        }
+
+        if (!typeFound || typeNamespace) {
+            // Known to not be a type:
+            //  - known to be a namespace (Namespace {})
+            //  - type with unknown namespace (UnknownNamespace.SomeType {})
+            QQmlError error;
+            if (typeNamespace) {
+                error.setDescription(QString("Namespace %1 cannot be used as a type").arg(ref.name));
+            } else {
+                if (errors.size()) {
+                    error = errors.takeFirst();
+                } else {
+                    // this should not be possible!
+                    // Description should come from error provided by addImport() function.
+                    error.setDescription(QQmlTypeLoader::tr("Unreported error adding script import to import database"));
+                }
+                error.setUrl(compilation()->importCache->baseUrl());
+                error.setDescription(QString("%1 %2").arg(ref.name).arg(error.description()));
+            }
+
+            error.setLine(unresolvedRef->location.line);
+            error.setColumn(unresolvedRef->location.column);
+
+            errors.prepend(error);
+            appendErrors(errors);
+            return false;
+        }
+
+        ref.composite = false;
+
+        // qqmltypeloader.cpp:2456 check composite type
+        if (ref.type && ref.type->isComposite()) {
+            ref.composite = true;
+            ref.component = getComponent(ref.type->sourceUrl());
+            if (!ref.component)
+                return false;
+        }
+
+        ref.location.line = unresolvedRef->location.line;
+        ref.location.column = unresolvedRef->location.column;
+        ref.majorVersion = majorVersion;
+        ref.minorVersion = minorVersion;
+
+        // add to map
+        compilation()->typeReferences.insert(unresolvedRef.key(), ref);
+    }
+
+    return true;
+}
+
+bool QmlC::doCompile()
+{
+    // qqmltypeloader.cpp:2339 QQmlTypeData::compile
+    QQmlCompiledData *compiledData = new QQmlCompiledData(compilation()->engine);
+    compilation()->compiledData = compiledData;
+    compiledData->url = compilation()->url;
+    compiledData->name = compilation()->urlString;
+
+    QmcTypeCompiler compiler(compilation());
+    if (!compiler.precompile()) {
+        appendErrors(compiler.compilationErrors());
+        return false;
+    }
+    return true;
+}
+
+bool QmlC::done()
+{
+    // TBD: qqmltypeloader.cpp:2103 check scripts for errors
+
+    // TBD: qqmltypeloader.cpp:2119 check type references for errors
+
+    // TBD: qqmltypeloader.cpp:2138 check composite singletons for errors
+
+    // TBD: qqmltypeloader.cpp:2157 check if this type is composite singleton
+
+    // qqmltypeloader.cpp:2169 compile
+    return doCompile();
+}
+
+bool QmlC::createExportStructures()
+{
+    compilation()->qmlUnit = compilation()->compiledData->qmlUnit;
+    compilation()->unit = compilation()->compiledData->compilationUnit;
+    compilation()->unit->ref();
+
+    // resolved types list
+    const QHash<int, QQmlCompiledData::TypeReference*> &typeRefHash = compilation()->compiledData->resolvedTypes;
     for (QHash<int, QQmlCompiledData::TypeReference*>::ConstIterator resolvedType = typeRefHash.constBegin(), end = typeRefHash.constEnd();
          resolvedType != end; ++resolvedType) {
         QmcUnitTypeReference typeRef;
         typeRef.index = resolvedType.key();
-        QString name(compilation->compiledData->compilationUnit->data->stringAt(typeRef.index));
+        QString name(compilation()->compiledData->compilationUnit->data->stringAt(typeRef.index));
         if (!name.compare(QString("QQmlComponent")))
             typeRef.syntheticComponent = 1;
         else
             typeRef.syntheticComponent = 0;
         //qDebug() << "Type ref" << typeRef.index << name;
-        compilation->typeRefs.append(typeRef);
+        compilation()->exportTypeRefs.append(typeRef);
     }
 
-
-    const QHash<int, int> &objectIdList = compilation->compiledData->objectIndexToIdForRoot;
+    // root object index to id mapping
+    const QHash<int, int> &objectIdList = compilation()->compiledData->objectIndexToIdForRoot;
     for (QHash<int, int>::ConstIterator objectRef = objectIdList.constBegin(), end = objectIdList.constEnd();
          objectRef != end; objectRef++) {
         QmcUnitObjectIndexToId mapping;
         //qDebug() << "Object mapping" << objectRef.key() << " -> " << objectRef.value();
         mapping.index = objectRef.key();
         mapping.id = objectRef.value();
-        compilation->objectIndexToIdRoot.append(mapping);
+        compilation()->objectIndexToIdRoot.append(mapping);
     }
 
-    const QHash<int, QHash<int, int> > &objectIdListComponent = compilation->compiledData->objectIndexToIdPerComponent;
+    // component root list + per-component object index to id mapping
+    const QHash<int, QHash<int, int> > &objectIdListComponent = compilation()->compiledData->objectIndexToIdPerComponent;
     for (QHash<int, QHash<int, int> >::ConstIterator componentRef = objectIdListComponent.constBegin(), end = objectIdListComponent.constEnd();
          componentRef != end; componentRef++) {
         const QHash<int, int>& componentRefTable = componentRef.value();
@@ -112,12 +307,12 @@ bool QmlC::compileData(QmlCompilation *compilation)
                 objectMapping.id = objectRef.value();
             }
         }
-        compilation->objectIndexToIdComponent.append(mapping);
+        compilation()->objectIndexToIdComponent.append(mapping);
     }
 
     // collect aliases
-    for (uint i = 0; i < compilation->compiledData->qmlUnit->nObjects; i++) {
-        const QV4::CompiledData::Object *obj = compilation->compiledData->qmlUnit->objectAt(i);
+    for (uint i = 0; i < compilation()->compiledData->qmlUnit->nObjects; i++) {
+        const QV4::CompiledData::Object *obj = compilation()->compiledData->qmlUnit->objectAt(i);
         int effectiveAliasIndex = 0;
         for (uint j = 0; j < obj->nProperties; j++) {
             const QV4::CompiledData::Property *p = &obj->propertyTable()[j];
@@ -128,7 +323,7 @@ bool QmlC::compileData(QmlCompilation *compilation)
 
                 // qqmltypecompiler.cpp:1687
                 typedef QQmlVMEMetaData VMD;
-                QByteArray &dynamicData = compilation->compiledData->metaObjects[i];
+                QByteArray &dynamicData = compilation()->compiledData->metaObjects[i];
                 Q_ASSERT(!dynamicData.isEmpty());
                 VMD *vmd = (QQmlVMEMetaData *)dynamicData.data();
                 QQmlVMEMetaData::AliasData *aliasData = &vmd->aliasData()[effectiveAliasIndex++];
@@ -137,30 +332,82 @@ bool QmlC::compileData(QmlCompilation *compilation)
                 alias.propertyType = aliasData->propType;
                 alias.flags = aliasData->flags;
                 alias.notifySignal = aliasData->notifySignal;
-                compilation->aliases.append(alias);
+                compilation()->aliases.append(alias);
             }
         }
     }
 
-    const QHash<int, QQmlCompiledData::CustomParserData> &customParsers = compilation->compiledData->customParserData;
+    const QHash<int, QQmlCompiledData::CustomParserData> &customParsers = compilation()->compiledData->customParserData;
     for (QHash<int, QQmlCompiledData::CustomParserData>::ConstIterator customParserRef = customParsers.constBegin(), end = customParsers.constEnd();
          customParserRef != end; customParserRef++) {
         QmcUnitCustomParser customParser;
         customParser.objectIndex = customParserRef.key();
         customParser.compilationArtifact = customParserRef.value().compilationArtifact;
         customParser.bindings = customParserRef.value().bindings;
-        compilation->customParsers.append(customParser);
+        compilation()->customParsers.append(customParser);
     }
 
-    compilation->customParserBindings = compilation->compiledData->customParserBindings;
+    compilation()->customParserBindings = compilation()->compiledData->customParserBindings;
 
-    const QHash<int, QBitArray> &deferredBindings = compilation->compiledData->deferredBindingsPerObject;
+    const QHash<int, QBitArray> &deferredBindings = compilation()->compiledData->deferredBindingsPerObject;
     for (QHash<int, QBitArray>::ConstIterator ref = deferredBindings.constBegin(), end = deferredBindings.constEnd();
          ref != end; ref++) {
         QmcUnitDeferredBinding binding;
         binding.objectIndex = ref.key();
         binding.bindings = ref.value();
     }
+    return true;
+}
+
+bool QmlC::compileData()
+{
+    compilation()->type = QMC_QML;
+
+    // qqmltypeloader.cpp:2207 QQmlTypeData::dataReceived
+    // -> qqmltypeloader.cpp: QQmlTypeData::continueLoadFromIR
+    if (!dataReceived())
+        return false;
+
+    // TBD: check if there are unresolved imports
+
+    // qqmltypeloader.cpp:2293 QQmlTypeData::allDependenciesDone
+    // -> qqmltypeloader.cpp:2353 QQmlTypeData::resolveTypes
+    if (!resolveTypes())
+        return false;
+
+    // qqmltypeloader.cpp:606 tryDone
+    // -> qqmltypeloader.cpp:2100 QQmlTypeData::done
+    if (!done()) {
+        return false;
+    }
 
     return true;
+}
+
+QmlCompilation* QmlC::getComponent(const QUrl& url)
+{
+    QString str = url.toString();
+    if (components.contains(str))
+        return components[str];
+    else {
+        if (recursion > MAX_RECURSION) {
+            QQmlError error;
+            error.setUrl(url);
+            error.setDescription("Max recursion reached");
+            appendError(error);
+            return NULL;
+        }
+
+        // compile
+        QmlC compiler;
+        compiler.recursion = this->recursion + 1;
+        if (!compiler.compile(url.toString())) {
+            appendErrors(compiler.errors());
+            return NULL;
+        }
+
+        QmlCompilation* compilation = compiler.takeCompilation();
+        components.insert(str, compilation);
+        return compilation;
+    }
 }

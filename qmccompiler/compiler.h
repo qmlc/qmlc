@@ -29,6 +29,12 @@
 class QmlCompilation;
 class CompilerPrivate;
 
+namespace QV4 {
+namespace CompiledData {
+struct Import;
+}
+}
+
 #include "qmccompiler_global.h"
 
 class QMCCOMPILERSHARED_EXPORT Compiler : public QObject
@@ -46,13 +52,20 @@ public:
     bool isError() const;
     const QList<QQmlError>& compileErrors() const;
 protected:
-    virtual bool compileData(QmlCompilation *compilation) = 0;
+    bool compile(const QString &url);
+    virtual bool compileData() = 0;
+    virtual bool createExportStructures() = 0;
     void appendError(const QQmlError &error);
     void appendErrors(const QList<QQmlError> &errors);
+    bool addImport(const QV4::CompiledData::Import *import, QList<QQmlError> *errors);
+    QString stringAt(int index) const;
+    QmlCompilation* compilation();
+    const QmlCompilation* compilation() const;
+    QmlCompilation* takeCompilation();
 
 private:
-    bool exportData(QmlCompilation *compilation, QDataStream &output);
-    bool loadData(const QUrl& url, QmlCompilation *compilation);
+    bool exportData(QDataStream &output);
+    bool loadData();
     void clearError();
 
     Q_DISABLE_COPY(Compiler)

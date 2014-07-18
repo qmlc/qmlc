@@ -70,36 +70,43 @@ class TestSimpleQmlLoad: public QObject
 {
     Q_OBJECT
 private slots:
+
+    void loadScript1();
+    void compileAndLoadScript1();
+
+    void loadSubItem2();
+    void compileAndLoadSubItem2();
+
+    void loadSubItem1();
+    void compileAndLoadSubItem1();
+
+    void loadSignal3();
+    void compileAndLoadSignal3();
+
     void loadListView1();
     void compileAndLoadListView1();
 
-    void compileAndLoadSignal3();
-    void loadSignal3();
-
-    void compileAndLoadSignal2();
     void loadSignal2();
+    void compileAndLoadSignal2();
 
     void loadSignal1();
     void compileAndLoadSignal1();
 
-    void compileAndLoadComponent1();
     void loadComponent1();
+    void compileAndLoadComponent1();
 
     void loadAlias1();
     void compileAndLoadAlias1();
-    void loadSubItem2();
-    void compileAndLoadSubItem2();
-    void compileAndLoadSubItem1();
 
-    void loadSubItem1();
-    void compileAndLoadScript1();
-    void compileAndLoadFunction1();
-    void loadScript1();
     void loadFunction1();
-    void compileAndLoadBinding1();
+    void compileAndLoadFunction1();
+
     void loadBinding1();
-    void compileAndLoadItem();
+    void compileAndLoadBinding1();
+
     void loadItem();
+    void compileAndLoadItem();
+
     void initTestCase();
     void cleanupTestCase();
 

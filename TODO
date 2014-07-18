@@ -1,0 +1,6 @@
+* Cyclic dependencies of QML components
+- See: http://lists.qt-project.org/pipermail/development/2013-August/012576.html
+* ARM support
+* Namespace support
+* Automatic loading of dependencies
+* Preinitialization of global QML structure. Currently it is compiled in JIT in every engine creation.

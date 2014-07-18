@@ -23,25 +23,39 @@
 #include <QObject>
 #include <QUrl>
 #include <QDataStream>
+#include <QHash>
 
 #include "compiler.h"
 #include "qmccompiler_global.h"
 
-class QmlCPrivate;
-
 class QMCCOMPILERSHARED_EXPORT QmlC : public Compiler
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlC)
 
 public:
     QmlC(QObject *parent = 0);
     virtual ~QmlC();
 
 protected:
-    virtual bool compileData(QmlCompilation *compilation);
+    virtual bool compileData();
+    virtual bool createExportStructures();
 
 private:
+    bool compileComponent(int recursion);
+    bool dataReceived();
+    bool continueLoadFromIR();
+    bool resolveTypes();
+    bool done();
+    bool doCompile();
+    bool loadImplicitImport();
+    QmlCompilation* getComponent(const QUrl& url);
+
+    bool implicitImportLoaded;
+    static int MAX_RECURSION;
+    int recursion;
+
+    QHash<QString, QmlCompilation *> components;
+
     Q_DISABLE_COPY(QmlC)
 };
 

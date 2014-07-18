@@ -34,7 +34,8 @@ public:
     virtual ~JSC();
 
 protected:
-    virtual bool compileData(QmlCompilation *compilation);
+    virtual bool compileData();
+    virtual bool createExportStructures();
 
 };
 

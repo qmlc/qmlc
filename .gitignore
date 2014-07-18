@@ -1,0 +1,12 @@
+*.o
+*.so
+*.so.?
+*.so.?.?
+*.so.?.?.?
+moc_*.cpp
+*.pro.user
+Makefile
+*.qmc
+qmc
+qrc_*.cpp
+objectlistmodel

@@ -29,9 +29,9 @@ QmlCompilation::QmlCompilation(const QString &urlString, const QUrl &url)
     : urlString(urlString),
       url(url),
       compiledData(NULL),
-      typeData(NULL),
       unit(NULL),
-      engine(new QQmlEngine)
+      engine(new QQmlEngine),
+      document(NULL)
 {
     if (QQmlDebugService::isDebuggingEnabled())
         // disable debugging
@@ -42,11 +42,15 @@ QmlCompilation::~QmlCompilation()
 {
     if (compiledData)
         compiledData->release();
-    if (typeData)
-        typeData->release();
     if (unit)
         unit->deref();
     engine->deleteLater();
+    if (document)
+        delete document;
+    if (importCache)
+        delete importCache;
+    if (importDatabase)
+        delete importDatabase;
 }
 
 int QmlCompilation::calculateSize() const
@@ -76,7 +80,7 @@ bool QmlCompilation::checkData(int *sizeInBytes) const
         return false;
     if (namespaces.size() > QMC_UNIT_MAX_NAMESPACES)
         return false;
-    if (typeRefs.size() > QMC_UNIT_MAX_TYPE_REFERENCES)
+    if (exportTypeRefs.size() > QMC_UNIT_MAX_TYPE_REFERENCES)
         return false;
     QV4::JIT::CompilationUnit *compilationUnit = (QV4::JIT::CompilationUnit *)unit;
     if (compilationUnit->codeRefs.size() > QMC_UNIT_MAX_CODE_REFS)
@@ -120,7 +124,7 @@ bool QmlCompilation::checkData(int *sizeInBytes) const
         size += s + 4;
     }
 
-    size += typeRefs.size() * sizeof (QmcUnitTypeReference);
+    size += exportTypeRefs.size() * sizeof (QmcUnitTypeReference);
 
     foreach (const JSC::MacroAssemblerCodeRef &codeRef, compilationUnit->codeRefs) {
         s = codeRef.size();

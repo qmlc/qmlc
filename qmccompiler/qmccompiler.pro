@@ -30,7 +30,20 @@ SOURCES += \
     qmlcompilation.cpp \
     qmcexporter.cpp \
     jsc.cpp \
-    compiler.cpp
+    compiler.cpp \
+    qmctypecompiler.cpp \
+    propertycachecreator.cpp \
+    defaultpropertymerger.cpp \
+    signalhandlerfunctionconverter.cpp \
+    enumtyperesolver.cpp \
+    aliasannotator.cpp \
+    customparserscriptindexer.cpp \
+    scriptstringscanner.cpp \
+    jsbindingexpressionsimplifier.cpp \
+    jscodegenerator.cpp \
+    propertyvalidator.cpp \
+    componentandaliasresolver.cpp \
+    irfunctioncleanser.cpp
 
 
 HEADERS += qmccompiler_global.h \
@@ -38,7 +51,20 @@ HEADERS += qmccompiler_global.h \
     qmlcompilation.h \
     qmcexporter.h \
     jsc.h \
-    compiler.h
+    compiler.h \
+    qmctypecompiler.h \
+    propertycachecreator.h \
+    defaultpropertymerger.h \
+    signalhandlerfunctionconverter.h \
+    enumtyperesolver.h \
+    aliasannotator.h \
+    customparserscriptindexer.h \
+    scriptstringscanner.h \
+    jsbindingexpressionsimplifier.h \
+    jscodegenerator.h \
+    propertyvalidator.h \
+    componentandaliasresolver.h \
+    irfunctioncleanser.h
 
 
 unix {

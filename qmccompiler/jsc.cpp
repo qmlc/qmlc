@@ -36,17 +36,17 @@ JSC::~JSC()
 {
 }
 
-bool JSC::compileData(QmlCompilation *compilation)
+bool JSC::compileData()
 {
-    compilation->type = QMC_JS;
+    compilation()->type = QMC_JS;
     // from QQmlScriptBlob::dataReceived
-    QV4::ExecutionEngine *v4 = QV8Engine::getV4((QJSEngine *)compilation->engine);
+    QV4::ExecutionEngine *v4 = QV8Engine::getV4((QJSEngine *)compilation()->engine);
     QmlIR::Document irUnit(false);
     QQmlJS::DiagnosticMessage metaDataError;
-    irUnit.extractScriptMetaData(compilation->code, &metaDataError);
+    irUnit.extractScriptMetaData(compilation()->code, &metaDataError);
     if (!metaDataError.message.isEmpty()) {
         QQmlError e;
-        e.setUrl(compilation->url);
+        e.setUrl(compilation()->url);
         e.setLine(metaDataError.loc.startLine);
         e.setColumn(metaDataError.loc.startColumn);
         e.setDescription(metaDataError.message);
@@ -55,7 +55,7 @@ bool JSC::compileData(QmlCompilation *compilation)
     }
 
     QList<QQmlError> errors;
-    QV4::CompiledData::CompilationUnit *unit = QV4::Script::precompile(&irUnit.jsModule, &irUnit.jsGenerator, v4, compilation->url, compilation->code, &errors);
+    QV4::CompiledData::CompilationUnit *unit = QV4::Script::precompile(&irUnit.jsModule, &irUnit.jsGenerator, v4, compilation()->url, compilation()->code, &errors);
     if (unit)
         unit->ref();
 
@@ -73,8 +73,12 @@ bool JSC::compileData(QmlCompilation *compilation)
     Q_ASSERT((void*)qmlUnit == (void*)&qmlUnit->header);
     // The js unit owns the data and will free the qml unit.
     unit->data = &qmlUnit->header;
-    compilation->unit = unit;
-    compilation->qmlUnit = qmlUnit;
-    compilation->name = compilation->urlString;
+    compilation()->unit = unit;
+    compilation()->qmlUnit = qmlUnit;
+    compilation()->name = compilation()->urlString;
     return true;
+}
+
+bool JSC::createExportStructures()
+{
 }
