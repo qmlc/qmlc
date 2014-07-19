@@ -30,7 +30,8 @@ SOURCES += qmcloader.cpp \
     qmcunitpropertycachecreator.cpp \
     qmctypeunit.cpp \
     qmcscriptunit.cpp \
-    qmctypeunitcomponentandaliasresolver.cpp
+    qmctypeunitcomponentandaliasresolver.cpp \
+    qmcbackedinstructionselection.cpp
 
 
 HEADERS += qmcloader.h \
@@ -40,7 +41,8 @@ HEADERS += qmcloader.h \
     qmcunitpropertycachecreator.h \
     qmctypeunit.h \
     qmcscriptunit.h \
-    qmctypeunitcomponentandaliasresolver.h
+    qmctypeunitcomponentandaliasresolver.h \
+    qmcbackedinstructionselection.h
 
 unix {
     target.path = /usr/lib

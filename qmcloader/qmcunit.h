@@ -55,6 +55,9 @@ struct QmcUnit
     QV4::CompiledData::QmlUnit* qmlUnit;
     QV4::CompiledData::Unit* unit;
     QV4::JIT::CompilationUnit *compilationUnit;
+    QList<QVector<char> > codeRefData;
+    QList<QVector<QmcUnitCodeRefLinkCall> > linkCalls;
+    QList<QVector<QV4::Primitive> > constantVectors;
     QList<QmcUnitTypeReference> typeReferences;
     QUrl url;
     QString urlString;

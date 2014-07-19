@@ -52,6 +52,8 @@ static const char QMC_UNIT_MAGIC_STR[] = "qmcunit1";
 #define QMC_UNIT_MAX_CODE_REFS 256
 #define QMC_UNIT_MAX_CODE_REF_SIZE 8192
 
+#define QMC_UNIT_MAX_CODE_REF_LINK_CALLS 256
+
 #define QMC_UNIT_MAX_CONSTANT_VECTORS 256
 #define QMC_UNIT_MAX_CONSTANT_VECTOR_SIZE 256
 
@@ -90,7 +92,6 @@ struct QmcUnitHeader {
     quint32 namespaces;
     quint32 typeReferences;
     quint32 codeRefs;
-    quint32 constantVectors;
     quint32 objectIndexToIdRoot;
     quint32 objectIndexToIdComponent;
     quint32 aliases;
@@ -134,6 +135,11 @@ struct QmcUnitCustomParser {
 struct QmcUnitDeferredBinding {
     quint32 objectIndex;
     QBitArray bindings;
+};
+
+struct QmcUnitCodeRefLinkCall {
+    quint32 index; // as in qmclinktable.h
+    quint32 offset; // inside coderef
 };
 
 #endif // QMCFILE_H

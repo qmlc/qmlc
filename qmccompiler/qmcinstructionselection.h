@@ -20,7 +20,11 @@
 #ifndef QMCINSTRUCTIONSELECTION_H
 #define QMCINSTRUCTIONSELECTION_H
 
+#include <QList>
+
 #include <private/qv4isel_masm_p.h>
+
+#include "qmcfile.h"
 
 namespace QV4 {
 namespace IR {
@@ -38,6 +42,12 @@ public:
                             QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *jsGenerator);
 
     virtual void run(int functionIndex);
+
+    const QList<QVector<QmcUnitCodeRefLinkCall > >& linkData() const { return linkedCalls; }
+
+private:
+
+    QList<QVector<QmcUnitCodeRefLinkCall > > linkedCalls;
 
 };
 

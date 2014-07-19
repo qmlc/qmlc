@@ -47,7 +47,6 @@ void QmcExporter::createHeader(QmcUnitHeader &header, QmlCompilation *c)
     header.typeReferences = c->exportTypeRefs.size();
     QV4::JIT::CompilationUnit* compilationUnit = static_cast<QV4::JIT::CompilationUnit *>(c->unit);
     header.codeRefs = compilationUnit->codeRefs.size();
-    header.constantVectors = compilationUnit->constantValues.size();
     header.objectIndexToIdRoot = c->objectIndexToIdRoot.size();
     header.objectIndexToIdComponent = c->objectIndexToIdComponent.size();
     header.aliases = c->aliases.size();
@@ -177,15 +176,26 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
 
     // codeRefs
     QV4::JIT::CompilationUnit* compilationUnit = static_cast<QV4::JIT::CompilationUnit *>(c->unit);
-    foreach (const JSC::MacroAssemblerCodeRef &codeRef, compilationUnit->codeRefs) {
+    for (int i = 0; i < compilationUnit->codeRefs.size(); i++) {
+        const JSC::MacroAssemblerCodeRef &codeRef = compilationUnit->codeRefs[i];
+        const QVector<QmcUnitCodeRefLinkCall> &linkCalls = c->linkData[i];
+        const QVector<QV4::Primitive> &constantValue = compilationUnit->constantValues[i];
         if (!writeDataWithLen(stream, (const char *)codeRef.code().executableAddress(), codeRef.size()))
             return false;
-    }
-
-    // constants
-    foreach (const QVector<QV4::Primitive> &constantValue, compilationUnit->constantValues) {
-        if (!writeDataWithLen(stream, (const char *)constantValue.data(), constantValue.size() * sizeof (QV4::Primitive)))
+        quint32 linkCallCount = linkCalls.size();
+        if (!writeData(stream, (const char *)&linkCallCount, sizeof(quint32)))
+            return false;
+        if (linkCallCount > 0) {
+            if (!writeData(stream, (const char *)linkCalls.data(), linkCalls.size() * sizeof (QmcUnitCodeRefLinkCall)))
                 return false;
+        }
+        quint32 constTableCount = constantValue.size();
+        if (!writeData(stream, (const char *)&constTableCount, sizeof(quint32)))
+            return false;
+        if (constTableCount > 0) {
+            if (!writeData(stream, (const char*)constantValue.data(), sizeof(QV4::Primitive) * constantValue.size()))
+                return false;
+        }
     }
 
     // object index -> id

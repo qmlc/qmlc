@@ -85,7 +85,9 @@ bool QmlCompilation::checkData(int *sizeInBytes) const
     QV4::JIT::CompilationUnit *compilationUnit = (QV4::JIT::CompilationUnit *)unit;
     if (compilationUnit->codeRefs.size() > QMC_UNIT_MAX_CODE_REFS)
         return false;
-    if (compilationUnit->constantValues.size() > QMC_UNIT_MAX_CONSTANT_VECTORS)
+    if (linkData.size() != compilationUnit->codeRefs.size())
+        return false;
+    if (compilationUnit->constantValues.size() != linkData.size())
         return false;
     if (objectIndexToIdRoot.size() > QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_ROOT)
         return false;
@@ -131,6 +133,12 @@ bool QmlCompilation::checkData(int *sizeInBytes) const
         if (s > QMC_UNIT_MAX_CODE_REF_SIZE)
             return false;
         size += s + 4;
+    }
+
+    foreach (const QVector<QmcUnitCodeRefLinkCall>& linkedCalls, linkData) {
+        if (linkedCalls.size() > QMC_UNIT_MAX_CODE_REF_LINK_CALLS)
+            return false;
+        size += linkedCalls.size() * sizeof (QmcUnitCodeRefLinkCall) + sizeof(quint32);
     }
 
     foreach (const QVector<QV4::Primitive > & vec, compilationUnit->constantValues) {

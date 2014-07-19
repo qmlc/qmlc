@@ -26,17 +26,32 @@
 #include "compiler.h"
 #include "qmccompiler_global.h"
 
-class QMCCOMPILERSHARED_EXPORT JSC : public Compiler
+namespace QV4 {
+namespace IR {
+struct Module;
+}
+
+namespace Compiler {
+struct JSUnitGenerator;
+}
+
+namespace CompiledData {
+class CompilationUnit;
+}
+}
+
+class QMCCOMPILERSHARED_EXPORT ScriptC : public Compiler
 {
     Q_OBJECT
 public:
-    explicit JSC(QObject *parent = 0);
-    virtual ~JSC();
+    explicit ScriptC(QObject *parent = 0);
+    virtual ~ScriptC();
 
 protected:
     virtual bool compileData();
     virtual bool createExportStructures();
-
+private:
+    QV4::CompiledData::CompilationUnit* precompile(QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *unitGenerator);
 };
 
 #endif // JSC_H

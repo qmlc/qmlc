@@ -746,6 +746,12 @@ public:
     {
         AssemblerType::cacheFlush(code, size);
     }
+
+    void appendData(char *data, int len)
+    {
+        return m_assembler.appendData(data, len);
+    }
+
 protected:
     AbstractMacroAssembler()
         : m_randomSource(cryptographicallyRandomNumber())

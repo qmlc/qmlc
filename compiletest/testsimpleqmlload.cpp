@@ -23,7 +23,7 @@
 #include <QString>
 #include <QUrl>
 #include "qmlc.h"
-#include "jsc.h"
+#include "scriptc.h"
 #include "qmcloader.h"
 #include "compiler.h"
 #include "testobject.h"
@@ -71,6 +71,14 @@ class TestSimpleQmlLoad: public QObject
     Q_OBJECT
 private slots:
 
+    void loadBinding1();
+    void compileAndLoadBinding1();
+
+//private:
+
+    void loadItem();
+    void compileAndLoadItem();
+
     void loadScript1();
     void compileAndLoadScript1();
 
@@ -100,12 +108,6 @@ private slots:
 
     void loadFunction1();
     void compileAndLoadFunction1();
-
-    void loadBinding1();
-    void compileAndLoadBinding1();
-
-    void loadItem();
-    void compileAndLoadItem();
 
     void initTestCase();
     void cleanupTestCase();
@@ -688,7 +690,7 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
         bool ret = false;
         QString u("qrc" + dependency);
         if (dependency.endsWith(".js")) {
-            JSC jsc;
+            ScriptC jsc;
             ret = jsc.compile(u, out);
             if (!ret)
                 printErrors(jsc.errors());

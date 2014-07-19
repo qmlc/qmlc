@@ -29,7 +29,6 @@ SOURCES += \
     qmlc.cpp \
     qmlcompilation.cpp \
     qmcexporter.cpp \
-    jsc.cpp \
     compiler.cpp \
     qmctypecompiler.cpp \
     propertycachecreator.cpp \
@@ -44,14 +43,14 @@ SOURCES += \
     propertyvalidator.cpp \
     componentandaliasresolver.cpp \
     irfunctioncleanser.cpp \
-    qmcinstructionselection.cpp
+    qmcinstructionselection.cpp \
+    scriptc.cpp
 
 
 HEADERS += qmccompiler_global.h \
     qmlc.h \
     qmlcompilation.h \
     qmcexporter.h \
-    jsc.h \
     compiler.h \
     qmctypecompiler.h \
     propertycachecreator.h \
@@ -66,7 +65,8 @@ HEADERS += qmccompiler_global.h \
     propertyvalidator.h \
     componentandaliasresolver.h \
     irfunctioncleanser.h \
-    qmcinstructionselection.h
+    qmcinstructionselection.h \
+    scriptc.h
 
 
 unix {

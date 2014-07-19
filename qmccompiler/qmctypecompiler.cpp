@@ -415,6 +415,7 @@ bool QmcTypeCompiler::precompile()
                                             &compilation->document->jsModule, &compilation->document->jsGenerator));
         isel->setUseFastLookups(false);
         compilation->document->javaScriptCompilationUnit = isel->compile(/*generated unit data*/false);
+        compilation->linkData = isel->linkData();
     }
 
     // Generate QML compiled type data structures

@@ -31,6 +31,10 @@
 #include "qmctypeunit.h"
 #include "qmcscriptunit.h"
 
+#include "qmclinktable.h"
+
+#include "qmcbackedinstructionselection.h"
+
 QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
@@ -155,40 +159,128 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         if (codeRefLen == 0) {
             JSC::MacroAssemblerCodeRef codeRef;
             compilationUnit->codeRefs.append(codeRef);
+            QVector<QmcUnitCodeRefLinkCall> linkData;
+            linkCalls.append(linkData);
+            QVector<QV4::Primitive> constData;
+            constantVectors.append(constData);
             continue;
         }
-        QV4::ExecutableAllocator::Allocation *executableMemory =
-                QQmlEnginePrivate::get(engine)->v4engine()->executableAllocator->allocate(codeRefLen);
-        if (!executableMemory)
+
+        // read code to temporary variable, there will be executable code if it
+        QVector<char> code;
+        code.resize(codeRefLen);
+        if (!readData(code.data(), codeRefLen, stream)) {
             return false;
-        allocations.append(executableMemory);
-        char *code = (char *) executableMemory->start();
-        //ASSERT(code);
-        JSC::ExecutableAllocator::makeWritable(code, codeRefLen);
+        }
+        codeRefData.append(code);
 
-        if (!readData(code, codeRefLen, stream))
+        quint32 linkCallsCount = 0;
+        if (!readData((char *)&linkCallsCount, sizeof(quint32), stream))
             return false;
+        if (linkCallsCount > QMC_UNIT_MAX_CODE_REF_LINK_CALLS)
+            return false;
+        QVector<QmcUnitCodeRefLinkCall> linkData;
+        if (linkCallsCount > 0) {
+            linkData.resize(linkCallsCount);
+            if (!readData((char *)linkData.data(), sizeof (QmcUnitCodeRefLinkCall) * linkCallsCount, stream))
+                return false;
+        }
+        linkCalls.append(linkData);
 
-        JSC::MacroAssemblerCodePtr codePtr = JSC::MacroAssemblerCodePtr::createFromExecutableAddress(code);
-        JSC::MacroAssemblerCodeRef codeRef = JSC::MacroAssemblerCodeRef::createSelfManagedCodeRef(codePtr);
-
-        compilationUnit->codeRefs.append(codeRef);
-        codeRefSizes[i] = codeRefLen;
-    }
-
-    // constants
-    for (int i = 0; i < (int)header->constantVectors; i++) {
         quint32 constantVectorLen = 0;
         if (!readData((char *)&constantVectorLen, sizeof(quint32), stream))
             return false;
         if (constantVectorLen > QMC_UNIT_MAX_CONSTANT_VECTOR_SIZE)
             return false;
-        QVector<QV4::Primitive > constantVector(constantVectorLen);
-        compilationUnit->constantValues.append(constantVector);
-        if (constantVectorLen == 0)
-            continue;
-        if (!readData((char *)constantVector.data(), constantVectorLen, stream))
+        QVector<QV4::Primitive > constantVector;
+        if (constantVectorLen > 0) {
+            constantVector.resize(constantVectorLen);
+            if (constantVectorLen == 0)
+                continue;
+            if (!readData((char *)constantVector.data(), constantVectorLen, stream))
+                return false;
+        }
+        constantVectors.append(constantVector);
+
+#if 0
+        QV4::ExecutableAllocator::Allocation *executableMemory =
+                QQmlEnginePrivate::get(engine)->v4engine()->executableAllocator->allocate(codeRefLen);
+        if (!executableMemory)
             return false;
+        allocations.append(executableMemory);
+        char *codeExec = (char *) executableMemory->start();
+        //ASSERT(code);
+        JSC::ExecutableAllocator::makeWritable(codeExec, codeRefLen);
+        memcpy(codeExec, code.data(), codeRefLen);
+
+        JSC::MacroAssemblerCodePtr codePtr = JSC::MacroAssemblerCodePtr::createFromExecutableAddress(codeExec);
+        JSC::MacroAssemblerCodeRef codeRef = JSC::MacroAssemblerCodeRef::createSelfManagedCodeRef(codePtr);
+        compilationUnit->constantValues.append(constantVectors);
+#else
+        QV4::ExecutableAllocator* executableAllocator = QQmlEnginePrivate::get(engine)->v4engine()->executableAllocator;
+        QmcBackedInstructionSelection *isel = new QmcBackedInstructionSelection(compilationUnit);
+        QV4::IR::Function nullFunction(0, 0);
+        QV4::JIT::Assembler* as = new QV4::JIT::Assembler(isel, &nullFunction, executableAllocator, 6); // 6 == max argc for calls to built-ins with an argument array
+
+        QList<QV4::JIT::Assembler::CallToLink>& callsToLink = as->callsToLink();
+        foreach (const QmcUnitCodeRefLinkCall &call, linkData) {
+            // resolve function pointer
+            if (call.index > sizeof (QMC_LINK_TABLE) / sizeof (QmcLinkEntry)) {
+                qDebug() << "Function pointer index out of bounds";
+                //return false;
+                continue;
+            }
+            void *functionPtr = QMC_LINK_TABLE[call.index].addr;
+            QV4::JIT::Assembler::CallToLink c;
+            JSC::AssemblerLabel label(call.offset);
+            c.call = QV4::JIT::Assembler::Call(label, QV4::JIT::Assembler::Call::Linkable);
+            c.externalFunction = JSC::FunctionPtr((quint64(*)(void))functionPtr);
+            callsToLink.append(c);
+        }
+
+        QV4::JIT::Assembler::ConstantTable& constTable = as->constantTable();
+        int iii = 0;
+        foreach (const QV4::Primitive &p, constantVector) {
+            int idx = constTable.add(p);
+            Q_ASSERT(idx == iii++);
+        }
+        as->appendData(code.data(), codeRefLen);
+
+        // TBD: need to restore the state of the assembler
+        // need done:
+        //  _executableAllocator
+        //  _as->_callsToLink
+        //  _as->_constTable
+        //  _as->_constTable->_values
+        //  _as->m_assembler = _as (qv4isel_masm.cpp:143)
+        // need maybe done:
+        //  _as->_isel
+        //  _as->_isel->addConstantTable (values from _as->_constTable->_values will be appended here)
+        //  _as->_isel->compilationUnit (need to be final compilation unit, QV4::JIT::CompilationUnit)
+        //  _as->m_formatter (X86Assembler.h:2066~2563)
+        //  _as->m_formatter->m_buffer (X86Assembler.h:2562 + AssemblerBuffer.h:63)
+        //  _as->m_formatter->m_buffer->m_index (AssemblerBuffer.h:174)
+        //  _as->m_formatter->m_buffer->m_buffer (AssemblerBuffer.h:172)
+        //  _as->m_formatter->m_buffer->m_index (size of code)
+        //  _as->m_formatter->m_buffer->m_buffer (code pointer)
+        // need:
+        //  function->maxNumberOfArguments
+        //  function->tempCount
+        // need ?:
+        //  _constTable->_toPatch
+        //  _patches -> need to be preparsed
+        //  _dataLabelPatches
+        //  exceptionPropagationJumps
+        //  _labelPatches
+        int dummySize;
+        JSC::MacroAssemblerCodeRef codeRef = as->link(&dummySize);
+        Q_ASSERT(dummySize == (int)codeRefLen);
+        delete as;
+        this->codeRefData.append(codeRefData);
+#endif
+
+        compilationUnit->codeRefs.append(codeRef);
+        codeRefSizes[i] = codeRefLen;
     }
 
     // object index -> id
@@ -365,9 +457,6 @@ bool QmcUnit::checkHeader(QmcUnitHeader *header)
         return false;
 
     if (header->codeRefs > QMC_UNIT_MAX_CODE_REFS)
-        return false;
-
-    if (header->constantVectors > QMC_UNIT_MAX_CONSTANT_VECTORS)
         return false;
 
     if (header->objectIndexToIdRoot > QMC_UNIT_MAX_OBJECT_INDEX_TO_ID_ROOT)

@@ -75,6 +75,8 @@ public:
     };
 
     QList<ScriptReference> scripts;
+
+    QList<QVector<QmcUnitCodeRefLinkCall > > linkData;
 };
 
 #endif // QMLCOMPILATION_H

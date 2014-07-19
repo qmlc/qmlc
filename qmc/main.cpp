@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include "qmlc.h"
-#include "jsc.h"
+#include "scriptc.h"
 #include "comp.h"
 
 using std::cerr;
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     Compiler *compiler = NULL;
     if (fileName.endsWith(".js")) {
-        compiler = new JSC();
+        compiler = new ScriptC();
     } else if (fileName.endsWith(".qml")) {
         compiler = new QmlC();
     } else {

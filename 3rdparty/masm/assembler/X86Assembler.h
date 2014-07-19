@@ -101,6 +101,11 @@ public:
         ConditionNC = ConditionAE,
     } Condition;
 
+    void appendData(char *data, int len)
+    {
+        return m_formatter.appendData(data, len);
+    }
+
 private:
     typedef enum {
         OP_ADD_EvGv                     = 0x01,
@@ -2380,6 +2385,7 @@ private:
         AssemblerLabel label() const { return m_buffer.label(); }
         bool isAligned(int alignment) const { return m_buffer.isAligned(alignment); }
         void* data() const { return m_buffer.data(); }
+        void appendData(char *data, int len) { return m_buffer.appendData(data, len); }
 
         PassRefPtr<ExecutableMemoryHandle> executableCopy(JSGlobalData& globalData, void* ownerUID, JITCompilationEffort effort)
         {

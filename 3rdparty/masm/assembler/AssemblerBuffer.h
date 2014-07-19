@@ -86,6 +86,14 @@ namespace JSC {
                 grow();
         }
 
+        void appendData(char *data, int len)
+        {
+            if (!isAvailable(len))
+                grow(len);
+            memcpy(m_buffer + m_index, data, len);
+            m_index += len;
+        }
+
         bool isAligned(int alignment) const
         {
             return !(m_index & (alignment - 1));

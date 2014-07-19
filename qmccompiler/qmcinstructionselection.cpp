@@ -18,7 +18,10 @@
  */
 
 #include "qmcinstructionselection.h"
+#include "qmclinktable.h"
 #include <private/qv4ssa_p.h>
+
+#include "AbstractMacroAssembler.h"
 
 using namespace QV4;
 using namespace QV4::IR;
@@ -94,6 +97,53 @@ void QmcInstructionSelection::run(int functionIndex)
         visitRet(0);
 
     int dummySize;
+    // check data
+    if (_as->hasPatches()) {
+        qDebug() << "Has patches";
+        //Q_ASSERT(!_as->hasPatches());
+    }
+    QVector<QmcUnitCodeRefLinkCall> calls;
+    Q_ASSERT(linkedCalls.size() == functionIndex);
+    QList<Assembler::CallToLink>& callsToLink = _as->callsToLink();
+    for (int i = 0; i < callsToLink.size(); i++) {
+        Assembler::CallToLink& ctl = callsToLink[i];
+        QString fname (ctl.functionName);
+        qDebug() << "Call to link " << fname << "ext value" << ctl.externalFunction.value() << "ext ex" << ctl.externalFunction.executableAddress();
+        // find entry
+        int index = -1;
+        for (uint i = 0; i < sizeof(QMC_LINK_TABLE) / sizeof (QmcLinkEntry); i++) {
+            if (QMC_LINK_TABLE[i].addr == ctl.externalFunction.value()) {
+                index = i;
+                break;
+            }
+        }
+
+        if (ctl.call.isFlagSet(Assembler::Call::Near)) {
+            qDebug() << "Near linker flag is not supported" << ctl.functionName;
+            Q_ASSERT(0);
+        }
+
+        if (index < 0) {
+            qDebug() << "Could not link call" << ctl.functionName << QString("%1").arg((quint64)QV4::Runtime::mul, 0, 16);
+            // try name based look up
+            for (uint i = 0; i < sizeof (QMC_LINK_TABLE) / sizeof (QmcLinkEntry); i++) {
+                QmcLinkEntry& entry = QMC_LINK_TABLE[i];
+                if (!strncmp(ctl.functionName, entry.name, strlen(entry.name))) {
+                    index = i;
+                    break;
+                }
+            }
+            //Q_ASSERT(index >= 0);
+        }
+        Q_ASSERT(index >= 0);
+        QmcUnitCodeRefLinkCall link;
+        link.index = index;
+        link.offset = ctl.call.m_label.m_offset;
+        calls.append(link);
+    }
+
+    linkedCalls.append(calls);
+
     JSC::MacroAssemblerCodeRef codeRef =_as->link(&dummySize);
     compilationUnit->codeRefs[functionIndex] = codeRef;
 
