@@ -1,0 +1,80 @@
+Qml Compiler
+------------
+
+The Qml Compiler can be used to convert Qml source code files into
+precompiled Qml files. The precompiled Qml files are faster to load
+and do not expose the source code. Normally, the Qt either compiles
+the Qml files in the startup or interprets the Qml files runtime.
+
+The Qml uses the JIT compiler shipped with Qt to create precompiled
+files. It works thus in same way, as Qt when it is using JIT. Only
+that the JIT compilation step is performed already when the program
+launches. The loader is used to load precompiled files and link
+them into the Qml Engine.
+
+The compiler is created by creating a new version of the Qml
+compilation framework, that is builtin in the Qt. The class
+QQmlTypeCompiler, that is the core class handling the compilation,
+is taken as a base for the compiler. Some of its dependencies
+are exported on the Qt, some of the dependencies are rewritten, due
+to need for modifications.
+
+The compiler, loader and examples are all based on Qt source code.
+They are licensed under LGPL 2.1 (with Digia Qt LGPL exception 1.1)
+or BSD license. See source code files for license. Collectively this
+component can be used under terms of LGPL 2.1 with Digia Qt LGPL
+exception 1.1. See LICENSE.LGPL and LGPL_EXCEPTION.txt for details.
+
+
+Known limitations
+-----------------
+
+There are few limitations with the compiler. The compiler requires
+a modified version of the Qt. The modifications are available in the
+qtdeclarative repository. Other than that, the target is to
+remove these limitations. There might be also a way to no require
+modified Qt. The reason for the other limitations is the lack of
+implementation.
+
+- It is not possible to mix precompiled and source Qml files
+- It is not possible to load Qml from network
+- Few structures are still unsupported, for example composite
+  singleton
+- The test cases are still not very comphrehensive
+- It is not possible to use external libraries, such as qt-components
+- The Qml programs need slight modifications
+- Dependencies need to be loaded manually
+
+There are also few more specific issues that are being worked on
+or improved in the TODO file.
+
+
+Using Qml Compiler
+------------------
+
+The Qml compiler can be used from command line:
+
+This command will read the Qml file and produce a precompiled qml file.
+The produced file is named file.qmc.
+
+ qmc file.qml
+
+The Qml program needs slight modifications.
+
+After creating the QQuickView, the precompiled components need to be loaded:
+
+    QQmlEngine *engine = view.engine();
+    QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);
+    QmcLoader loader(engine);
+    QQmlComponent *component = loader.loadComponent(":/file.qmc");
+    QObject *rootObject = component->create();
+    view.setContent(component->url(), component, rootObject);
+
+The dependencies need to manually loaded.
+
+To load dependency add:
+    loader.loadDependency(":/dependency.qmc");
+
+There is an example in the examples/objectlistmodel how to use the
+compiler.
+
