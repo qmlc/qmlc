@@ -165,7 +165,6 @@ bool ComponentAndAliasResolver::resolve()
 
         componentRoots.append(i);
 
-        qDebug() << "count" << obj->functionCount();
         if (obj->functionCount() > 0)
             COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new functions."));
         if (obj->propertyCount() > 0)

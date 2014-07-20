@@ -71,10 +71,9 @@ class TestSimpleQmlLoad: public QObject
     Q_OBJECT
 private slots:
 
-    void loadBinding1();
+    // first test needs to be compilation, loading will initialize structures
     void compileAndLoadBinding1();
-
-//private:
+    void loadBinding1();
 
     void loadItem();
     void compileAndLoadItem();

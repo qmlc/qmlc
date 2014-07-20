@@ -200,21 +200,59 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
     const QString &importQualifier = stringAt(import->qualifierIndex);
 
     if (import->type == QV4::CompiledData::Import::ImportScript) {
-        qDebug() << "Script imported" << importUri;
         // TBD: qqmltypeloader.cpp:1320
         QmlCompilation::ScriptReference scriptRef;
         scriptRef.location = import->location;
         scriptRef.qualifier = importQualifier;
         d->compilation->scripts.append(scriptRef);
     } else if (import->type == QV4::CompiledData::Import::ImportLibrary) {
-        // TBD: locked module qqmltypeloader.cpp:1325
-        // TBD: qmldir qqmltypeloader.cpp:1331
-        // assume it is module
-        if (QQmlMetaType::isAnyModule(importUri)) {
+        QString qmldirFilePath;
+        QString qmldirUrl;
+        if (QQmlMetaType::isLockedModule(importUri, import->majorVersion)) {
+            //Locked modules are checked first, to save on filesystem checks
             if (!d->compilation->importCache->addLibraryImport(d->compilation->importDatabase, importUri, importQualifier, import->majorVersion,
                                           import->minorVersion, QString(), QString(), false, errors))
                 return false;
-        } // TBD: else add to unresolved imports qqmltypeloader.cpp:1356
+
+        } else if (d->compilation->importCache->locateQmldir(d->compilation->importDatabase, importUri, import->majorVersion, import->minorVersion,
+                                 &qmldirFilePath, &qmldirUrl)) {
+            // This is a local library import
+            if (!d->compilation->importCache->addLibraryImport(d->compilation->importDatabase, importUri, importQualifier, import->majorVersion,
+                                          import->minorVersion, qmldirFilePath, qmldirUrl, false, errors))
+                return false;
+
+            if (!importQualifier.isEmpty()) {
+                // Does this library contain any qualified scripts?
+                QUrl libraryUrl(qmldirUrl);
+                QQmlTypeLoader* typeLoader = &QQmlEnginePrivate::get(d->compilation->engine)->typeLoader;
+                const QQmlTypeLoader::QmldirContent *qmldir = typeLoader->qmldirContent(qmldirFilePath, qmldirUrl);
+                foreach (const QQmlDirParser::Script &script, qmldir->scripts()) {
+                    // TBD: qqmltypeloader.cpp:1343
+                    qDebug() << "Library contains scripts";
+                    QQmlError error;
+                    error.setDescription("Libraries with scripts not supported");
+                    appendError(error);
+                    return false;
+                }
+            }
+        } else {
+            // Is this a module?
+            if (QQmlMetaType::isAnyModule(importUri)) {
+                if (!d->compilation->importCache->addLibraryImport(d->compilation->importDatabase, importUri, importQualifier, import->majorVersion,
+                                              import->minorVersion, QString(), QString(), false, errors))
+                    return false;
+            } else {
+                qDebug() << "Encountered unresolved import";
+                QQmlError error;
+                error.setDescription("Unresolved import" + importUri);
+                error.setLine(import->location.line);
+                error.setColumn(import->location.column);
+                error.setUrl(d->compilation->url);
+                appendError(error);
+                return false;
+                // TBD: else add to unresolved imports qqmltypeloader.cpp:1356
+            }
+        }
     } else {
         Q_ASSERT(import->type == QV4::CompiledData::Import::ImportFile);
         qDebug() << "File import type not supported";

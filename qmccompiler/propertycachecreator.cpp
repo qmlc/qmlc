@@ -338,6 +338,7 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
                     if (qmltype->isComposite()) {
                         // TBD: how to handle composite type
                         qDebug() << "Composite type not supported";
+#if 0
                         QQmlTypeData *tdata = NULL; //enginePrivate->typeLoader.getType(qmltype->sourceUrl());
                         Q_ASSERT(tdata);
                         Q_ASSERT(tdata->isComplete());
@@ -347,6 +348,8 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
                         paramTypes[i + 1] = data->metaTypeId;
 
                         tdata->release();
+#endif
+                        return false;
                     } else {
                         paramTypes[i + 1] = qmltype->typeId();
                     }

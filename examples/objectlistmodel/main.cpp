@@ -79,7 +79,7 @@ int main(int argc, char ** argv)
     QQmlContext *ctxt = view.rootContext();
 //![0]
 
-#if 0
+#if 1
     // add precompiled files
     QQmlEngine *engine = view.engine();
     QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);

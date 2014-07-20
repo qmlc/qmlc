@@ -55,10 +55,13 @@ int main(int argc, char *argv[])
     comp.compiler = compiler;
     comp.fileName = fileName;
 
+    /*
     QObject::connect(&comp, SIGNAL(finished()), &app, SLOT(quit()));
     QTimer::singleShot(0, &comp, SLOT(compile()));
 
     app.exec();
+    */
+    comp.compile();
 
     delete compiler;
     if (Comp::retValue == 0)

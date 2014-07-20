@@ -225,11 +225,8 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         QList<QV4::JIT::Assembler::CallToLink>& callsToLink = as->callsToLink();
         foreach (const QmcUnitCodeRefLinkCall &call, linkData) {
             // resolve function pointer
-            if (call.index > sizeof (QMC_LINK_TABLE) / sizeof (QmcLinkEntry)) {
-                qDebug() << "Function pointer index out of bounds";
-                //return false;
-                continue;
-            }
+            if (call.index > sizeof (QMC_LINK_TABLE) / sizeof (QmcLinkEntry))
+                return false;
             void *functionPtr = QMC_LINK_TABLE[call.index].addr;
             QV4::JIT::Assembler::CallToLink c;
             JSC::AssemblerLabel label(call.offset);

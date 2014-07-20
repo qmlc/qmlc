@@ -98,17 +98,13 @@ void QmcInstructionSelection::run(int functionIndex)
 
     int dummySize;
     // check data
-    if (_as->hasPatches()) {
-        qDebug() << "Has patches";
-        //Q_ASSERT(!_as->hasPatches());
-    }
     QVector<QmcUnitCodeRefLinkCall> calls;
     Q_ASSERT(linkedCalls.size() == functionIndex);
     QList<Assembler::CallToLink>& callsToLink = _as->callsToLink();
     for (int i = 0; i < callsToLink.size(); i++) {
         Assembler::CallToLink& ctl = callsToLink[i];
         QString fname (ctl.functionName);
-        qDebug() << "Call to link " << fname << "ext value" << ctl.externalFunction.value() << "ext ex" << ctl.externalFunction.executableAddress();
+        //qDebug() << "Call to link " << fname << "ext value" << ctl.externalFunction.value();
         // find entry
         int index = -1;
         for (uint i = 0; i < sizeof(QMC_LINK_TABLE) / sizeof (QmcLinkEntry); i++) {
@@ -124,7 +120,6 @@ void QmcInstructionSelection::run(int functionIndex)
         }
 
         if (index < 0) {
-            qDebug() << "Could not link call" << ctl.functionName << QString("%1").arg((quint64)QV4::Runtime::mul, 0, 16);
             // try name based look up
             for (uint i = 0; i < sizeof (QMC_LINK_TABLE) / sizeof (QmcLinkEntry); i++) {
                 QmcLinkEntry& entry = QMC_LINK_TABLE[i];
