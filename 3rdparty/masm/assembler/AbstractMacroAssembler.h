@@ -338,7 +338,7 @@ public:
         }
         
         bool isSet() const { return m_label.isSet(); }
-    private:
+
         AssemblerLabel m_label;
     };
     

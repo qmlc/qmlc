@@ -49,8 +49,8 @@ void IRFunctionCleanser::clean()
     module->functions = newFunctions;
 
     foreach (QV4::IR::Function *function, module->functions) {
-        foreach (QV4::IR::BasicBlock *block, function->basicBlocks) {
-            foreach (QV4::IR::Stmt *s, block->statements) {
+        foreach (QV4::IR::BasicBlock *block, function->basicBlocks()) {
+            foreach (QV4::IR::Stmt *s, block->statements()) {
                 s->accept(this);
             }
         }
