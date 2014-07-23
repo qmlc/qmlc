@@ -31,6 +31,8 @@
 #include "qmcunit.h"
 #include "qmctypeunit.h"
 
+static int DEPENDENCY_MAX_RECURSION_DEPTH = 10;
+
 class QmcLoaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmcLoader)
@@ -41,11 +43,15 @@ public:
     QList<QQmlError> errors;
     QmcTypeUnit* unit;
     QMap<QString, QmcUnit *> dependencies;
+    bool loadDependenciesAutomatically;
+    int dependencyRecursionDepth;
 };
 
 QmcLoaderPrivate::QmcLoaderPrivate(QQmlEngine *engine)
     : engine(engine),
-      unit(NULL)
+      unit(NULL),
+      loadDependenciesAutomatically(true),
+      dependencyRecursionDepth(0)
 {
 }
 
@@ -76,15 +82,17 @@ QQmlComponent *QmcLoader::loadComponent(const QString &file)
     }
 
     QDataStream in(&f);
-    return loadComponent(in);
+    QQmlComponent *ret = loadComponent(in, createLoadedUrl(file));
+    f.close();
+    return ret;
 }
 
-QQmlComponent *QmcLoader::loadComponent(QDataStream &stream)
+QQmlComponent *QmcLoader::loadComponent(QDataStream &stream, const QUrl &loadedUrl)
 {
     clearError();
     Q_D(QmcLoader);
     // TBD: check validity of all read values
-    QmcUnit *unit = QmcUnit::loadUnit(stream, d->engine, this);
+    QmcUnit *unit = QmcUnit::loadUnit(stream, d->engine, this, loadedUrl);
     if (!unit) {
         QQmlError error;
         error.setDescription("Error parsing / loading");
@@ -127,6 +135,29 @@ QQmlComponent *QmcLoader::loadComponent(QDataStream &stream)
     return component;
 }
 
+void QmcLoader::setLoadDependenciesAutomatically(bool load)
+{
+    Q_D(QmcLoader);
+    d->loadDependenciesAutomatically = load;
+}
+
+bool QmcLoader::isLoadDependenciesAutomatically() const
+{
+    const Q_D(QmcLoader);
+    return d->loadDependenciesAutomatically;
+}
+
+QUrl QmcLoader::createLoadedUrl(const QString &file)
+{
+    QString urlStr;
+    if (file.startsWith(":/"))
+        urlStr = "qrc:";
+    else
+        urlStr = "file:";
+    urlStr.append(file);
+    return QUrl(urlStr);
+}
+
 QString QmcLoader::getBaseUrl(const QUrl &url)
 {
     QString path = url.path();
@@ -135,6 +166,8 @@ QString QmcLoader::getBaseUrl(const QUrl &url)
     if (lastSlash != -1) {
         path = path.left(lastSlash + 1);
         newUrl.setPath(path);
+    } else {
+        newUrl = "";
     }
     return newUrl.toString();
 }
@@ -142,8 +175,23 @@ QString QmcLoader::getBaseUrl(const QUrl &url)
 QmcUnit *QmcLoader::getUnit(const QString &url)
 {
     Q_D(QmcLoader);
-    if (!d->dependencies.contains(url))
+    if (!d->dependencies.contains(url)) {
+        if (d->loadDependenciesAutomatically) {
+            // try to load it
+            if (d->dependencyRecursionDepth >= DEPENDENCY_MAX_RECURSION_DEPTH) {
+                QQmlError error;
+                error.setDescription("Could not load dependency, too deep recursion");
+                error.setUrl(url);
+                appendError(error);
+                return NULL;
+            }
+            d->dependencyRecursionDepth++;
+            QmcUnit *unit = doloadDependency(url);
+            d->dependencyRecursionDepth--;
+            return unit;
+        } else
         return NULL;
+    }
     return d->dependencies[url];
 }
 
@@ -176,22 +224,76 @@ QmcUnit *QmcLoader::getType(const QString &name, const QUrl &loaderUrl)
     return unit;
 }
 
-bool QmcLoader::loadDependency(QDataStream &stream)
+bool QmcLoader::loadDependency(QDataStream &stream, const QUrl &loadedUrl)
 {
     clearError();
+    QmcUnit *unit = doloadDependency(stream, loadedUrl);
+    unit->blob->release();
+    return true;
+}
+
+bool QmcLoader::loadDependency(const QString &file)
+{
+    clearError();
+    QFile f(file);
+    if (!f.open(QFile::ReadOnly)) {
+        QQmlError error;
+        error.setDescription("Could not open file for reading");
+        appendError(error);
+        return NULL;
+    }
+
+    QDataStream in(&f);
+    QmcUnit *unit = doloadDependency(in, createLoadedUrl(file));
+    unit->blob->release();
+    f.close();
+    return true;
+}
+
+QmcUnit *QmcLoader::doloadDependency(const QString &url)
+{
     Q_D(QmcLoader);
-    QmcUnit *unit = QmcUnit::loadUnit(stream, d->engine, this);
+
+    QString urlString;
+    if (url.endsWith(".js") || url.endsWith(".qml")) {
+        urlString = url.left(url.lastIndexOf("."));
+        urlString.append(".qmc");
+    } else
+        urlString = url;
+
+    QUrl u(urlString);
+    QString file = u.toLocalFile();
+    QFile f(file);
+    if (!f.open(QFile::ReadOnly)) {
+        QQmlError error;
+        error.setDescription("Could not open file for reading: " + f.errorString());
+        error.setUrl(QUrl(file));
+        qDebug() << "Cannot open" << file;
+        appendError(error);
+        return NULL;
+    }
+
+    QDataStream in(&f);
+    QmcUnit *unit = doloadDependency(in, createLoadedUrl(file));
+    f.close();
+    return unit;
+}
+
+QmcUnit *QmcLoader::doloadDependency(QDataStream &stream, const QUrl &loadedUrl)
+{
+    Q_D(QmcLoader);
+    QmcUnit *unit = QmcUnit::loadUnit(stream, d->engine, this, loadedUrl);
     if (!unit) {
         QQmlError error;
         error.setDescription("Error loading");
         appendError(error);
-        return false;
+        return NULL;
     }
 
     // add to dependencies
     d->dependencies[unit->url.toString()] = unit;
-
-    return true;
+    unit->blob->addref();
+    return unit;
 }
 
 const QList<QQmlError>& QmcLoader::errors() const

@@ -25,11 +25,11 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    TestSimpleQmlLoad st;
-    QTest::qExec(&st);
-
     TestCreateFile tf;
     QTest::qExec(&tf);
+
+    TestSimpleQmlLoad st;
+    QTest::qExec(&st);
 
     return 0;
 }

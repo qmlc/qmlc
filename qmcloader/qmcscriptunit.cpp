@@ -49,7 +49,7 @@ bool QmcScriptUnit::initialize()
     for (quint32 i = 0; i < unit->qmlUnit->nImports; ++i) {
         const QV4::CompiledData::Import *import = unit->qmlUnit->importAt(i);
         if (import->type == QV4::CompiledData::Import::ImportScript) {
-            QmcScriptUnit* script = unit->loader->getScript(stringAt(import->uriIndex), finalUrl());
+            QmcScriptUnit* script = unit->loader->getScript(stringAt(import->uriIndex), unit->loadedUrl);
             if (!script)
                 return false;
             dependencies.append(script->unit);

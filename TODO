@@ -9,3 +9,4 @@
 * Figure out if there's a way to create loader component that does not require changes to the Qt
 * More examples
 * Find ways to optimize Qml loading even further
+* Lots of TBD items in the code. Some of these are not needed, some of them are. Figure out which ones are.

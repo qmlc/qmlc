@@ -125,8 +125,8 @@ bool QmcTypeUnit::addImports()
         const QV4::CompiledData::Import *p = compiledData->qmlUnit->importAt(i);
         if (p->type == QV4::CompiledData::Import::ImportScript) {
             // load it if it does not exist yet
-            QmcScriptUnit* scriptUnit = unit->loader->getScript(stringAt(p->uriIndex), finalUrl());
-            if (!unit) {
+            QmcScriptUnit* scriptUnit = unit->loader->getScript(stringAt(p->uriIndex), unit->loadedUrl);
+            if (!scriptUnit) {
                 QQmlError error;
                 error.setColumn(p->location.column);
                 error.setLine(p->location.line);

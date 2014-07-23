@@ -20,6 +20,8 @@
 
 #include <QObject>
 #include <QTemporaryDir>
+#include <QQmlError>
+#include <QList>
 
 class TestCreateFile : public QObject
 {
@@ -32,7 +34,11 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
 
+    void testLoadSingleFile();
+    void testLoadDependency();
+
 private:
+    QString tempDirPath(const QString &file);
     QTemporaryDir* tempDir;
 };
 

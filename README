@@ -70,11 +70,6 @@ After creating the QQuickView, the precompiled components need to be loaded:
     QObject *rootObject = component->create();
     view.setContent(component->url(), component, rootObject);
 
-The dependencies need to manually loaded.
-
-To load dependency add:
-    loader.loadDependency(":/dependency.qmc");
-
 There is an example in the examples/objectlistmodel how to use the
 compiler.
 

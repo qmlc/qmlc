@@ -40,14 +40,20 @@ class QMCLOADERSHARED_EXPORT QmcLoader : public QObject
     Q_DECLARE_PRIVATE(QmcLoader)
 public:
     explicit QmcLoader(QQmlEngine *engine, QObject *parent = 0);
-    QQmlComponent *loadComponent(QDataStream &stream);
+    QQmlComponent *loadComponent(QDataStream &stream, const QUrl &loadedUrl);
     QQmlComponent *loadComponent(const QString &file);
-    bool loadDependency(QDataStream &stream);
+    bool loadDependency(QDataStream &stream, const QUrl &loadedUrl);
+    bool loadDependency(const QString &file);
     const QList<QQmlError>& errors() const;
     QmcScriptUnit *getScript(const QString &url, const QUrl &loaderUrl);
     QmcUnit *getType(const QString &name, const QUrl &loaderUrl);
+    void setLoadDependenciesAutomatically(bool load);
+    bool isLoadDependenciesAutomatically() const;
 
 private:
+    QUrl createLoadedUrl(const QString &url);
+    QmcUnit *doloadDependency(const QString &url);
+    QmcUnit *doloadDependency(QDataStream &stream, const QUrl &loadedUrl);
     void appendError(QQmlError error);
     void appendErrors(const QList<QQmlError>& errors);
     void clearError();

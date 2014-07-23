@@ -33,10 +33,13 @@ public:
 
     QList<QQmlError> errors;
     QmlCompilation* compilation;
+    QString basePath;
+    bool basePathSet;
 };
 
 CompilerPrivate::CompilerPrivate()
-    : compilation(NULL)
+    : compilation(NULL),
+      basePathSet(false)
 {
 }
 
@@ -60,6 +63,19 @@ QmlCompilation* Compiler::takeCompilation()
     QmlCompilation* c = d->compilation;
     d->compilation = NULL;
     return c;
+}
+
+void Compiler::unsetBasePath()
+{
+    Q_D(Compiler);
+    d->basePathSet = false;
+}
+
+void Compiler::setBasePath(const QString &path)
+{
+    Q_D(Compiler);
+    d->basePathSet = true;
+    d->basePath = path;
 }
 
 bool Compiler::loadData()
@@ -154,9 +170,26 @@ bool Compiler::compile(const QString &url)
 
 bool Compiler::compile(const QString &url, QDataStream &output)
 {
+    Q_D(Compiler);
     bool ret = compile(url);
     if (ret) {
+
         ret = createExportStructures();
+        if (d->basePathSet) {
+            QString newUrl = d->basePath;
+            int lastSlash = url.lastIndexOf('/');
+            if (lastSlash == -1)
+                newUrl.append(url);
+            else if (lastSlash < url.length() - 1)
+                newUrl.append(url.mid(lastSlash + 1));
+            QUrl url;
+            if (newUrl.startsWith(":/"))
+                url.setUrl("qrc:" + newUrl);
+            else
+                url.setUrl("file:" + newUrl);
+            d->compilation->url = url;
+            d->compilation->urlString = url.toString();
+        }
         if (ret)
             ret = exportData(output);
     }

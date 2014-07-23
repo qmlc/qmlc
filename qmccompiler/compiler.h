@@ -46,6 +46,21 @@ public:
 
     Compiler(QObject *parent = 0);
     virtual ~Compiler();
+
+    /**
+     * @brief setBasePath
+     * Sets base path in the generated files
+     * @param path
+     * Path that will be used
+     */
+    void setBasePath(const QString& path);
+
+    /**
+     * @brief unsetBasePath
+     * Removes effective base path setting.
+     */
+    void unsetBasePath();
+
     bool compile(const QString &url, QDataStream &output);
     bool compile(const QString &url, const QString &outputFile);
 

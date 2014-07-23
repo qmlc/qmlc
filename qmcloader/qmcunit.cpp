@@ -39,7 +39,7 @@ QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-QmcUnit::QmcUnit(QmcUnitHeader *header, const QUrl& url, const QString &urlString, QQmlEngine *engine, QmcLoader *loader, const QString &name) :
+QmcUnit::QmcUnit(QmcUnitHeader *header, const QUrl& url, const QString &urlString, QQmlEngine *engine, QmcLoader *loader, const QString &name, const QUrl &loadedUrl) :
     engine(engine),
     header(header),
     qmlUnit(NULL),
@@ -47,6 +47,7 @@ QmcUnit::QmcUnit(QmcUnitHeader *header, const QUrl& url, const QString &urlStrin
     compilationUnit(new QV4::JIT::CompilationUnit),
     url(url),
     urlString(urlString),
+    loadedUrl(loadedUrl),
     type((QmcFileType)header->type),
     loader(loader),
     name(name)
@@ -71,7 +72,7 @@ QmcUnit::~QmcUnit()
     allocations.clear();
 }
 
-QmcUnit *QmcUnit::loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *loader)
+QmcUnit *QmcUnit::loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *loader, const QUrl &loadedUrl)
 {
     QmcUnitHeader *header = new QmcUnitHeader;
 
@@ -91,7 +92,7 @@ QmcUnit *QmcUnit::loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *l
     QUrl url;
     url.setUrl(urlString);
 
-    QmcUnit *unit = new QmcUnit(header, url, urlString, engine, loader, name);
+    QmcUnit *unit = new QmcUnit(header, url, urlString, engine, loader, name, loadedUrl);
 
     if (unit->loadUnitData(stream))
         return unit;

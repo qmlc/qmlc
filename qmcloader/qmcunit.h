@@ -41,7 +41,7 @@ class QmcLoader;
 
 struct QmcUnit
 {
-    static QmcUnit *loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *loader);
+    static QmcUnit *loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *loader, const QUrl &loadedUrl);
     virtual ~QmcUnit();
 
     QString stringAt(int) const;
@@ -61,6 +61,7 @@ struct QmcUnit
     QList<QmcUnitTypeReference> typeReferences;
     QUrl url;
     QString urlString;
+    QUrl loadedUrl;
     QList<QString> strings;
     QList<QString> namespaces;
     QList<QV4::ExecutableAllocator::Allocation *> allocations;
@@ -82,7 +83,7 @@ struct QmcUnit
     bool makeExecutable();
 
 private:
-    QmcUnit(QmcUnitHeader *header, const QUrl &url, const QString &urlString, QQmlEngine *engine, QmcLoader *loader, const QString &name);
+    QmcUnit(QmcUnitHeader *header, const QUrl &url, const QString &urlString, QQmlEngine *engine, QmcLoader *loader, const QString &name, const QUrl &loadedUrl);
     bool loadUnitData(QDataStream &stream);
     static bool checkHeader(QmcUnitHeader *header);
     static bool readString(QString &string, QDataStream &stream);

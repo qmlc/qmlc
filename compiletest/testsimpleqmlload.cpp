@@ -619,11 +619,12 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
     }
 
     QmcLoader loader(engine);
+    loader.setLoadDependenciesAutomatically(false);
 
     // load first dependencies
-    foreach (QByteArray *buf, outputBufs) {
-        QDataStream in(buf, QIODevice::ReadOnly);
-        success = loader.loadDependency(in);
+    for (int i = 0; i < outputBufs.size(); i++) {
+        QDataStream in(outputBufs.at(i), QIODevice::ReadOnly);
+        success = loader.loadDependency(in, QUrl("qrc" + dependencies.at(i)));
         if (!success) {
             printErrors(loader.errors());
             return NULL;
@@ -631,7 +632,7 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
     }
 
     QDataStream input(&outputBuf, QIODevice::ReadOnly);
-    QQmlComponent* component = loader.loadComponent(input);
+    QQmlComponent* component = loader.loadComponent(input, QUrl(url));
     if (!component) {
         printErrors(loader.errors());
     }
