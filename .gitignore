@@ -7,6 +7,6 @@ moc_*.cpp
 *.pro.user
 Makefile
 *.qmc
-qmc
+qmc/qmc
 qrc_*.cpp
 objectlistmodel

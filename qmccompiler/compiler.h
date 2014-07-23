@@ -47,6 +47,7 @@ public:
     Compiler(QObject *parent = 0);
     virtual ~Compiler();
     bool compile(const QString &url, QDataStream &output);
+    bool compile(const QString &url, const QString &outputFile);
 
     QList<QQmlError> errors() const;
     bool isError() const;

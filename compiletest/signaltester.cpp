@@ -15,44 +15,24 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-#include <QFile>
-#include <QDataStream>
+#include "signaltester.h"
 
-#include "comp.h"
-#include "compiler.h"
-
-#include <iostream>
-
-using std::cerr;
-using std::endl;
-
-Comp::Comp(QObject *parent) :
-    QObject(parent)
+SignalTester::SignalTester(QObject *parent)
+    : QObject(parent),
+      val(-1)
 {
 }
 
-Comp::~Comp()
+SignalTester::~SignalTester()
 {
 }
 
-int Comp::retValue = EXIT_FAILURE;
-
-void Comp::compile()
+void SignalTester::sendSig()
 {
-    QString outputFile = fileName.left(fileName.lastIndexOf('.'));
-    outputFile.append(".qmc");
+    emit sig2();
+}
 
-    bool ret = compiler->compile("file:" + fileName, outputFile);
-
-    if (ret){
-        retValue = EXIT_SUCCESS;
-    } else {
-        if (compiler->errors().empty())
-            cerr << "Error compiling <no reason>" << endl;
-        foreach (QQmlError error, compiler->errors()) {
-            cerr << "Error: " << error.toString().toStdString() << endl;
-        }
-    }
-    emit finished();
-    return;
+void SignalTester::rcvMsg(int v)
+{
+    val = v;
 }

@@ -166,6 +166,24 @@ bool Compiler::compile(const QString &url, QDataStream &output)
     return ret;
 }
 
+bool Compiler::compile(const QString &url, const QString &outputFile)
+{
+    // open output file
+    QFile f(outputFile);
+    if (!f.open(QFile::WriteOnly | QFile::Truncate)) {
+        QQmlError error;
+        error.setDescription("Could not open file for writing");
+        error.setUrl(QUrl(outputFile));
+        return false;
+    }
+    QDataStream out(&f);
+
+    bool ret = compile(url, out);
+    f.close();
+
+    return ret;
+}
+
 bool Compiler::exportData(QDataStream &output)
 {
     Q_D(Compiler);

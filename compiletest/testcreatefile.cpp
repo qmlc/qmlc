@@ -15,44 +15,30 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-#include <QFile>
-#include <QDataStream>
+#include <QTest>
 
-#include "comp.h"
-#include "compiler.h"
+#include "testcreatefile.h"
 
-#include <iostream>
-
-using std::cerr;
-using std::endl;
-
-Comp::Comp(QObject *parent) :
-    QObject(parent)
+TestCreateFile::TestCreateFile(QObject *parent) :
+    QObject(parent),
+    tempDir(NULL)
 {
 }
 
-Comp::~Comp()
+TestCreateFile::~TestCreateFile()
 {
 }
 
-int Comp::retValue = EXIT_FAILURE;
-
-void Comp::compile()
+void TestCreateFile::initTestCase()
 {
-    QString outputFile = fileName.left(fileName.lastIndexOf('.'));
-    outputFile.append(".qmc");
+    tempDir = new QTemporaryDir;
+    QVERIFY(tempDir);
+    QVERIFY(tempDir->isValid());
+    QVERIFY(tempDir->autoRemove());
+}
 
-    bool ret = compiler->compile("file:" + fileName, outputFile);
-
-    if (ret){
-        retValue = EXIT_SUCCESS;
-    } else {
-        if (compiler->errors().empty())
-            cerr << "Error compiling <no reason>" << endl;
-        foreach (QQmlError error, compiler->errors()) {
-            cerr << "Error: " << error.toString().toStdString() << endl;
-        }
-    }
-    emit finished();
-    return;
+void TestCreateFile::cleanupTestCase()
+{
+    delete tempDir;
+    tempDir = NULL;
 }

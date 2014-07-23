@@ -6,3 +6,6 @@
 * Preinitialization of global QML structure. Currently it is compiled in JIT in every engine creation.
 * Integer / floating point optimization. When compiling module all code need to be compiled as floating point.
   Improve so that functions get compiled as two variants.
+* Figure out if there's a way to create loader component that does not require changes to the Qt
+* More examples
+* Find ways to optimize Qml loading even further

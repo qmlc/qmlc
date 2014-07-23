@@ -19,7 +19,10 @@ LIBS += -lqmcloader
 # Input
 SOURCES += \
     testsimpleqmlload.cpp \
-    testobject.cpp
+    testobject.cpp \
+    testcreatefile.cpp \
+    main.cpp \
+    signaltester.cpp
 
 OTHER_FILES += \
     testitem.qml \
@@ -43,4 +46,7 @@ RESOURCES += \
     testqml.qrc
 
 HEADERS += \
-    testobject.h
+    testobject.h \
+    testcreatefile.h \
+    signaltester.h \
+    testsimpleqmlload.h
