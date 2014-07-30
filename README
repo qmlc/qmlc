@@ -41,12 +41,9 @@ implementation.
 - Few structures are still unsupported, for example composite
   singleton
 - The test cases are still not very comphrehensive
-- It is not possible to use external libraries, such as qt-components
-- The Qml programs need slight modifications
-- Dependencies need to be loaded manually
 
-There are also few more specific issues that are being worked on
-or improved in the TODO file.
+List of current issues can be found at:
+https://github.com/qmlc/qmlc/issues
 
 
 Using Qml Compiler

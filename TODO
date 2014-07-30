@@ -1,12 +1,5 @@
-* Cyclic dependencies of QML components
-- See: http://lists.qt-project.org/pipermail/development/2013-August/012576.html
-* ARM support
-* Namespace support
-* Automatic loading of dependencies
-* Preinitialization of global QML structure. Currently it is compiled in JIT in every engine creation.
-* Integer / floating point optimization. When compiling module all code need to be compiled as floating point.
-  Improve so that functions get compiled as two variants.
-* Figure out if there's a way to create loader component that does not require changes to the Qt
-* More examples
-* Find ways to optimize Qml loading even further
-* Lots of TBD items in the code. Some of these are not needed, some of them are. Figure out which ones are.
+TODO moved to github issues.
+
+Please see:
+https://github.com/qmlc/qmlc/issues
+
