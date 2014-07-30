@@ -28,6 +28,7 @@
 
 class QmlCompilation;
 class CompilerPrivate;
+class QQmlEngine;
 
 namespace QV4 {
 namespace CompiledData {
@@ -44,7 +45,6 @@ class QMCCOMPILERSHARED_EXPORT Compiler : public QObject
 
 public:
 
-    Compiler(QObject *parent = 0);
     virtual ~Compiler();
 
     /**
@@ -68,6 +68,7 @@ public:
     bool isError() const;
     const QList<QQmlError>& compileErrors() const;
 protected:
+    Compiler(QQmlEngine *engine, QObject *parent = 0);
     bool compile(const QString &url);
     virtual bool compileData() = 0;
     virtual bool createExportStructures() = 0;
@@ -78,6 +79,7 @@ protected:
     QmlCompilation* compilation();
     const QmlCompilation* compilation() const;
     QmlCompilation* takeCompilation();
+    QQmlEngine *engine();
 
 private:
     bool exportData(QDataStream &output);

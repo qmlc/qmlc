@@ -23,20 +23,18 @@
 #include <private/qv4runtime_p.h>
 
 struct QmcLinkEntry {
-    QmcLinkEntry(const char *name, void *addr) { this->name = name; this->addr = addr; }
-    QmcLinkEntry() { name = NULL; addr = NULL; }
     const char *name;
     void *addr;
 };
 
 #define QMC_LINK_TABLE_ADD_NS(x) QV4::Runtime::x
 #define QMC_LINK_TABLE_STR(x) "Runtime::" #x
-#define QMC_LINK_TABLE_ENTRY_RUNTIME(x) QmcLinkEntry(QMC_LINK_TABLE_STR(x), (void *)QMC_LINK_TABLE_ADD_NS(x))
+#define QMC_LINK_TABLE_ENTRY_RUNTIME(x) { (const char *)QMC_LINK_TABLE_STR(x), (void *)QMC_LINK_TABLE_ADD_NS(x) }
 
 // table to link objects
 // this table can be used to resolve functions, it is id -> object mapping to maximize performance in linking phase
 // when adding new calls, add to end of the list to maintain compatibility
-QmcLinkEntry QMC_LINK_TABLE[] = {
+const QmcLinkEntry QMC_LINK_TABLE[] = {
     // call
     QMC_LINK_TABLE_ENTRY_RUNTIME(callGlobalLookup),
     QMC_LINK_TABLE_ENTRY_RUNTIME(callActivationProperty),

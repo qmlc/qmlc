@@ -36,6 +36,10 @@ private slots:
 
     void testLoadSingleFile();
     void testLoadDependency();
+    void testLoadModule1();
+    void testLoadModule2();
+
+
 
 private:
     QString tempDirPath(const QString &file);

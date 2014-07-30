@@ -33,6 +33,7 @@ public:
 
     QList<QQmlError> errors;
     QmlCompilation* compilation;
+    QQmlEngine *engine;
     QString basePath;
     bool basePathSet;
 };
@@ -48,13 +49,21 @@ CompilerPrivate::~CompilerPrivate()
     delete compilation;
 }
 
-Compiler::Compiler(QObject *parent) :
+Compiler::Compiler(QQmlEngine *engine, QObject *parent) :
     QObject(*(new CompilerPrivate), parent)
 {
+    Q_D(Compiler);
+    d->engine = engine;
 }
 
 Compiler::~Compiler()
 {
+}
+
+QQmlEngine* Compiler::engine()
+{
+    Q_D(Compiler);
+    return d->engine;
 }
 
 QmlCompilation* Compiler::takeCompilation()
@@ -81,7 +90,7 @@ void Compiler::setBasePath(const QString &path)
 bool Compiler::loadData()
 {
     Q_D(Compiler);
-    const QUrl& url = d->compilation->url;
+    const QUrl& url = d->compilation->loadUrl;
     if (!url.isValid() || url.isEmpty())
         return false;
     QQmlFile f;
@@ -149,11 +158,18 @@ bool Compiler::compile(const QString &url)
     }
 
     Q_ASSERT(d->compilation == NULL);
-    QmlCompilation* c = new QmlCompilation(url, QUrl(url));
+    QmlCompilation* c = new QmlCompilation(url, QUrl(url), d->engine);
     d->compilation = c;
     c->importCache = new QQmlImports(&QQmlEnginePrivate::get(d->compilation->engine)->typeLoader);
     c->importDatabase = new QQmlImportDatabase(d->compilation->engine);
-    c->url = url;
+    c->loadUrl = url;
+    int lastSlash = url.lastIndexOf('/');
+    if (lastSlash == -1)
+        c->url = url;
+    else if (lastSlash + 1 < url.length())
+        c->url = url.mid(lastSlash + 1);
+    else
+        c->url = "";
 
     if (!loadData()) {
         delete takeCompilation();
@@ -255,6 +271,7 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
         QmlCompilation::ScriptReference scriptRef;
         scriptRef.location = import->location;
         scriptRef.qualifier = importQualifier;
+        scriptRef.compilation = NULL;
         d->compilation->scripts.append(scriptRef);
     } else if (import->type == QV4::CompiledData::Import::ImportLibrary) {
         QString qmldirFilePath;
@@ -305,10 +322,24 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
             }
         }
     } else {
+        // qqmltypeloader.cpp:1383
         Q_ASSERT(import->type == QV4::CompiledData::Import::ImportFile);
-        qDebug() << "File import type not supported";
-        // TBD: qqmltypeloader.cpp:1383
-        return false;
+
+        QUrl qmldirUrl;
+        if (importQualifier.isEmpty()) {
+            qmldirUrl = compilation()->loadUrl.resolved(QUrl(importUri + QLatin1String("/qmldir")));
+            if (!QQmlImports::isLocal(qmldirUrl)) {
+                qDebug() << "File import from network not supported";
+                QQmlError error;
+                error.setDescription("File import from network not supported");
+                errors->append(error);
+                return false;
+            }
+        }
+
+        if (!compilation()->importCache->addFileImport(compilation()->importDatabase, importUri, importQualifier, import->majorVersion,
+                                   import->minorVersion, /*incomplete*/ false, errors))
+            return false;
     }
     return true;
 }

@@ -16,6 +16,16 @@ LIBS += -L../qmcloader
 LIBS += -lqmccompiler
 LIBS += -lqmcloader
 
+# These are just for using JIT
+QT += qml-private core-private
+INCLUDEPATH += ../3rdparty/masm
+INCLUDEPATH += ../3rdparty/masm/stubs
+INCLUDEPATH += ../3rdparty/masm/stubs/wtf
+INCLUDEPATH += ../3rdparty/masm/jit
+INCLUDEPATH += ../3rdparty/masm/disassembler
+include(../3rdparty/masm/masm-defs.pri)
+DEFINES += ENABLE_JIT ASSERT_DISABLED=1
+
 # Input
 SOURCES += \
     testsimpleqmlload.cpp \
@@ -40,7 +50,15 @@ OTHER_FILES += \
     testsignal2.qml \
     testsignal3.qml \
     testlistview1.qml \
-    testbinding1.qml
+    testbinding1.qml \
+    ModItem.qml \
+    ModItem11.qml \
+    mod.js \
+    mod.qmldir \
+    testmod1.qml \
+    modsimple.qmldir \
+    SimpleItem.qml \
+    testmod1.qml
 
 RESOURCES += \
     testqml.qrc

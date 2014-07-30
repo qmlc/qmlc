@@ -34,8 +34,8 @@
 
 int QmlC::MAX_RECURSION = 10;
 
-QmlC::QmlC(QObject *parent) :
-    Compiler(parent),
+QmlC::QmlC(QQmlEngine *engine, QObject *parent) :
+    Compiler(engine, parent),
     recursion(0)
 {
 }
@@ -138,12 +138,32 @@ bool QmlC::resolveTypes()
     // script references
     // qqmltypeloader.cpp:2356
     // TBD
-    foreach (const QQmlImports::ScriptReference &scriptRef, compilation()->importCache->resolvedScripts()) {
-        if (!scriptRef.nameSpace.isEmpty()) {
-            QString qualifier = scriptRef.nameSpace;
-            qualifier.prepend(scriptRef.qualifier + ".");
-            compilation()->namespaces.append(qualifier);
+    foreach (const QQmlImports::ScriptReference &script, compilation()->importCache->resolvedScripts()) {
+#if 0
+        QmlCompilation *scriptCompilation = getComponent(script.location);
+        if (!scriptCompilation) {
+            QQmlError error;
+            error.setDescription("Could not get dependency");
+            error.setUrl(script.location);
+            appendError(error);
+            return false;
         }
+#endif
+
+        QmlCompilation::ScriptReference scriptRef;
+        scriptRef.compilation = NULL; //scriptCompilation;
+
+        scriptRef.qualifier = script.nameSpace;
+        if (!script.qualifier.isEmpty())
+        {
+            scriptRef.qualifier.prepend(script.qualifier + QLatin1Char('.'));
+
+            // Add a reference to the enclosing namespace
+            if (!compilation()->namespaces.contains(script.qualifier))
+                compilation()->namespaces.append(script.qualifier);
+        }
+
+        compilation()->scripts.append(scriptRef);
     }
 
     // TBD: qqmltypeloader.cpp:2377 resolved composite singletons
@@ -234,6 +254,7 @@ bool QmlC::doCompile()
     compiledData->url = compilation()->url;
     compiledData->name = compilation()->urlString;
 
+    //qDebug() << "Compile" << compilation()->url;
     QmcTypeCompiler compiler(compilation());
     if (!compiler.precompile()) {
         appendErrors(compiler.compilationErrors());
@@ -273,6 +294,12 @@ bool QmlC::createExportStructures()
             typeRef.syntheticComponent = 1;
         else
             typeRef.syntheticComponent = 0;
+
+        if (resolvedType.value()->component)
+            typeRef.composite = 1;
+        else
+            typeRef.composite = 0;
+
         //qDebug() << "Type ref" << typeRef.index << name;
         compilation()->exportTypeRefs.append(typeRef);
     }
@@ -386,6 +413,7 @@ bool QmlC::compileData()
 
 QmlCompilation* QmlC::getComponent(const QUrl& url)
 {
+    //qDebug() << "Load dependency" << url.toString();
     QString str = url.toString();
     if (components.contains(str))
         return components[str];
@@ -399,7 +427,7 @@ QmlCompilation* QmlC::getComponent(const QUrl& url)
         }
 
         // compile
-        QmlC compiler;
+        QmlC compiler(engine());
         compiler.recursion = this->recursion + 1;
         if (!compiler.compile(url.toString())) {
             appendErrors(compiler.errors());

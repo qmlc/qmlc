@@ -167,7 +167,7 @@ QString QmcLoader::getBaseUrl(const QUrl &url)
         path = path.left(lastSlash + 1);
         newUrl.setPath(path);
     } else {
-        newUrl = "";
+        newUrl.setPath("");
     }
     return newUrl.toString();
 }
@@ -175,7 +175,8 @@ QString QmcLoader::getBaseUrl(const QUrl &url)
 QmcUnit *QmcLoader::getUnit(const QString &url)
 {
     Q_D(QmcLoader);
-    if (!d->dependencies.contains(url)) {
+    QString precompiled = precompiledUrl(url);
+    if (!d->dependencies.contains(precompiled)) {
         if (d->loadDependenciesAutomatically) {
             // try to load it
             if (d->dependencyRecursionDepth >= DEPENDENCY_MAX_RECURSION_DEPTH) {
@@ -186,13 +187,23 @@ QmcUnit *QmcLoader::getUnit(const QString &url)
                 return NULL;
             }
             d->dependencyRecursionDepth++;
-            QmcUnit *unit = doloadDependency(url);
+            QmcUnit *unit = doloadDependency(precompiled);
             d->dependencyRecursionDepth--;
             return unit;
         } else
         return NULL;
     }
-    return d->dependencies[url];
+    return d->dependencies[precompiled];
+}
+
+QString QmcLoader::precompiledUrl(const QString &url)
+{
+    QString urlString = url;
+    if (url.endsWith(".js"))
+        urlString.append("c");
+    else if (url.endsWith(".qml"))
+        urlString[urlString.length() - 1] = 'c';
+    return urlString;
 }
 
 QmcScriptUnit *QmcLoader::getScript(const QString &url, const QUrl &loaderUrl)
@@ -252,16 +263,7 @@ bool QmcLoader::loadDependency(const QString &file)
 
 QmcUnit *QmcLoader::doloadDependency(const QString &url)
 {
-    Q_D(QmcLoader);
-
-    QString urlString;
-    if (url.endsWith(".js") || url.endsWith(".qml")) {
-        urlString = url.left(url.lastIndexOf("."));
-        urlString.append(".qmc");
-    } else
-        urlString = url;
-
-    QUrl u(urlString);
+    QUrl u(url);
     QString file = u.toLocalFile();
     QFile f(file);
     if (!f.open(QFile::ReadOnly)) {
@@ -291,7 +293,7 @@ QmcUnit *QmcLoader::doloadDependency(QDataStream &stream, const QUrl &loadedUrl)
     }
 
     // add to dependencies
-    d->dependencies[unit->url.toString()] = unit;
+    d->dependencies[unit->loadedUrl.toString()] = unit;
     unit->blob->addref();
     return unit;
 }

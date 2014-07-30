@@ -39,6 +39,8 @@ void QmcInstructionSelection::run(int functionIndex)
     QVector<Lookup> lookups;
     qSwap(_function, function);
 
+    //qDebug() << "Compile" << *_function->name;
+
     IR::Optimizer opt(_function);
     opt.run(qmlEngine);
 
@@ -54,7 +56,13 @@ void QmcInstructionSelection::run(int functionIndex)
             opt.convertOutOfSSA();
         ConvertTemps().toStackSlots(_function);
     }
-    IR::Optimizer::showMeTheCode(_function);
+
+    if (!qgetenv("QV4_SHOW_IR_ONLY_USER").isNull() && qgetenv("QV4_SHOW_IR_ONLY_FINAL").isNull()) {
+        if (*_function->name != QString("%entry") && *_function->name != QString("freeze_recur") && _function->name != QString("context scope"))
+            IR::Optimizer::showMeTheCode(_function);
+    } else
+        IR::Optimizer::showMeTheCode(_function);
+
     QSet<IR::Jump *> removableJumps = opt.calculateOptionalJumps();
     qSwap(_removableJumps, removableJumps);
 
@@ -122,7 +130,7 @@ void QmcInstructionSelection::run(int functionIndex)
         if (index < 0) {
             // try name based look up
             for (uint i = 0; i < sizeof (QMC_LINK_TABLE) / sizeof (QmcLinkEntry); i++) {
-                QmcLinkEntry& entry = QMC_LINK_TABLE[i];
+                const QmcLinkEntry& entry = QMC_LINK_TABLE[i];
                 if (!strncmp(ctl.functionName, entry.name, strlen(entry.name))) {
                     index = i;
                     break;

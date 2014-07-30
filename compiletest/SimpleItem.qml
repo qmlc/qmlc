@@ -14,22 +14,9 @@
  * the Digia Qt LGPL Exception version 1.1, included in the file
  * LGPL_EXCEPTION.txt in this package.
  */
+import QtQuick 2.0
 
-#include "testsimpleqmlload.h"
-#include "testcreatefile.h"
-
-#include <QTest>
-#include <QCoreApplication>
-
-int main(int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
-
-    TestSimpleQmlLoad st;
-    QTest::qExec(&st);
-
-    TestCreateFile tf;
-    QTest::qExec(&tf);
-
-    return 0;
+Item {
+    width: 100
+    height: 62
 }

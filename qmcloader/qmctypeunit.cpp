@@ -104,9 +104,6 @@ bool QmcTypeUnit::link()
     if (!initDependencies())
         return false;
 
-    if (!unit->makeExecutable())
-        return false;
-
     if (!initQml())
         return false;
 
@@ -121,6 +118,8 @@ bool QmcTypeUnit::addImports()
     compiledData->customParserBindings = qmcUnit()->customParserBindings;
     compiledData->deferredBindingsPerObject = qmcUnit()->deferredBindings;
 
+    // qqmltypeloader.cpp:2271
+    // ->addImport qqmltypeloader.cpp:1311
     for (uint i = 0; i < compiledData->qmlUnit->nImports; i++) {
         const QV4::CompiledData::Import *p = compiledData->qmlUnit->importAt(i);
         if (p->type == QV4::CompiledData::Import::ImportScript) {
@@ -140,17 +139,52 @@ bool QmcTypeUnit::addImports()
             ref.qualifier = stringAt(p->qualifierIndex);
             ref.script = scriptUnit;
             scripts.append(ref);
-        }
-        if (p->type == QV4::CompiledData::Import::ImportLibrary) {
+        } else if (p->type == QV4::CompiledData::Import::ImportLibrary) {
             if (!addImport(p, &unit->errors))
                 return false;
+        } else if (p->type == QV4::CompiledData::Import::ImportFile) {
+            // load file import
+            // qqmltypeloader.cpp:1384
+            const QString &importUri = stringAt(p->uriIndex);
+            const QString &importQualifier = stringAt(p->qualifierIndex);
+
+            QUrl qmldirUrl;
+            if (importQualifier.isEmpty()) {
+                qmldirUrl = finalUrl().resolved(QUrl(importUri + QLatin1String("/qmldir")));
+                if (!QQmlImports::isLocal(qmldirUrl)) {
+                    // This is a remote file; the import is currently incomplete
+                    QQmlError error;
+                    error.setDescription("Remote dependencies not supported");
+                    error.setUrl(qmldirUrl);
+                    unit->errors.append(error);
+                    return false;
+                }
+            }
+
+            QString uri;
+            QString path = QmcLoader::getBaseUrl(unit->loadedUrl);
+            uri = path + importUri;
+
+
+            if (!m_importCache.addFileImport(typeLoader()->importDatabase(), uri, importQualifier, p->majorVersion,
+                                       p->minorVersion, false, &unit->errors))
+                return false;
+
+        } else {
+            QQmlError error;
+            error.setDescription("Unknown type import");
+            error.setColumn(p->location.column);
+            error.setLine(p->location.line);
+            error.setUrl(finalUrl());
+            unit->errors.append(error);
+            return false;
         }
     }
 
     // resolve types
     // type data creation
     // qqmlirbuilder.cpp:285 create QV4::CompiledData::TypeReference = location
-    // qqmltypeloader.cpp:2400 QV4::CompiledData::TypeReference -> QQmlTypeData::TypeReference
+    // qqmltypeloader.cpp:2402 QV4::CompiledData::TypeReference -> QQmlTypeData::TypeReference
     // qqmltypecompiler.cpp:86 QQmlTypeData::TypeReference -> QQmlCompiledData::TypeReference
 
     foreach (const QmcUnitTypeReference& typeRef, unit->typeReferences) {
@@ -163,22 +197,51 @@ bool QmcTypeUnit::addImports()
         if (typeRef.syntheticComponent)
             continue;
         QQmlCompiledData::TypeReference *ref = new QQmlCompiledData::TypeReference;
-        if (!m_importCache.resolveType(name, &ref->type, &majorVersion, &minorVersion, &typeNamespace, &unit->errors)) {
-            // try to load it
+        QQmlType *qmlType = NULL;
+        if (!m_importCache.resolveType(name, &qmlType, &majorVersion, &minorVersion, &typeNamespace, &unit->errors)) {
+            // try to load it as implicit import
             QmcUnit *typeUnit = qmcUnit()->loader->getType(name, finalUrl());
             if (typeUnit) {
                 ref->component = ((QmcTypeUnit *)typeUnit->blob)->refCompiledData(); // addref
                 unit->errors.clear();
                 dependencies.append(typeUnit);
-            }
-            if (!typeUnit) {
+            } else {
+                QQmlError error;
+                error.setDescription("Could not load implicit import");
+                unit->errors.append(error);
                 delete ref;
                 return false;
             }
         }
 
-        // TBD component creation, see qqmltypecompiler.cpp:87
-        if (ref->type) {
+        // component creation, see qqmltypecompiler.cpp:87
+        // and qqmltypeloader.cpp:2456
+        if (typeRef.composite && !ref->component) {
+            // extract name of the source url
+            Q_ASSERT(qmlType);
+            QString sourceName;
+            if (!sourceNameForUrl(qmlType->sourceUrl(), sourceName)) {
+                delete ref;
+                return false;
+            }
+
+            int lastDot = sourceName.lastIndexOf('.');
+            if (lastDot != -1)
+                sourceName = sourceName.left(lastDot);
+
+            QmcUnit *typeUnit = qmcUnit()->loader->getType(sourceName, unit->loadedUrl);
+            if (typeUnit) {
+                ref->component = ((QmcTypeUnit *)typeUnit->blob)->refCompiledData(); // addref
+                dependencies.append(typeUnit);
+            } else {
+                QQmlError error;
+                error.setDescription("Could not load implicit import");
+                unit->errors.append(error);
+                delete ref;
+                return false;
+            }
+        } else if (qmlType) {
+            ref->type = qmlType;
             if (ref->type->containsRevisionedAttributes()) {
                 // qqmltypecompiler.cpp:102
                 QQmlError cacheError;
@@ -229,6 +292,55 @@ bool QmcTypeUnit::addImports()
         compiledData->resolvedTypes.insert(typeRef.index, ref);
     }
 
+    // scripts resolved through file imports
+    // actual script loading is done in QQmlObjectCreator::create (qqmlobjectcreator.cpp:215)
+    foreach (const QQmlImports::ScriptReference &scriptRef, imports().resolvedScripts()) {
+        // script reference
+        QString locationName;
+        if (!sourceNameForUrl(scriptRef.location, locationName))
+            return false;
+
+        QmcScriptUnit *script = unit->loader->getScript(locationName, unit->loadedUrl);
+        if (!script) {
+            QQmlError error;
+            error.setDescription("Could not load script");
+            error.setUrl(scriptRef.location);
+            unit->errors.append(error);
+            return false;
+        }
+        //compiledData->scripts.append(script->scriptData());
+        QQmlTypeData::ScriptReference ref;
+        ref.script = script;
+        ref.qualifier = scriptRef.qualifier;
+        scripts.append(ref);
+    }
+
+    return true;
+}
+
+bool QmcTypeUnit::sourceNameForUrl(const QUrl &url, QString &name)
+{
+    name = url.toString();
+    QString loadedBaseUrl = QmcLoader::getBaseUrl(unit->loadedUrl.toString());
+
+    if (name.startsWith(loadedBaseUrl)) {
+        if (name.size() > loadedBaseUrl.size())
+            name = name.mid(loadedBaseUrl.size());
+        else
+            name = "";
+    } else {
+        // use just name
+        qDebug() << "Reverting back to using just file name to resolve url, propably won't work";
+        int lastSlash = name.lastIndexOf('/');
+        if (lastSlash + 1 >= name.length()) {
+            QQmlError error;
+            error.setDescription("Illegal formatted url");
+            error.setUrl(url);
+            unit->errors.append(error);
+            return false;
+        } else if (lastSlash != -1)
+            name = name.mid(lastSlash + 1);
+    }
     return true;
 }
 

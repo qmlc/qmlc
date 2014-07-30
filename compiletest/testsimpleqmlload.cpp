@@ -31,6 +31,13 @@
 #include "testsimpleqmlload.h"
 #include "signaltester.h"
 
+#include "config.h"
+
+#include <private/qqmlengine_p.h>
+#include <private/qv4isel_masm_p.h>
+#include <private/qqmlcomponent_p.h>
+#include <private/qqmlcompiler_p.h>
+
 void TestSimpleQmlLoad::initTestCase()
 {
 }
@@ -337,6 +344,7 @@ void TestSimpleQmlLoad::printErrors(const QList<QQmlError> &errors)
 
 QQmlComponent* TestSimpleQmlLoad::load(QQmlEngine *engine, const QString &file)
 {
+    QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);
     QUrl url("qrc" + file);
     QQmlComponent* component = new QQmlComponent(engine, url, QQmlComponent::PreferSynchronous);
 
@@ -586,7 +594,7 @@ void TestSimpleQmlLoad::compileAndLoadBinding1()
 QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QString &file, const QList<QString> &dependencies)
 {
     QString url("qrc" + file);
-    QmlC c;
+    QmlC c(engine);
     QByteArray outputBuf;
     QDataStream output(&outputBuf, QIODevice::WriteOnly);
     bool success = c.compile(url, output);
@@ -602,12 +610,12 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
         bool ret = false;
         QString u("qrc" + dependency);
         if (dependency.endsWith(".js")) {
-            ScriptC jsc;
+            ScriptC jsc(engine);
             ret = jsc.compile(u, out);
             if (!ret)
                 printErrors(jsc.errors());
         } else {
-            QmlC qmlc;
+            QmlC qmlc(engine);
             ret = qmlc.compile(u, out);
             if (!ret)
                 printErrors(qmlc.errors());
@@ -624,7 +632,12 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
     // load first dependencies
     for (int i = 0; i < outputBufs.size(); i++) {
         QDataStream in(outputBufs.at(i), QIODevice::ReadOnly);
-        success = loader.loadDependency(in, QUrl("qrc" + dependencies.at(i)));
+        QString str = dependencies.at(i);
+        if (str.endsWith(".qml"))
+            str[str.size() - 1] = 'c';
+        else
+            str.append('c');
+        success = loader.loadDependency(in, QUrl("qrc" + str));
         if (!success) {
             printErrors(loader.errors());
             return NULL;
@@ -637,6 +650,70 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
         printErrors(loader.errors());
     }
     return component;
+}
+
+void TestSimpleQmlLoad::loadModule1()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testmod1.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVariant val;
+    val = myObject->property("width");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 100);
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileModule1()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    QmlC compiler(engine);
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    bool ret = compiler.compile("qrc:/testqml/testmod1.qml", out);
+    QVERIFY(ret);
+    delete engine;
+}
+
+void TestSimpleQmlLoad::loadModule2()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testmod2.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+    QQmlComponentPrivate *cPriv = QQmlComponentPrivate::get(component);
+    QVERIFY(cPriv);
+    QVERIFY(cPriv->cc);
+    QVERIFY(cPriv->cc->scripts.size() == 2);
+
+    QObject *myObject = component->create();
+    QVariant val;
+    val = myObject->property("m1h");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 200);
+    val = myObject->property("m2w");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 30);
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileModule2()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    QmlC compiler(engine);
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    bool ret = compiler.compile("qrc:/testqml/testmod2.qml", out);
+    printErrors(compiler.errors());
+    QVERIFY(ret);
+    delete engine;
 }
 
 //#include "testsimpleqmlload.moc"

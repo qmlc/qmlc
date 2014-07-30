@@ -30,8 +30,8 @@
 #include "qmcinstructionselection.h"
 
 
-ScriptC::ScriptC(QObject *parent) :
-    Compiler(parent)
+ScriptC::ScriptC(QQmlEngine *engine, QObject *parent) :
+    Compiler(engine, parent)
 {
 }
 

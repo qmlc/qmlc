@@ -16,5 +16,16 @@
         <file>testsignal2.qml</file>
         <file>testsignal3.qml</file>
         <file>testlistview1.qml</file>
+        <file>testmod2.qml</file>
+        <file>testmod1.qml</file>
+    </qresource>
+    <qresource prefix="/testqml/mod">
+        <file>ModItem11.qml</file>
+        <file>ModItem.qml</file>
+        <file alias="qmldir">mod.qmldir</file>
+        <file>mod.js</file>
+    </qresource>
+    <qresource prefix="/testqml/modsimple">
+        <file>SimpleItem.qml</file>
     </qresource>
 </RCC>

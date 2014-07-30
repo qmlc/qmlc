@@ -15,21 +15,19 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-#include "testsimpleqmlload.h"
-#include "testcreatefile.h"
+import QtQuick 2.0
+import "mod/" 1.0 as M1
+import "mod/" 1.1 as M2
 
-#include <QTest>
-#include <QCoreApplication>
+Item {
+    property var m1h: m1i.height
+    property alias m2w: m2i.width
 
-int main(int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
+    M1.ModItem {
+        id: m1i
+    }
 
-    TestSimpleQmlLoad st;
-    QTest::qExec(&st);
-
-    TestCreateFile tf;
-    QTest::qExec(&tf);
-
-    return 0;
+    M2.ModItem {
+        id: m2i
+    }
 }

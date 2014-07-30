@@ -319,6 +319,10 @@ bool QmcTypeCompiler::precompile()
     // namespaces
     // qqmltypecompiler.cpp:72
     // qqmltypeloader.cpp:2356
+    foreach (const QString &ns, compilation->namespaces) {
+        compiledData->importCache->add(ns);
+    }
+
     // TBD: qqmltypecompiler.cpp:72 namespaces, copy from QmlCompilation->namespaces
 
     // TBD: qqmltypecompiler.cpp:76 composite singletons

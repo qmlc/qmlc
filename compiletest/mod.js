@@ -15,21 +15,6 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-#include "testsimpleqmlload.h"
-#include "testcreatefile.h"
-
-#include <QTest>
-#include <QCoreApplication>
-
-int main(int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
-
-    TestSimpleQmlLoad st;
-    QTest::qExec(&st);
-
-    TestCreateFile tf;
-    QTest::qExec(&tf);
-
-    return 0;
+function f(x) {
+    return x * 2;
 }

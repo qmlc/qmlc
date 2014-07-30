@@ -49,6 +49,7 @@ public:
     QmcUnit *getType(const QString &name, const QUrl &loaderUrl);
     void setLoadDependenciesAutomatically(bool load);
     bool isLoadDependenciesAutomatically() const;
+    static QString getBaseUrl(const QUrl &url);
 
 private:
     QUrl createLoadedUrl(const QString &url);
@@ -57,8 +58,8 @@ private:
     void appendError(QQmlError error);
     void appendErrors(const QList<QQmlError>& errors);
     void clearError();
-    QString getBaseUrl(const QUrl &url);
     QmcUnit *getUnit(const QString &url);
+    QString precompiledUrl(const QString &url);
 };
 
 #endif // QMCLOADER_H

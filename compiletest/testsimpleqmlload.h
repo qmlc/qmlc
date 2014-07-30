@@ -65,6 +65,12 @@ private slots:
     void loadFunction1();
     void compileAndLoadFunction1();
 
+    void loadModule1(); // compilation test in file based tests
+    void compileModule1();
+
+    void loadModule2(); // compilation test in file based tests
+    void compileModule2();
+
     void initTestCase();
     void cleanupTestCase();
 

@@ -103,6 +103,7 @@ struct QmcUnitHeader {
 struct QmcUnitTypeReference {
     quint32 index;
     quint32 syntheticComponent;
+    quint32 composite;
 };
 
 struct QmcUnitObjectIndexToId {

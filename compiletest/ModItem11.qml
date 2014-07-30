@@ -15,21 +15,12 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-#include "testsimpleqmlload.h"
-#include "testcreatefile.h"
+import QtQuick 2.0
+import "mod.js" as QQ
 
-#include <QTest>
-#include <QCoreApplication>
-
-int main(int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
-
-    TestSimpleQmlLoad st;
-    QTest::qExec(&st);
-
-    TestCreateFile tf;
-    QTest::qExec(&tf);
-
-    return 0;
+Rectangle {
+    height: 10
+    width: {
+        return 10 + QQ.f(height);
+    }
 }

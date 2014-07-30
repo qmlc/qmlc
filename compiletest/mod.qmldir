@@ -1,0 +1,5 @@
+module mod
+
+ModItem 1.0 ModItem.qml
+ModItem 1.1 ModItem11.qml
+Scr 1.0 mod.js

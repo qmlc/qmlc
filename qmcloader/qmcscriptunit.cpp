@@ -39,6 +39,8 @@ QmcScriptUnit::~QmcScriptUnit()
 
 bool QmcScriptUnit::initialize()
 {
+    if (isComplete())
+        return true;
     setStatus(Complete);
 
     initializeFromCompilationUnit(unit->compilationUnit, false);
@@ -76,9 +78,6 @@ bool QmcScriptUnit::initialize()
             return false;
         }
     }
-
-    if (!unit->makeExecutable())
-        return false;
 
     // call done
     done();

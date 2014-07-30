@@ -21,12 +21,13 @@ class QQmlEngine;
 class QMCCOMPILERSHARED_EXPORT QmlCompilation
 {
 public:
-    QmlCompilation(const QString &urlString, const QUrl& url);
+    QmlCompilation(const QString &urlString, const QUrl& url, QQmlEngine *engine);
     virtual ~QmlCompilation();
 
     QString urlString;
     QString name;
     QUrl url;
+    QUrl loadUrl;
     QString code;
     QQmlCompiledData *compiledData;
     bool checkData(int *sizeInBytes = NULL) const;
@@ -72,6 +73,7 @@ public:
     {
         QV4::CompiledData::Location location;
         QString qualifier;
+        QmlCompilation *compilation;
     };
 
     QList<ScriptReference> scripts;

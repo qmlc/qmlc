@@ -74,6 +74,7 @@ QmcUnit::~QmcUnit()
 
 QmcUnit *QmcUnit::loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *loader, const QUrl &loadedUrl)
 {
+    //qDebug() << "Loading" << loadedUrl;
     QmcUnitHeader *header = new QmcUnitHeader;
 
     bool ret = readData((char *)header, sizeof(QmcUnitHeader), stream);
@@ -483,33 +484,6 @@ QString QmcUnit::stringAt(int index) const
 {
     Q_ASSERT(index < strings.size());
     return strings.at(index);
-}
-
-bool QmcUnit::makeExecutable()
-{
-    int i = 0;
-    foreach (const JSC::MacroAssemblerCodeRef &codeRef, compilationUnit->codeRefs) {
-        //JSC::ExecutableAllocator::makeExecutable(code, codeRefLen);
-
-        size_t codeRefSize = codeRefSizes[i++];
-        size_t pageSize = PAGE_SIZE;
-        size_t iaddr = reinterpret_cast<size_t>(codeRef.code().executableAddress());
-        size_t roundAddr = iaddr & ~(pageSize - static_cast<size_t>(1));
-        size_t len = codeRefSize + (iaddr - roundAddr);
-        if (len == 0)
-            len++;
-        int mode = PROT_READ | PROT_EXEC;
-#if 0
-        QString roundAddrAsHex = QString("%1").arg(roundAddr, 0, 16);
-        QString codeAddrAsHex = QString("%1").arg((size_t)codeRef.code().executableAddress(), 0, 16);
-        QString sizeAsHex = QString("%1").arg(codeRefSize, 0, 16);
-        QString lenAsHex = QString("%1").arg(len, 0, 16);
-        qDebug() << "set executable addr" << roundAddrAsHex << codeAddrAsHex << "size" << sizeAsHex << "len" << lenAsHex;
-#endif
-        if (mprotect(reinterpret_cast<void *>(roundAddr), len, mode))
-            return false;
-    }
-    return true;
 }
 
 QT_END_NAMESPACE

@@ -47,6 +47,7 @@ private:
     bool addImports();
     bool initDependencies();
     bool initQml();
+    bool sourceNameForUrl(const QUrl &url, QString &name);
 
     QmcUnit *unit;
 

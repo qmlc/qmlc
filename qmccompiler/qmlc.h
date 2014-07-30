@@ -28,12 +28,14 @@
 #include "compiler.h"
 #include "qmccompiler_global.h"
 
+class QQmlEngine;
+
 class QMCCOMPILERSHARED_EXPORT QmlC : public Compiler
 {
     Q_OBJECT
 
 public:
-    QmlC(QObject *parent = 0);
+    QmlC(QQmlEngine *engine, QObject *parent = 0);
     virtual ~QmlC();
 
 protected:

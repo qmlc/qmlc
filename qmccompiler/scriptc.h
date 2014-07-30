@@ -40,11 +40,13 @@ class CompilationUnit;
 }
 }
 
+class QQmlEngine;
+
 class QMCCOMPILERSHARED_EXPORT ScriptC : public Compiler
 {
     Q_OBJECT
 public:
-    explicit ScriptC(QObject *parent = 0);
+    explicit ScriptC(QQmlEngine *engine, QObject *parent = 0);
     virtual ~ScriptC();
 
 protected:

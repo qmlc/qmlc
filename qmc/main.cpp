@@ -19,6 +19,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <QTimer>
+#include <QQmlEngine>
 
 #include <iostream>
 #include "qmlc.h"
@@ -31,6 +32,7 @@ using std::endl;
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    QQmlEngine *engine = new QQmlEngine;
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " input-file" << endl;
         return EXIT_FAILURE;
@@ -44,9 +46,9 @@ int main(int argc, char *argv[])
 
     Compiler *compiler = NULL;
     if (fileName.endsWith(".js")) {
-        compiler = new ScriptC();
+        compiler = new ScriptC(engine);
     } else if (fileName.endsWith(".qml")) {
-        compiler = new QmlC();
+        compiler = new QmlC(engine);
     } else {
         cerr << "Supported filetypes include .js and .qml" << endl;
         return EXIT_FAILURE;
@@ -64,6 +66,7 @@ int main(int argc, char *argv[])
     comp.compile();
 
     delete compiler;
+    delete engine;
     if (Comp::retValue == 0)
         return EXIT_SUCCESS;
     else

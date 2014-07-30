@@ -26,8 +26,15 @@
 
 #define SUB_ITEM_QMC "SubItem.qmc"
 #define SUB_ITEM_WITH_SCRIPT_QMC "SubItemWithScript.qmc"
-#define TEST_SCRIPT_1_QMC "testscript1.qmc"
-#define TEST_SCRIPT_2_QMC "testscript2.qmc"
+#define TEST_SCRIPT_1_JSC "testscript1.jsc"
+#define TEST_SCRIPT_2_JSC "testscript2.jsc"
+
+#define TEST_MOD_1_QMC "testmod1.qmc"
+
+#define TEST_MOD_2_QMC "testmod2.qmc"
+
+#include <private/qqmlcompiler_p.h>
+#include <private/qqmlcomponent_p.h>
 
 TestCreateFile::TestCreateFile(QObject *parent) :
     QObject(parent),
@@ -80,6 +87,47 @@ void TestCreateFile::testLoadDependency()
     delete engine;
 }
 
+void TestCreateFile::testLoadModule1()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    QmcLoader loader(engine);
+    QQmlComponent *c = loader.loadComponent(tempDirPath(TEST_MOD_1_QMC));
+    QVERIFY(c);
+    QObject *myObject = c->create();
+    QVariant val;
+    val = myObject->property("width");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 100);
+
+    delete myObject;
+    delete c;
+    delete engine;
+}
+
+void TestCreateFile::testLoadModule2()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    QmcLoader loader(engine);
+    QQmlComponent *c = loader.loadComponent(tempDirPath(TEST_MOD_2_QMC));
+    QVERIFY(c);
+    QQmlComponentPrivate *cPriv = QQmlComponentPrivate::get(c);
+    QVERIFY(cPriv);
+    QVERIFY(cPriv->cc);
+    QVERIFY(cPriv->cc->scripts.size() == 2);
+    QObject *myObject = c->create();
+    QVariant val;
+    val = myObject->property("m1h");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 200);
+    val = myObject->property("m2w");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 30);
+
+    delete myObject;
+    delete c;
+    delete engine;
+}
+
 void TestCreateFile::initTestCase()
 {
     tempDir = new QTemporaryDir;
@@ -88,28 +136,69 @@ void TestCreateFile::initTestCase()
     QVERIFY(tempDir->autoRemove());
     QVERIFY(!tempDir->path().isEmpty());
 
+    QDir dir (tempDir->path());
+
     qDebug() << "Created temp dir" << tempDir->path();
 
+    QQmlEngine *engine = new QQmlEngine;
     bool ret;
-    QmlC qmlc;
+    QmlC qmlc(engine);
     qmlc.setBasePath("");
+
+    ScriptC scriptc(engine);
+    scriptc.setBasePath("");
+
     ret = qmlc.compile("qrc:/testqml/SubItem.qml", tempDirPath(SUB_ITEM_QMC));
     QVERIFY(ret);
     ret = qmlc.compile("qrc:/testqml/SubItemWithScript.qml", tempDirPath(SUB_ITEM_WITH_SCRIPT_QMC));
     QVERIFY(ret);
 
-    ScriptC scriptc;
-    scriptc.setBasePath("");
-    ret = scriptc.compile("qrc:/testqml/testscript1.js", tempDirPath(TEST_SCRIPT_1_QMC));
+    ret = scriptc.compile("qrc:/testqml/testscript1.js", tempDirPath(TEST_SCRIPT_1_JSC));
     QVERIFY(ret);
-    ret = scriptc.compile("qrc:/testqml/testscript2.js", tempDirPath(TEST_SCRIPT_2_QMC));
+    ret = scriptc.compile("qrc:/testqml/testscript2.js", tempDirPath(TEST_SCRIPT_2_JSC));
     QVERIFY(ret);
+
+    // testmod 1
+
+    ret = qmlc.compile("qrc:/testqml/testmod1.qml", tempDirPath(TEST_MOD_1_QMC));
+    QVERIFY(ret);
+
+    ret = dir.mkdir("modsimple");
+    QVERIFY(ret);
+
+    ret = qmlc.compile("qrc:/testqml/modsimple/SimpleItem.qml", tempDirPath("modsimple/SimpleItem.qmc"));
+    QVERIFY(ret);
+
+    // testmod 2
+
+    ret = qmlc.compile("qrc:/testqml/testmod2.qml", tempDirPath(TEST_MOD_2_QMC));
+    QVERIFY(ret);
+
+    ret = dir.mkdir("mod");
+    QVERIFY(ret);
+
+    ret = qmlc.compile("qrc:/testqml/mod/ModItem.qml", tempDirPath("mod/ModItem.qmc"));
+    QVERIFY(ret);
+
+    ret = qmlc.compile("qrc:/testqml/mod/ModItem11.qml", tempDirPath("mod/ModItem11.qmc"));
+    QVERIFY(ret);
+
+    ret = scriptc.compile("qrc:/testqml/mod/mod.js", tempDirPath("mod/mod.jsc"));
+    QVERIFY(ret);
+
+    ret = QFile::copy(":/testqml/mod/qmldir", tempDirPath("mod/qmldir"));
+    QVERIFY(ret);
+
+    delete engine;
 }
 
 void TestCreateFile::cleanupTestCase()
 {
+    QDir t(tempDir->path());
+    QVERIFY(t.exists());
     delete tempDir;
     tempDir = NULL;
+    QVERIFY(!t.exists());
 }
 
 QString TestCreateFile::tempDirPath(const QString &file)

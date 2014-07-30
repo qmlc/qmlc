@@ -25,12 +25,12 @@
 #include <private/qqmldebugserver_p.h>
 #include <private/qv4isel_masm_p.h>
 
-QmlCompilation::QmlCompilation(const QString &urlString, const QUrl &url)
+QmlCompilation::QmlCompilation(const QString &urlString, const QUrl &url, QQmlEngine *engine)
     : urlString(urlString),
       url(url),
       compiledData(NULL),
       unit(NULL),
-      engine(new QQmlEngine),
+      engine(engine),
       document(NULL)
 {
     if (QQmlDebugService::isDebuggingEnabled())
@@ -44,7 +44,6 @@ QmlCompilation::~QmlCompilation()
         compiledData->release();
     if (unit)
         unit->deref();
-    engine->deleteLater();
     if (document)
         delete document;
     if (importCache)
