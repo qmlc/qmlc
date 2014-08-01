@@ -229,6 +229,8 @@ bool Compiler::compile(const QString &url, const QString &outputFile)
 
     bool ret = compile(url, out);
     f.close();
+    if (!ret)
+        f.remove();
 
     return ret;
 }
