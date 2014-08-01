@@ -17,6 +17,8 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
+#include  <QDir>
+
 #include "qmlc.h"
 #include "qmcfile.h"
 #include "qmcexporter.h"
@@ -74,7 +76,12 @@ bool QmlC::dataReceived()
 bool QmlC::continueLoadFromIR()
 {
     compilation()->document->collectTypeReferences();
-    compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
+    QUrl baseUrl = compilation()->url;
+    if (!compilation()->url.toLocalFile().startsWith(":/")) {
+        QDir dd;
+        baseUrl.setPath(dd.absolutePath());
+    }
+    compilation()->importCache->setBaseUrl(baseUrl, compilation()->urlString);
 
     // TBD: implicit import qqmltypeloader.cpp:2248
 
