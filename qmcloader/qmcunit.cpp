@@ -234,7 +234,9 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
             JSC::AssemblerLabel label(call.offset);
             c.call = QV4::JIT::Assembler::Call(label, QV4::JIT::Assembler::Call::Linkable);
             c.externalFunction = JSC::FunctionPtr((quint64(*)(void))functionPtr);
+#if QT_VERSION > QT_VERSION_CHECK(5,3,0)
             c.label.m_label = label;
+#endif
             callsToLink.append(c);
         }
 

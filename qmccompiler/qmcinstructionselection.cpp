@@ -84,12 +84,22 @@ void QmcInstructionSelection::run(int functionIndex)
     _as->storePtr(Assembler::LocalsRegister, Address(Assembler::ScratchRegister, qOffsetOf(ExecutionEngine, jsStackTop)));
 
     int lastLine = 0;
+#if QT_VERSION > QT_VERSION_CHECK(5,3,0)
     for (int i = 0, ei = _function->basicBlockCount(); i != ei; ++i) {
         IR::BasicBlock *nextBlock = (i < ei - 1) ? _function->basicBlock(i + 1) : 0;
         _block = _function->basicBlock(i);
+#else
+    for (int i = 0, ei = _function->basicBlocks.size(); i != ei; ++i) {
+        IR::BasicBlock *nextBlock = (i < ei - 1) ? _function->basicBlocks[i + 1] : 0;
+        _block = _function->basicBlocks[i];
+#endif
         _as->registerBlock(_block, nextBlock);
 
+#if QT_VERSION > QT_VERSION_CHECK(5,3,0)
         foreach (IR::Stmt *s, _block->statements()) {
+#else
+        foreach (IR::Stmt *s, _block->statements) {
+#endif
             if (s->location.isValid()) {
                 if (int(s->location.startLine) != lastLine) {
                     Assembler::Address lineAddr(Assembler::ContextRegister, qOffsetOf(QV4::ExecutionContext, lineNumber));

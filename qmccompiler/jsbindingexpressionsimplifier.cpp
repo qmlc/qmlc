@@ -156,11 +156,19 @@ bool JSBindingExpressionSimplifier::simplifyBinding(QV4::IR::Function *function,
 
     // It would seem unlikely that function with some many basic blocks (after optimization)
     // consists merely of a qsTr call or a constant value return ;-)
+#if QT_VERSION > QT_VERSION_CHECK(5,3,0)
     if (function->basicBlockCount() > 10)
+#else
+    if (function->basicBlocks.size() > 10)
+#endif
         return false;
-
+#if QT_VERSION > QT_VERSION_CHECK(5,3,0)
     foreach (QV4::IR::BasicBlock *bb, function->basicBlocks()) {
         foreach (QV4::IR::Stmt *s, bb->statements()) {
+#else
+    foreach (QV4::IR::BasicBlock *bb, function->basicBlocks) {
+        foreach (QV4::IR::Stmt *s, bb->statements) {
+#endif
             s->accept(this);
             if (!_canSimplify)
                 return false;
