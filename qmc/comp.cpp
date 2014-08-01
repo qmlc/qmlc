@@ -39,8 +39,11 @@ int Comp::retValue = EXIT_FAILURE;
 
 void Comp::compile()
 {
-    QString outputFile = fileName.left(fileName.lastIndexOf('.'));
-    outputFile.append(".qmc");
+    QString outputFile = fileName;
+    if (outputFile.endsWith("qml"))
+        outputFile[outputFile.size() - 1] = 'c';
+    else
+        outputFile.append("c");
 
     bool ret = compiler->compile("file:" + fileName, outputFile);
 
