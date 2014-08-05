@@ -32,7 +32,8 @@ SOURCES += \
     testobject.cpp \
     testcreatefile.cpp \
     main.cpp \
-    signaltester.cpp
+    signaltester.cpp \
+    cppsubitem.cpp
 
 OTHER_FILES += \
     testitem.qml \
@@ -67,4 +68,5 @@ HEADERS += \
     testobject.h \
     testcreatefile.h \
     signaltester.h \
-    testsimpleqmlload.h
+    testsimpleqmlload.h \
+    cppsubitem.h

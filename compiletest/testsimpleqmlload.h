@@ -71,6 +71,9 @@ private slots:
     void loadModule2(); // compilation test in file based tests
     void compileModule2();
 
+    void loadCppSubItem();
+    void compileAndLoadCppSubItem();
+
     void initTestCase();
     void cleanupTestCase();
 

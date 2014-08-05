@@ -18,6 +18,7 @@
         <file>testlistview1.qml</file>
         <file>testmod2.qml</file>
         <file>testmod1.qml</file>
+        <file>testcppsubitem.qml</file>
     </qresource>
     <qresource prefix="/testqml/mod">
         <file>ModItem11.qml</file>

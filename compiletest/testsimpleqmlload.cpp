@@ -30,6 +30,7 @@
 
 #include "testsimpleqmlload.h"
 #include "signaltester.h"
+#include "cppsubitem.h"
 
 #include "config.h"
 
@@ -715,5 +716,59 @@ void TestSimpleQmlLoad::compileModule2()
     QVERIFY(ret);
     delete engine;
 }
+
+void TestSimpleQmlLoad::loadCppSubItem()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testcppsubitem.qml");
+
+    qmlRegisterType<CppSubItem>("CppTests", 1, 0, "CppSubItem");
+
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+    QQmlComponentPrivate *cPriv = QQmlComponentPrivate::get(component);
+    QVERIFY(cPriv);
+    QVERIFY(cPriv->cc);
+
+    QObject *myObject = component->create();
+    QVariant val;
+
+    val = myObject->property("name");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toString() == "default_name");
+
+    val = myObject->property("color");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.value<QColor>() == "red");
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileAndLoadCppSubItem()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testcppsubitem.qml");
+
+    qmlRegisterType<CppSubItem>("CppTests", 1, 0, "CppSubItem");
+
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    CppSubItem *item = qobject_cast<CppSubItem *>(myObject);
+
+    QVERIFY(item->name() == "default_name");
+    item->setName("testname0");
+    QVERIFY(item->name() == "testname0");
+
+    QVERIFY(item->color() == "red");
+    item->setColor("green");
+    QVERIFY(item->color() == "green");
+
+    delete component;
+    delete engine;
+}
+
 
 //#include "testsimpleqmlload.moc"
