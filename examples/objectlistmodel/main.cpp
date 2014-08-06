@@ -54,9 +54,8 @@
 #include <private/qv4isel_masm_p.h>
 
 #include "dataobject.h"
-
 #include "qmcloader.h"
-
+#include "cputimer.h"
 /*
    This example illustrates exposing a QList<QObject*> as a
    model in QML
@@ -77,6 +76,11 @@ int main(int argc, char ** argv)
 
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     QQmlContext *ctxt = view.rootContext();
+     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+
+#ifdef linux
+     CPUTimer timer(CLOCK_PROCESS_CPUTIME_ID);
+#endif
 //![0]
 
 #if 1
@@ -84,7 +88,12 @@ int main(int argc, char ** argv)
     QQmlEngine *engine = view.engine();
     QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);
     QmcLoader loader(engine);
+
+#ifdef linux
+    timer.start();
+#endif
     QQmlComponent *component = loader.loadComponent(":/view.qmc");
+
     if (!component) {
         qDebug() << "Could not load component";
         return -1;
@@ -98,6 +107,11 @@ int main(int argc, char ** argv)
         }
         return -1;
     }
+
+#ifdef linux
+    qDebug() << "Loading qmc takes " << timer.elapsed() << " seconds";
+#endif
+
     QObject *rootObject = component->create();
     if (!rootObject) {
         qDebug() << "Could not create root object";
@@ -106,7 +120,12 @@ int main(int argc, char ** argv)
 #else
     QQmlEngine *engine = view.engine();
     QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("view.qml"));
+    QQmlComponent *component = new QQmlComponent(engine);
+
+#ifdef linux
+    timer.start();
+#endif
+    component->loadUrl(QUrl("view.qml"));
     if (!component) {
         qDebug() << "Could not load component";
         return -1;
@@ -118,14 +137,19 @@ int main(int argc, char ** argv)
         }
         return -1;
     }
+
+#ifdef linux
+    qDebug() << "Loading qml takes " << timer.elapsed() << " seconds";
+#endif
+
     QObject *rootObject = component->create();
     if (!rootObject) {
         qDebug() << "Could not create root object";
         return -1;
     }
 #endif
-    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
-    //view.setSource(QUrl("qrc:view.qml"));
+
+ //   view.setSource(QUrl("qrc:view.qml"));
     view.setContent(component->url(), component, rootObject);
 
     view.show();
