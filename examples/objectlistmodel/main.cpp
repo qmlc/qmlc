@@ -55,7 +55,7 @@
 
 #include "dataobject.h"
 #include "qmcloader.h"
-#include "cputimer.h"
+#include "qmcloadingmeasurer.h"
 /*
    This example illustrates exposing a QList<QObject*> as a
    model in QML
@@ -78,9 +78,6 @@ int main(int argc, char ** argv)
     QQmlContext *ctxt = view.rootContext();
      ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 
-#ifdef linux
-     CPUTimer timer(CLOCK_PROCESS_CPUTIME_ID);
-#endif
 //![0]
 
 #if 1
@@ -89,9 +86,9 @@ int main(int argc, char ** argv)
     QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);
     QmcLoader loader(engine);
 
-#ifdef linux
+    QmcLoadingMeasurer timer;
     timer.start();
-#endif
+
     QQmlComponent *component = loader.loadComponent(":/view.qmc");
 
     if (!component) {
@@ -107,10 +104,7 @@ int main(int argc, char ** argv)
         }
         return -1;
     }
-
-#ifdef linux
-    qDebug() << "Loading qmc takes " << timer.elapsed() << " seconds";
-#endif
+    timer.done();
 
     QObject *rootObject = component->create();
     if (!rootObject) {
@@ -122,9 +116,12 @@ int main(int argc, char ** argv)
     QQmlEnginePrivate::get(engine)->v4engine()->iselFactory.reset(new QV4::JIT::ISelFactory);
     QQmlComponent *component = new QQmlComponent(engine);
 
-#ifdef linux
+
+    QmcLoadingMeasurer timer(component);
     timer.start();
-#endif
+    QObject::connect(component, SIGNAL(progressChanged(qreal)),
+                     &timer, SLOT(update()), Qt::DirectConnection);
+
     component->loadUrl(QUrl("view.qml"));
     if (!component) {
         qDebug() << "Could not load component";
@@ -137,10 +134,6 @@ int main(int argc, char ** argv)
         }
         return -1;
     }
-
-#ifdef linux
-    qDebug() << "Loading qml takes " << timer.elapsed() << " seconds";
-#endif
 
     QObject *rootObject = component->create();
     if (!rootObject) {

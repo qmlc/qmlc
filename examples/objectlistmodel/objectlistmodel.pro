@@ -16,8 +16,8 @@ DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 
 SOURCES += main.cpp \
            dataobject.cpp
-HEADERS += dataobject.h \
-    cputimer.h
+
+HEADERS += dataobject.h
 
 OTHER_FILES += \
     view.qmc \
