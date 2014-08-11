@@ -25,3 +25,8 @@ SOURCES += main.cpp \
 
 HEADERS += \
     comp.h
+
+unix {
+    target.path = /usr/bin
+    INSTALLS += target
+}
