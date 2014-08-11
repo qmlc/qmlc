@@ -84,6 +84,9 @@ make %{?jobs:-j%jobs}
 
 %files loader-devel
 %{_libdir}/libqmcloader.so
+%{_libdir}/pkgconfig/qmcloader.pc
+%{_includedir}/qmcloader
+
 
 %changelog
 * Mon Aug 11 2014 Matias Muhonen <> 0.0.1
