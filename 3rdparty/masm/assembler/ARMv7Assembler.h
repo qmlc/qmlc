@@ -445,6 +445,11 @@ public:
         ConditionInvalid
     } Condition;
 
+    void appendData(char *data, int len)
+    {
+        return m_formatter.appendData(data, len);
+    }
+
 #define JUMP_ENUM_WITH_SIZE(index, value) (((value) << 3) | (index))
 #define JUMP_ENUM_SIZE(jump) ((jump) >> 3) 
     enum JumpType { JumpFixed = JUMP_ENUM_WITH_SIZE(0, 0), 
@@ -2782,6 +2787,7 @@ private:
         AssemblerLabel label() const { return m_buffer.label(); }
         bool isAligned(int alignment) const { return m_buffer.isAligned(alignment); }
         void* data() const { return m_buffer.data(); }
+        void appendData(char *data, int len) { return m_buffer.appendData(data, len); }
 
         unsigned debugOffset() { return m_buffer.debugOffset(); }
 
