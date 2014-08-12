@@ -44,7 +44,8 @@ SOURCES += \
     componentandaliasresolver.cpp \
     irfunctioncleanser.cpp \
     qmcinstructionselection.cpp \
-    scriptc.cpp
+    scriptc.cpp \
+    qrccompiler.cpp
 
 
 HEADERS += qmccompiler_global.h \
@@ -66,7 +67,8 @@ HEADERS += qmccompiler_global.h \
     componentandaliasresolver.h \
     irfunctioncleanser.h \
     qmcinstructionselection.h \
-    scriptc.h
+    scriptc.h \
+    qrccompiler.h
 
 
 unix {

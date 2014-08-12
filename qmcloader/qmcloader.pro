@@ -35,7 +35,8 @@ SOURCES += qmcloader.cpp \
     qmcscriptunit.cpp \
     qmctypeunitcomponentandaliasresolver.cpp \
     qmcbackedinstructionselection.cpp \
-    qmcloadingmeasurer.cpp
+    qmcloadingmeasurer.cpp \
+    qrcloader.cpp
 
 HEADERS += qmcloader.h \
     qmcloader_global.h \
@@ -45,7 +46,8 @@ HEADERS += qmcloader.h \
     qmcscriptunit.h \
     qmctypeunitcomponentandaliasresolver.h \
     qmcbackedinstructionselection.h \
-    qmcloadingmeasurer.h
+    qmcloadingmeasurer.h \
+    qrcloader.h
 
 
 devheaders.files = qmcloader.h qmcloader_global.h
