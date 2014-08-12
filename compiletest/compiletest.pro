@@ -3,7 +3,7 @@
 ######################################################################
 
 QT += testlib qml quick
-CONFIG += qmltestcase
+#CONFIG += qmltestcase
 TEMPLATE = app
 TARGET = compiletest
 
@@ -70,3 +70,6 @@ HEADERS += \
     signaltester.h \
     testsimpleqmlload.h \
     cppsubitem.h
+
+target.path = /usr/bin
+INSTALLS += target

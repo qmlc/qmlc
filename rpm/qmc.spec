@@ -7,6 +7,7 @@ License:    LGPLv2.1 with exception
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Quick)
+BuildRequires:  pkgconfig(Qt5Test)
 
 %description
 The Qml Compiler can be used to convert Qml source code files into
@@ -53,6 +54,27 @@ Requires:       %{name}-loader = %{version}-%{release}
 %description loader-devel
 Development files for the qmc loader library
 
+
+%package tests
+Summary:        Tests for qmc compiler/loader
+Group:          System/Libraries
+Requires:       %{name}-core = %{version}-%{release}
+Requires:       %{name}-loader = %{version}-%{release}
+
+%description tests
+Tests for qmc compiler/loader
+
+
+%package examples
+Summary:        Examples for qmc compiler/loader
+Group:          System/Libraries
+Requires:       %{name}-core = %{version}-%{release}
+Requires:       %{name}-loader = %{version}-%{release}
+
+%description examples
+Examples for qmc compiler/loader
+
+
 %prep
 %setup -q
 
@@ -87,6 +109,15 @@ make %{?jobs:-j%jobs}
 %{_libdir}/pkgconfig/qmcloader.pc
 %{_includedir}/qmcloader
 
+%files loader-devel
+%{_libdir}/libqmcloader.so
+%{_libdir}/pkgconfig/qmcloader.pc
+%{_includedir}/qmcloader
+
+%files tests
+%{_bindir}/compiletest
+
+%files examples
 
 %changelog
 * Mon Aug 11 2014 Matias Muhonen <> 0.0.1
