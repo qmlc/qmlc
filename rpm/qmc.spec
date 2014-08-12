@@ -1,5 +1,5 @@
 Name:       qmc      
-Version:    0.0.1
+Version:    5.3.0
 Release:    1%{?dist}
 Summary:    QML Compiler
 License:    LGPLv2.1 with exception
@@ -120,5 +120,7 @@ make %{?jobs:-j%jobs}
 %files examples
 
 %changelog
+* Tue Aug 12 2014 Matias Muhonen <> 5.3.0
+- Bump version
 * Mon Aug 11 2014 Matias Muhonen <> 0.0.1
 - Initial version
