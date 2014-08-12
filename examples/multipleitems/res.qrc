@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>multipleitems.qmc</file>
+        <file>QmlSubItem.qmc</file>
+        <file>testscript1.jsc</file>
+    </qresource>
+</RCC>
