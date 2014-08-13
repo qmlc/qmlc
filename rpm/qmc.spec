@@ -110,11 +110,6 @@ make %{?jobs:-j%jobs}
 %{_libdir}/pkgconfig/qmcloader.pc
 %{_includedir}/qmcloader
 
-%files loader-devel
-%{_libdir}/libqmcloader.so
-%{_libdir}/pkgconfig/qmcloader.pc
-%{_includedir}/qmcloader
-
 %files tests
 %{_bindir}/compiletest
 
