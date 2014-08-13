@@ -46,7 +46,7 @@
 #include "qrccompiler.h"
 
 // include program specific cpp types
-#include "../cppsubitem.h"
+#include "cppsubitem.h"
 
 int main(int argc, char **argv)
 {
@@ -56,5 +56,5 @@ int main(int argc, char **argv)
     // compile all possible files in the qrc in this directory and put in the
     // third args(dir)
     QrcCompiler qrccompiler;
-    return qrccompiler.compile(argc, argv, "../");
+    return qrccompiler.compile(argc, argv, "../app/");
 }

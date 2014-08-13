@@ -1,11 +1,10 @@
 QT += qml quick
 
 QMLCBASEPATH = ../../../
-PROJECTBASEPATH = ../
 
-INCLUDEPATH += $$QMLCBASEPATH/qmccompiler
-LIBS += -L$$QMLCBASEPATH/qmccompiler
-LIBS += -lqmccompiler
+INCLUDEPATH += $$QMLCBASEPATH/qmcloader
+LIBS += -L$$QMLCBASEPATH/qmcloader
+LIBS += -lqmcloader
 
 # These are just for using JIT
 QT += qml-private core-private
@@ -18,16 +17,21 @@ include($$QMLCBASEPATH/3rdparty/masm/masm-defs.pri)
 DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 
 SOURCES += main.cpp \
-           $$PROJECTBASEPATH/cppsubitem.cpp
+           cppsubitem.cpp
 
-HEADERS += $$PROJECTBASEPATH/cppsubitem.h
+HEADERS += cppsubitem.h
+
+OTHER_FILES += \
+    multipleitems.qmc \
+    QmlSubItem.qmc \
+    testscript1.jsc
 
 RESOURCES += res.qrc
 
-TARGET = compile
+TARGET = multipleitems
+target.path = $$[QT_INSTALL_EXAMPLES]/quick/multipleitems
 
-# run the target that was compiled to compile the .qml etc. files
-QMAKE_POST_LINK = LD_LIBRARY_PATH=$$QMLCBASEPATH/qmccompiler ./compile
+compiled_files.files =  multipleitems.qmc QmlSubItem.qmc testscript1.jsc
+compiled_files.path = $$[QT_INSTALL_EXAMPLES]/quick/multipleitems
 
-# clean the compiled files(TODO: improve, from .qrc?)
-QMAKE_CLEAN = ../*.qmc
+INSTALLS += target compiled_files
