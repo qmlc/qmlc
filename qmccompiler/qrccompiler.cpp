@@ -32,10 +32,10 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir)
         ret = 0;
         if(dir.path().endsWith(".qml")){
             ret = compileQml("qrc" + dir.path(),
-                    projectBaseDir + dir.dirName().replace(".qml", ".qmc"));
+                    projectBaseDir + "/" + dir.dirName().replace(".qml", ".qmc"));
         }else if(dir.path().endsWith(".js")){
             ret = compileJs("qrc" + dir.path(),
-                    projectBaseDir + dir.dirName().replace(".js", ".jsc"));
+                    projectBaseDir + "/" + dir.dirName().replace(".js", ".jsc"));
         }
 
         if(ret){
