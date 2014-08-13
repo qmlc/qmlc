@@ -101,6 +101,8 @@ make %{?jobs:-j%jobs}
 
 %files core-devel
 %{_libdir}/libqmccompiler.so
+%{_libdir}/pkgconfig/qmccompiler.pc
+%{_includedir}/qmccompiler
 
 %files loader
 %{_libdir}/libqmcloader.so.*
