@@ -7,6 +7,9 @@
 QT       += qml qml-private core-private
 QT       -= gui
 
+VERSION = 0.0.1
+CONFIG += create_pc create_prl no_install_prl
+
 TARGET = qmccompiler
 TEMPLATE = lib
 
@@ -70,8 +73,15 @@ HEADERS += qmccompiler_global.h \
     scriptc.h \
     qrccompiler.h
 
+devheaders.files = $$HEADERS
+devheaders.path = /usr/include/qmccompiler
 
 unix {
     target.path = /usr/lib
-    INSTALLS += target
+    INSTALLS += target devheaders
 }
+
+QMAKE_PKGCONFIG_PREFIX = /usr
+QMAKE_PKGCONFIG_INCDIR = $$devheaders.path
+QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+

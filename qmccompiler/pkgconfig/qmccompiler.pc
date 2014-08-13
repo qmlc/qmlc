@@ -1,0 +1,13 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/qmccompiler
+
+
+Name: Qmccompiler
+Description: Qmccompiler Library
+Version: 0.0.1
+Libs: -lqmccompiler 
+Libs.private: -lQt5Qml -lQt5Network -lQt5Core -lpthread
+Cflags: -I${includedir}
+
