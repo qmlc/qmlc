@@ -23,9 +23,14 @@ HEADERS += cppsubitem.h
 
 OTHER_FILES += \
     multipleitems.qmc \
-    QmlSubItem.qmc
+    QmlSubItem.qmc \
+    testscript1.jsc
 
 RESOURCES += res.qrc
 
-target.path = $$[QT_INSTALL_EXAMPLES]/quick/qmlsubitem
-INSTALLS += target
+target.path = $$[QT_INSTALL_EXAMPLES]/quick/multipleitems
+
+compiled_files.files =  multipleitems.qmc QmlSubItem.qmc testscript1.jsc
+compiled_files.path = $$[QT_INSTALL_EXAMPLES]/quick/multipleitems
+
+INSTALLS += target compiled_files
