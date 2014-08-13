@@ -8,6 +8,7 @@ Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Test)
+BuildRequires:  qt5-qtdeclarative-import-qtquick2plugin
 
 %description
 The Qml Compiler can be used to convert Qml source code files into
@@ -118,6 +119,7 @@ make %{?jobs:-j%jobs}
 %{_bindir}/compiletest
 
 %files examples
+%{_libdir}/qt5/examples/quick/multipleitems/*
 
 %changelog
 * Tue Aug 12 2014 Matias Muhonen <> 5.3.0
