@@ -70,8 +70,10 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
 
             QDataStream in(&inputFile);
 
-            qDebug() << "Loading.." << "qrc" + dir.path();
-            bool success = loader->loadDependency(in, QUrl("qrc" + dir.path()));
+            QString qrcPath = "qrc" + dir.path();
+            qDebug() << "Loading dependency " << qrcPath;
+            bool success = loader->loadDependency(in, QUrl(qrcPath));
+            qDebug() << (success ? "OK" : "Failed");
             assert(success);
             inputFile.close();
             assert(success);
@@ -94,8 +96,11 @@ int QrcLoader::loadTopLevelQmc(QString qmcFile)
     }
 
     QDataStream in(&inputFile);
+    QString qrcPath = "qrc:/" + qmcFile;
 
-    rootComponent = loader->loadComponent(in, QUrl("qrc:/" + qmcFile));
+    qDebug() << "Loading component " << qrcPath;
+    rootComponent = loader->loadComponent(in, QUrl(qrcPath));
+    qDebug() << (rootComponent ? "OK" : "Failed");
 
     inputFile.close();
 
