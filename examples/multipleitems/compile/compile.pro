@@ -30,4 +30,4 @@ TARGET = compile
 QMAKE_POST_LINK = LD_LIBRARY_PATH=$$QMLCBASEPATH/qmccompiler ./compile
 
 # clean the compiled files(TODO: improve, from .qrc?)
-QMAKE_CLEAN = $$PROJECTBASEPATH/*.qmc $$PROJECTBASEPATH/*.qmc
+#QMAKE_CLEAN = $$PROJECTBASEPATH/*.qmc $$PROJECTBASEPATH/*.jsc
