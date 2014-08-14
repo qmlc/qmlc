@@ -60,9 +60,11 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
         if(dir.path().endsWith(".qmc") || dir.path().endsWith(".jsc")){
             //ret = compileFile(engine, "qrc" + dir.path(),
              //       outputBaseDir + dir.dirName().replace(".qml", ".qmc"));
-            QFile inputFile(dir.dirName());
+            // remove leading :/
+            QString path = dir.path().mid(2);
+            QFile inputFile(path);
             if (!inputFile.open(QFile::ReadOnly)){
-                qWarning() << "Couldn't open file for input" << dir.dirName();
+                qWarning() << "Couldn't open file for input" << path;
                 return -1;
             }
 

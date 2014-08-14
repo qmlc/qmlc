@@ -28,14 +28,13 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir)
 
         QDir dir = it.next();
         //qDebug() << dir.path();
+        QString installAs = projectBaseDir + dir.path().mid(1);
 
         ret = 0;
         if(dir.path().endsWith(".qml")){
-            ret = compileQml("qrc" + dir.path(),
-                    projectBaseDir + "/" + dir.dirName().replace(".qml", ".qmc"));
+            ret = compileQml("qrc" + dir.path(), installAs.replace(".qml", ".qmc"));
         }else if(dir.path().endsWith(".js")){
-            ret = compileJs("qrc" + dir.path(),
-                    projectBaseDir + "/" + dir.dirName().replace(".js", ".jsc"));
+            ret = compileJs("qrc" + dir.path(), installAs.replace(".js", ".jsc"));
         }
 
         if(ret){
