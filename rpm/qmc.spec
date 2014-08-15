@@ -114,9 +114,9 @@ make %{?jobs:-j%jobs}
 
 %files tests
 %{_bindir}/compiletest
+%{_libdir}/qt5/tests/quick/multipleitems/*
 
 %files examples
-%{_libdir}/qt5/examples/quick/multipleitems/*
 
 %changelog
 * Tue Aug 12 2014 Matias Muhonen <> 5.3.0
