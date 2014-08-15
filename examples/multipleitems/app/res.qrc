@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/">
+    <qresource prefix="/qmlfiles">
         <file>qml/multipleitems.qmc</file>
         <file>qml/QmlSubItem.qmc</file>
         <file>qml/testscript1.jsc</file>

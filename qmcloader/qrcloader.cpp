@@ -91,7 +91,8 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
         QDir dir = it.next();
 
         // skip top level .qmc
-        if(dir.path().contains(topLevelQmc)){
+        //if(dir.path().contains(topLevelQmc)){
+        if(topLevelQmc.contains(dir.path())){
             continue;
         }
 
@@ -139,14 +140,26 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
 
 int QrcLoader::loadTopLevelQmc(QString qmcFile)
 {
-    QFile inputFile(qmcFile);
+
+    QString file;
+    foreach(file, qrcQmlFiles){
+        if(qmcFile.contains(file)){
+            break;
+        }
+    }
+
+    if(file.count() == 0){
+        return -1;
+    }
+
+    QFile inputFile(file);
     if (!inputFile.open(QFile::ReadOnly)){
-        qWarning() << "Couldn't open file for input" << qmcFile;
+        qWarning() << "Couldn't open file for input" << file;
         return -2;
     }
 
     QDataStream in(&inputFile);
-    QString qrcPath = "qrc:/" + qmcFile;
+    QString qrcPath = "qrc" + qmcFile;
 
     qDebug() << "Loading component " << qrcPath;
     rootComponent = loader->loadComponent(in, QUrl(qrcPath));
