@@ -56,5 +56,5 @@ int main(int argc, char **argv)
     // compile all possible files in the qrc in this directory and put in the
     // third args(dir)
     QrcCompiler qrccompiler;
-    return qrccompiler.compile(argc, argv, "../app/");
+    return qrccompiler.compile(argc, argv, "../app/", "../app/res_compile.qrc");
 }

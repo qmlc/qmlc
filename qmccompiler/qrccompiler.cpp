@@ -1,6 +1,7 @@
 
 #include <QCoreApplication>
 #include <QDirIterator>
+#include <QXmlStreamReader>
 
 #include <qqmlengine.h>
 
@@ -14,7 +15,8 @@
 #include "qmlc.h"
 #include "scriptc.h"
 
-int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir)
+int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
+        const QString &qrcFile)
 {
     int ret;
 
@@ -22,30 +24,84 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir)
 
     engine = new QQmlEngine;
 
+    ret = parseQrc(qrcFile);
+    if(ret != 0){
+        return ret;
+    }
+
     // iterate through files in .qrc and compile the ones we support
     QDirIterator it(":", QDirIterator::Subdirectories);
     while (it.hasNext()) {
 
         QDir dir = it.next();
         //qDebug() << dir.path();
-        QString installAs = projectBaseDir + dir.path().mid(1);
 
         ret = 0;
         if(dir.path().endsWith(".qml")){
-            ret = compileQml("qrc" + dir.path(), installAs.replace(".qml", ".qmc"));
+            foreach(QString file, qrcQmlFiles){
+                if(dir.path().contains(file)){
+                    qDebug() << "Compiling" << file;
+                    ret = compileQml("qrc" + dir.path(), projectBaseDir + "/" +
+                            file.replace(".qml", ".qmc"));
+                    break;
+                }
+            }
         }else if(dir.path().endsWith(".js")){
-            ret = compileJs("qrc" + dir.path(), installAs.replace(".js", ".jsc"));
+            foreach(QString file, qrcJsFiles){
+                if(dir.path().contains(file)){
+                    qDebug() << "Compiling" << file;
+                    ret = compileJs("qrc" + dir.path(), projectBaseDir + "/" +
+                            file.replace(".js", ".jsc"));
+                    break;
+                }
+            }
         }
 
         if(ret){
+            qDebug() << "Failed";
             return ret;
         }
     }
+
+    qDebug("Compilation done");
 
     delete engine;
 
     return ret;
 }
+
+/* get all the filenames we are intested in from qrcFile */
+int QrcCompiler::parseQrc(QString qrcFile)
+{
+    QFile qrc(qrcFile);
+
+    if(!qrc.open(QIODevice::ReadOnly)){
+        qDebug() << "File open error:" << qrc.errorString();
+        return qrc.error();
+    }
+
+    QXmlStreamReader inputStream(&qrc);
+
+    while (!inputStream.atEnd() && !inputStream.hasError()) {
+        inputStream.readNext();
+        if (inputStream.isStartElement()) {
+            QString name = inputStream.name().toString();
+            if (name == "file"){
+                QString filename = inputStream.readElementText();
+                //qDebug() << filename;
+                if(filename.endsWith(".qml")){
+                    qrcQmlFiles.append(filename);
+                }else if(filename.endsWith(".js")){
+                    qrcJsFiles.append(filename);
+                }
+            }
+        }
+    }
+
+    qrc.close();
+    return 0;
+}
+
 
 int QrcCompiler::compileQml(const QString &inputFile, const QString &outputFile)
 {
@@ -95,3 +151,4 @@ int QrcCompiler::compileJs(const QString &inputFile, const QString &outputFile)
 
     return 0;
 }
+

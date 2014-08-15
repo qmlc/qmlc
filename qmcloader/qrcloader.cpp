@@ -1,5 +1,6 @@
 
 #include <QDirIterator>
+#include <QXmlStreamReader>
 
 #include <qqmlengine.h>
 #include <qqmlcontext.h>
@@ -24,9 +25,14 @@ QrcLoader::~QrcLoader(void)
     delete loader;
 }
 
-int QrcLoader::load(QString topLevelQmc)
+int QrcLoader::load(QString topLevelQmc, QString qrcFile)
 {
     int ret;
+
+    ret = parseQrc(qrcFile);
+    if(ret != 0){
+        return ret;
+    }
 
     ret = loadDependencies(topLevelQmc);
     if(ret != 0){
@@ -42,6 +48,39 @@ QQmlComponent *QrcLoader::getRootComponent(void)
     return rootComponent;
 }
 
+/* get all the filenames we are intested in from qrcFile */
+int QrcLoader::parseQrc(QString qrcFile)
+{
+    QFile qrc(qrcFile);
+
+    if(!qrc.open(QIODevice::ReadOnly)){
+        qDebug() << "File open error:" << qrc.errorString();
+        return qrc.error();
+    }
+
+    QXmlStreamReader inputStream(&qrc);
+
+    while (!inputStream.atEnd() && !inputStream.hasError()) {
+        inputStream.readNext();
+        if (inputStream.isStartElement()) {
+            QString name = inputStream.name().toString();
+            if (name == "file"){
+                QString filename = inputStream.readElementText();
+                //qDebug() << filename;
+                if(filename.endsWith(".qmc")){
+                    qrcQmlFiles.append(filename);
+                }else if(filename.endsWith(".jsc")){
+                    qrcJsFiles.append(filename);
+                }
+            }
+        }
+    }
+
+    qrc.close();
+    return 0;
+}
+
+
 int QrcLoader::loadDependencies(QString topLevelQmc)
 {
     int ret;
@@ -52,19 +91,31 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
         QDir dir = it.next();
 
         // skip top level .qmc
-        if(QString(":/" + topLevelQmc) == dir.path()){
+        if(dir.path().contains(topLevelQmc)){
             continue;
         }
 
         ret = 0;
-        if(dir.path().endsWith(".qmc") || dir.path().endsWith(".jsc")){
-            //ret = compileFile(engine, "qrc" + dir.path(),
-             //       outputBaseDir + dir.dirName().replace(".qml", ".qmc"));
-            // remove leading :/
-            QString path = dir.path().mid(2);
-            QFile inputFile(path);
+        QString file;
+        if(dir.path().endsWith(".qmc")){
+            foreach(file, qrcQmlFiles){
+                if(dir.path().contains(file)){
+                    break;
+                }
+            }
+        }else if(dir.path().endsWith(".jsc")){
+            foreach(file, qrcJsFiles){
+                if(dir.path().contains(file)){
+                    break;
+                }
+            }
+        }
+
+        if(file.count() > 0){
+            //QString path = dir.path().mid(2);
+            QFile inputFile(file);
             if (!inputFile.open(QFile::ReadOnly)){
-                qWarning() << "Couldn't open file for input" << path;
+                qWarning() << "Couldn't open dependency for input" << file;
                 return -1;
             }
 
@@ -77,10 +128,10 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
             assert(success);
             inputFile.close();
             assert(success);
-        }
 
-        if(ret){
-            return ret;
+            if(ret){
+                return ret;
+            }
         }
     }
     return 0;
@@ -88,7 +139,6 @@ int QrcLoader::loadDependencies(QString topLevelQmc)
 
 int QrcLoader::loadTopLevelQmc(QString qmcFile)
 {
-
     QFile inputFile(qmcFile);
     if (!inputFile.open(QFile::ReadOnly)){
         qWarning() << "Couldn't open file for input" << qmcFile;
@@ -110,4 +160,3 @@ int QrcLoader::loadTopLevelQmc(QString qmcFile)
 
     return 0;
 }
-

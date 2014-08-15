@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
 
 #if 1
     QrcLoader qrcloader(engine);
-    ret = qrcloader.load("qml/multipleitems.qmc");
+    ret = qrcloader.load("qml/multipleitems.qmc", "res.qrc");
     if(ret != 0){
         qWarning() << "Couldn't load from qrc file error=%d" << ret;
         return 0;

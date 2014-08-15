@@ -10,13 +10,16 @@ public:
     QrcLoader(QQmlEngine *engine);
     ~QrcLoader(void);
 
-    int load(QString topLevelQmc);
+    int load(QString topLevelQmc, QString qrcFile);
     QQmlComponent *getRootComponent(void);
 
 private:
+    QStringList qrcQmlFiles;
+    QStringList qrcJsFiles;
     QQmlComponent *rootComponent;
     QmcLoader *loader;
 
+    int parseQrc(QString qrcFile);
     int loadDependencies(QString topLevelQmc);
     int loadTopLevelQmc(QString qmcFile);
 
