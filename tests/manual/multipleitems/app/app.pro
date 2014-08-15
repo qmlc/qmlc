@@ -1,6 +1,6 @@
 QT += qml quick
 
-QMLCBASEPATH = ../../../
+QMLCBASEPATH = ../../../../
 
 INCLUDEPATH += $$QMLCBASEPATH/qmcloader
 LIBS += -L$$QMLCBASEPATH/qmcloader
@@ -29,9 +29,9 @@ OTHER_FILES += \
 RESOURCES += res.qrc
 
 TARGET = multipleitems
-target.path = $$[QT_INSTALL_EXAMPLES]/quick/multipleitems
+target.path = $$[QT_INSTALL_TESTS]/quick/multipleitems
 
-compiled_files.files =  multipleitems.qmc QmlSubItem.qmc testscript1.jsc
-compiled_files.path = $$[QT_INSTALL_EXAMPLES]/quick/multipleitems
+compiled_files.files =  qml/multipleitems.qmc qml/QmlSubItem.qmc qml/testscript1.jsc
+compiled_files.path = $$[QT_INSTALL_TESTS]/quick/multipleitems/qml
 
 INSTALLS += target compiled_files

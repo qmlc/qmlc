@@ -5,8 +5,10 @@ SUBDIRS = \
 	qmcloader \
 	qmc \
 	compiletest \
-	examples
+	examples \
+	tests
 
 qmc.depends = qmccompiler
 compiletest.depends = qmccompiler qmcloader
 examples.depends = qmccompiler qmcloader
+tests.depends = qmccompiler qmcloader

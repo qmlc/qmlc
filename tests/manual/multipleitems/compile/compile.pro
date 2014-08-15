@@ -1,6 +1,6 @@
 QT += qml quick
 
-QMLCBASEPATH = ../../../
+QMLCBASEPATH = ../../../../
 PROJECTBASEPATH = ../app
 
 INCLUDEPATH += $$QMLCBASEPATH/qmccompiler $$PROJECTBASEPATH
