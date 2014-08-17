@@ -16,7 +16,7 @@
  */
 
 import QtQuick 2.0
-import "testscript1.js" as SS
+import "content/testscript1.js" as SS
 import CppTests 1.0
 import "content"
 

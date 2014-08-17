@@ -3,6 +3,6 @@
         <file>qml/multipleitems.qml</file>
         <file>qml/content</file>
         <file>qml/content/QmlSubItem.qml</file>
-        <file>qml/testscript1.js</file>
+        <file>qml/content/testscript1.js</file>
     </qresource>
 </RCC>
