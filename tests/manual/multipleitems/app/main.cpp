@@ -75,7 +75,7 @@ int main(int argc, char ** argv)
     }
     QQmlComponent *component = qrcloader.getRootComponent();
 #else
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("qmlsubitem.qml"));
+    QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
 #endif
 
     if (!component) {
