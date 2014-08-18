@@ -31,7 +31,8 @@ SOURCES += qmcloader.cpp \
     qmctypeunit.cpp \
     qmcscriptunit.cpp \
     qmctypeunitcomponentandaliasresolver.cpp \
-    qmcbackedinstructionselection.cpp
+    qmcbackedinstructionselection.cpp \
+    qmcloadingmeasurer.cpp
 
 
 HEADERS += qmcloader.h \
@@ -42,7 +43,8 @@ HEADERS += qmcloader.h \
     qmctypeunit.h \
     qmcscriptunit.h \
     qmctypeunitcomponentandaliasresolver.h \
-    qmcbackedinstructionselection.h
+    qmcbackedinstructionselection.h \
+    qmcloadingmeasurer.h
 
 unix {
     target.path = /usr/lib
