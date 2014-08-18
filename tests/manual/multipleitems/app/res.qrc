@@ -5,6 +5,7 @@
     </qresource>
     <qresource prefix="/qmlfiles2">
         <file>qml/content/QmlSubItem.qmc</file>
+        <file>qml/content/CompositeItem.qmc</file>
     </qresource>
     <qresource prefix="/jsfiles">
         <file>qml/content/testscript1.jsc</file>

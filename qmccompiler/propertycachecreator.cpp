@@ -436,8 +436,11 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
 
             Q_ASSERT(qmltype);
             if (qmltype->isComposite()) {
-                qDebug() << "Composite type not supported";
-                QQmlTypeData *tdata = NULL; //enginePrivate->typeLoader.getType(qmltype->sourceUrl());
+                qDebug() << "Composite type not supported" << qmltype->sourceUrl();
+                if (qmltype->isCompositeSingleton()) {
+                    qDebug() << "CompositeSingleton type not supported";
+                }
+                QQmlTypeData *tdata = enginePrivate->typeLoader.getType(qmltype->sourceUrl());
                 Q_ASSERT(tdata);
                 Q_ASSERT(tdata->isComplete());
 
