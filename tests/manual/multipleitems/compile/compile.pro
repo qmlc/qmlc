@@ -22,7 +22,7 @@ SOURCES += main.cpp \
 
 HEADERS += $$PROJECTBASEPATH/cppsubitem.h
 
-RESOURCES += $$PROJECTBASEPATH/res_compile.qrc
+RESOURCES += $$PROJECTBASEPATH/res.qrc
 
 TARGET = compile
 

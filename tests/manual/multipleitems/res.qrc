@@ -1,13 +1,13 @@
 <RCC>
     <qresource prefix="/qmlfiles">
         <file>qml/content</file>
-        <file>qml/multipleitems.qmc</file>
+        <file>qml/multipleitems.qml</file>
     </qresource>
     <qresource prefix="/qmlfiles2">
-        <file>qml/content/QmlSubItem.qmc</file>
-        <file>qml/content/CompositeItem.qmc</file>
+        <file>qml/content/QmlSubItem.qml</file>
+        <file>qml/content/CompositeItem.qml</file>
     </qresource>
     <qresource prefix="/jsfiles">
-        <file>qml/content/testscript1.jsc</file>
+        <file>qml/content/testscript1.js</file>
     </qresource>
 </RCC>
