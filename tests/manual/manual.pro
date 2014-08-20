@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS = multipleitems
+SUBDIRS = multipleitems \
+          plugins
