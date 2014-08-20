@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
+CONFIG += ordered
 
 SUBDIRS = \
 	compile \
-	app
-
-app.depends = compile
+    app.pro

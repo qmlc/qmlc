@@ -1,6 +1,6 @@
 QT += qml quick
 
-QMLCBASEPATH = ../../../../
+QMLCBASEPATH = ../../../
 
 INCLUDEPATH += $$QMLCBASEPATH/qmcloader
 LIBS += -L$$QMLCBASEPATH/qmcloader
