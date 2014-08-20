@@ -8,6 +8,6 @@ Name: Qmccompiler
 Description: Qmccompiler Library
 Version: 0.0.1
 Libs: -L${libdir} -lqmccompiler 
-Libs.private: -L/mnt/share/software/qt-everywhere-opensource-src-5.3.0/qtbase/lib -lQt5Qml -lQt5Network -lQt5Core -lfontconfig -lpthread   
+Libs.private: -lQt5Qml -lQt5Network -lQt5Core -lpthread
 Cflags: -I${includedir}
 
