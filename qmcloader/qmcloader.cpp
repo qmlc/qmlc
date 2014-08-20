@@ -222,9 +222,17 @@ QmcScriptUnit *QmcLoader::getScript(const QString &url, const QUrl &loaderUrl)
 
 QmcUnit *QmcLoader::getType(const QString &name, const QUrl &loaderUrl)
 {
-    QString newUrl = getBaseUrl(loaderUrl);
-    newUrl.append(name);
-    newUrl.append(".qml");
+    qDebug() << "Getting type name = " << name << "loaderUrl =" << loaderUrl;
+
+    QString newUrl;
+    if(name.startsWith("file://")){
+        newUrl = name;
+        newUrl.append(".qml");
+    }else{
+        newUrl = getBaseUrl(loaderUrl);
+        newUrl.append(name);
+        newUrl.append(".qml");
+    }
 
     QmcUnit *unit = getUnit(newUrl);
     if (!unit)

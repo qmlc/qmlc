@@ -323,7 +323,9 @@ bool QmcTypeUnit::sourceNameForUrl(const QUrl &url, QString &name)
     name = url.toString();
     QString loadedBaseUrl = QmcLoader::getBaseUrl(unit->loadedUrl.toString());
 
-    if (name.startsWith(loadedBaseUrl)) {
+    if (name.startsWith("file://")) {
+        // keep name as is
+    } else if (name.startsWith(loadedBaseUrl)) {
         if (name.size() > loadedBaseUrl.size())
             name = name.mid(loadedBaseUrl.size());
         else
