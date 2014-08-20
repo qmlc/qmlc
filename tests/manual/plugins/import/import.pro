@@ -13,7 +13,7 @@ SOURCES += piechart.cpp \
            pieslice.cpp \
            chartsplugin.cpp
 
-DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/tests/manual/plugins/Charts
+DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/manual/plugins/Charts
 
 target.path=$$DESTPATH
 qmldir.files=$$PWD/qmldir $$PWD/qmldir_compile

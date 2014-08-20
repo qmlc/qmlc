@@ -12,5 +12,13 @@ LIBS += -lqmcloader
 # import path for the Charts module.
 win32: DESTDIR = ./
 
+DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/manual/$$TARGET
+
+target.path=$$DESTPATH
+compiled_files.files = app.qmc
+compiled_files.path=$$DESTPATH
+
+INSTALLS += target compiled_files
+
 SOURCES += main.cpp
 RESOURCES += app.qrc

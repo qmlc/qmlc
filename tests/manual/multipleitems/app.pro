@@ -29,9 +29,17 @@ OTHER_FILES += \
 RESOURCES += res.qrc
 
 TARGET = multipleitems
-target.path = $$[QT_INSTALL_TESTS]/quick/multipleitems
 
-compiled_files.files =  qml/multipleitems.qmc qml/QmlSubItem.qmc qml/testscript1.jsc
-compiled_files.path = $$[QT_INSTALL_TESTS]/quick/multipleitems/qml
+DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/manual/$$TARGET
 
-INSTALLS += target compiled_files
+target.path = $$DESTPATH
+
+compiled_files.files =  qml/multipleitems.qmc
+compiled_files.path = $$DESTPATH/qml
+
+compiled_files2.files =  qml/content/QmlSubItem.qmc \
+                        qml/content/CompositeItem.qmc \
+                        qml/content/testscript1.jsc
+compiled_files2.path = $$DESTPATH/qml/content
+
+INSTALLS += target compiled_files compiled_files2
