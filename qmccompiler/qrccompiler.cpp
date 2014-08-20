@@ -24,6 +24,12 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
 
     engine = new QQmlEngine;
 
+    // round about way to add projectBaseDir to path because
+    // running a QCoreApplication and addImportPath doesn't work
+    QByteArray array = projectBaseDir.toLocal8Bit();
+    char *baseDir = array.data();
+    setenv("QML2_IMPORT_PATH", baseDir, 1);
+
     ret = parseQrc(qrcFile);
     if(ret != 0){
         return ret;
