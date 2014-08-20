@@ -277,6 +277,7 @@ QmcUnit *QmcLoader::doloadDependency(const QString &url)
     if (!f.open(QFile::ReadOnly)) {
         QQmlError error;
         error.setDescription("Could not open file for reading: " + f.errorString());
+        qWarning() << "Could not open file for reading" << file;
         error.setUrl(QUrl(file));
         qDebug() << "Cannot open" << file;
         appendError(error);
@@ -284,7 +285,9 @@ QmcUnit *QmcLoader::doloadDependency(const QString &url)
     }
 
     QDataStream in(&f);
-    QmcUnit *unit = doloadDependency(in, createLoadedUrl(file));
+    const QUrl loadAs = createLoadedUrl(file);
+    qDebug() << "Loading dependency" << url << "as" << loadAs;
+    QmcUnit *unit = doloadDependency(in, loadAs);
     f.close();
     return unit;
 }

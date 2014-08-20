@@ -311,6 +311,7 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
             }
         } else {
             // Is this a module?
+            qDebug() << "Importing local module" << importUri;
             if (QQmlMetaType::isAnyModule(importUri)) {
                 if (!d->compilation->importCache->addLibraryImport(d->compilation->importDatabase, importUri, importQualifier, import->majorVersion,
                                               import->minorVersion, QString(), QString(), false, errors))
