@@ -21,6 +21,7 @@
 #include <private/qqmlpropertycache_p.h>
 #include <private/qqmlengine_p.h>
 #include <private/qqmlstringconverters_p.h>
+#include <QDate>
 
 #include "propertyvalidator.h"
 
