@@ -20,12 +20,100 @@
 #include "qmcinstructionselection.h"
 #include "qmclinktable.h"
 #include <private/qv4ssa_p.h>
+#include <private/qv4regalloc_p.h>
+#include <private/qv4assembler_p.h>
 
 #include "AbstractMacroAssembler.h"
 
 using namespace QV4;
 using namespace QV4::IR;
 using namespace QV4::JIT;
+
+// from qv4isel_masm.cpp:217
+
+#if (CPU(X86_64) && (OS(MAC_OS_X) || OS(LINUX))) || (CPU(X86) && OS(LINUX))
+#  define REGALLOC_IS_SUPPORTED
+static QVector<int> getIntRegisters()
+{
+#  if CPU(X86) && OS(LINUX) // x86 with linux
+    static const QVector<int> intRegisters = QVector<int>()
+            << JSC::X86Registers::edx
+            << JSC::X86Registers::ebx;
+#  else // x86_64 with linux or with macos
+    static const QVector<int> intRegisters = QVector<int>()
+            << JSC::X86Registers::ebx
+            << JSC::X86Registers::edi
+            << JSC::X86Registers::esi
+            << JSC::X86Registers::edx
+            << JSC::X86Registers::r9
+            << JSC::X86Registers::r8
+            << JSC::X86Registers::r13
+            << JSC::X86Registers::r15;
+#  endif
+    return intRegisters;
+}
+
+static QVector<int> getFpRegisters()
+{
+// linux/x86_64, linux/x86, and macos/x86_64:
+    static const QVector<int> fpRegisters = QVector<int>()
+            << JSC::X86Registers::xmm2
+            << JSC::X86Registers::xmm3
+            << JSC::X86Registers::xmm4
+            << JSC::X86Registers::xmm5
+            << JSC::X86Registers::xmm6
+            << JSC::X86Registers::xmm7;
+    return fpRegisters;
+}
+
+#elif CPU(ARM) && OS(LINUX)
+    // Note: this is not generic for all ARM platforms. Specifically, r9 is platform dependent
+    // (e.g. iOS reserves it). See the ARM GNU Linux abi for details.
+#  define REGALLOC_IS_SUPPORTED
+static QVector<int> getIntRegisters()
+{
+    static const QVector<int> intRegisters = QVector<int>()
+            << JSC::ARMRegisters::r1
+            << JSC::ARMRegisters::r2
+            << JSC::ARMRegisters::r3
+            << JSC::ARMRegisters::r4
+            << JSC::ARMRegisters::r8
+            << JSC::ARMRegisters::r9;
+    return intRegisters;
+}
+
+static QVector<int> getFpRegisters()
+{
+    static const QVector<int> fpRegisters = QVector<int>()
+            << JSC::ARMRegisters::d2
+            << JSC::ARMRegisters::d3
+            << JSC::ARMRegisters::d4
+            << JSC::ARMRegisters::d5
+            << JSC::ARMRegisters::d6;
+    return fpRegisters;
+}
+#elif CPU(X86) && OS(WINDOWS)
+#  define REGALLOC_IS_SUPPORTED
+static QVector<int> getIntRegisters()
+{
+    static const QVector<int> intRegisters = QVector<int>()
+            << JSC::X86Registers::edx
+            << JSC::X86Registers::ebx;
+    return intRegisters;
+}
+
+static QVector<int> getFpRegisters()
+{
+    static const QVector<int> fpRegisters = QVector<int>()
+            << JSC::X86Registers::xmm2
+            << JSC::X86Registers::xmm3
+            << JSC::X86Registers::xmm4
+            << JSC::X86Registers::xmm5
+            << JSC::X86Registers::xmm6
+            << JSC::X86Registers::xmm7;
+    return fpRegisters;
+}
+#endif
 
 QmcInstructionSelection::QmcInstructionSelection(QQmlEnginePrivate *qmlEngine, QV4::ExecutableAllocator *execAllocator,
                                                  QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *jsGenerator)
@@ -88,6 +176,8 @@ void QmcInstructionSelection::run(int functionIndex)
     for (int i = 0, ei = _function->basicBlockCount(); i != ei; ++i) {
         IR::BasicBlock *nextBlock = (i < ei - 1) ? _function->basicBlock(i + 1) : 0;
         _block = _function->basicBlock(i);
+        if (_block->isRemoved())
+            continue;
 #else
     for (int i = 0, ei = _function->basicBlocks.size(); i != ei; ++i) {
         IR::BasicBlock *nextBlock = (i < ei - 1) ? _function->basicBlocks[i + 1] : 0;
@@ -115,7 +205,8 @@ void QmcInstructionSelection::run(int functionIndex)
         visitRet(0);
 
     int dummySize;
-    // check data
+    // before calling _as->link, collect linked calls to a list. This list is used when
+    // loading the code
     QVector<QmcUnitCodeRefLinkCall> calls;
     Q_ASSERT(linkedCalls.size() == functionIndex);
     QList<Assembler::CallToLink>& callsToLink = _as->callsToLink();
