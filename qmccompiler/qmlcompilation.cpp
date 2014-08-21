@@ -68,10 +68,14 @@ bool QmlCompilation::checkData(int *sizeInBytes) const
         *sizeInBytes = -1;
     if (type != QMC_QML && type != QMC_JS)
         return false;
-    if (qmlUnit->qmlUnitSize > QMC_UNIT_MAX_QML_UNIT_SIZE)
+    if (qmlUnit->qmlUnitSize > QMC_UNIT_MAX_QML_UNIT_SIZE){
+        qWarning() << "Exceeding max unit size, size =" << qmlUnit->qmlUnitSize;
         return false;
-    if (unit->data->unitSize > QMC_UNIT_MAX_COMPILATION_UNIT_SIZE)
+    }
+    if (unit->data->unitSize > QMC_UNIT_MAX_COMPILATION_UNIT_SIZE){
+        qWarning() << "Exceeding max compilation unit size, size =" << unit->data->unitSize;
         return false;
+    }
     if (qmlUnit->nImports > QMC_UNIT_MAX_IMPORTS)
         return false;
     uint stringCount = unit->data->stringTableSize;
