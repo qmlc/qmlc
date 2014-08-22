@@ -50,7 +50,7 @@ HEADERS += qmcloader.h \
     qrcloader.h
 
 
-devheaders.files = qmcloader.h qmcloader_global.h
+devheaders.files = qmcloader.h qmcloader_global.h qrcloader.h
 devheaders.path = /usr/include/qmcloader
 
 system("ln -s ../3rdparty")
