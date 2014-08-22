@@ -24,11 +24,8 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
 
     engine = new QQmlEngine;
 
-    // round about way to add projectBaseDir to path because
-    // running a QCoreApplication and addImportPath doesn't work
-    QByteArray array = projectBaseDir.toLocal8Bit();
-    char *baseDir = array.data();
-    setenv("QML2_IMPORT_PATH", baseDir, 1);
+    QDir::setCurrent(projectBaseDir);
+    setenv("QML2_IMPORT_PATH", ".", 1);
 
     ret = parseQrc(qrcFile);
     if(ret != 0){
@@ -47,8 +44,7 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
             foreach(QString file, qrcQmlFiles){
                 if(dir.path().contains(file)){
                     qDebug() << "Compiling" << file;
-                    ret = compileQml("qrc" + dir.path(), projectBaseDir + "/" +
-                            file.replace(".qml", ".qmc"));
+                    ret = compileQml("qrc" + dir.path(), file.replace(".qml", ".qmc"));
                     break;
                 }
             }
@@ -56,8 +52,7 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
             foreach(QString file, qrcJsFiles){
                 if(dir.path().contains(file)){
                     qDebug() << "Compiling" << file;
-                    ret = compileJs("qrc" + dir.path(), projectBaseDir + "/" +
-                            file.replace(".js", ".jsc"));
+                    ret = compileJs("qrc" + dir.path(), file.replace(".js", ".jsc"));
                     break;
                 }
             }
