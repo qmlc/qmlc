@@ -286,10 +286,6 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
 
         } else if (d->compilation->importCache->locateQmldir(d->compilation->importDatabase, importUri, import->majorVersion, import->minorVersion,
                                  &qmldirFilePath, &qmldirUrl)) {
-            if(QFile::exists(qmldirFilePath + "_compile")){
-                qmldirFilePath += "_compile";
-                qDebug() << "Using qmldir_compile file" << qmldirFilePath;
-            }
             // This is a local library import
             if (!d->compilation->importCache->addLibraryImport(d->compilation->importDatabase, importUri, importQualifier, import->majorVersion,
                                           import->minorVersion, qmldirFilePath, qmldirUrl, false, errors))

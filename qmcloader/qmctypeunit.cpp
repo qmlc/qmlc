@@ -140,8 +140,48 @@ bool QmcTypeUnit::addImports()
             ref.script = scriptUnit;
             scripts.append(ref);
         } else if (p->type == QV4::CompiledData::Import::ImportLibrary) {
-            if (!addImport(p, &unit->errors))
-                return false;
+
+            QString qmldirFilePath;
+            QString qmldirUrl;
+            const QString &importUri = stringAt(p->uriIndex);
+            const QString &importQualifier = stringAt(p->qualifierIndex);
+
+            if (QQmlMetaType::isLockedModule(importUri, p->majorVersion)) {
+                if (!addImport(p, &unit->errors))
+                    return false;
+            } else if (m_importCache.locateQmldir(typeLoader()->importDatabase(), importUri, p->majorVersion, p->minorVersion,
+                        &qmldirFilePath, &qmldirUrl)) {
+
+                if(QFile::exists(qmldirFilePath + "_loader")){
+                    qmldirFilePath += "_loader";
+                    qDebug() << "Using qmldir_loader file" << qmldirFilePath;
+                }
+
+                // This is a local library import
+                if (!m_importCache.addLibraryImport(typeLoader()->importDatabase(), importUri, importQualifier, p->majorVersion,
+                            p->minorVersion, qmldirFilePath, qmldirUrl, false, &unit->errors)){
+                    return false;
+                }
+
+                if (!importQualifier.isEmpty()) {
+                    // Does this library contain any qualified scripts?
+                    QUrl libraryUrl(qmldirUrl);
+                    const QQmlTypeLoader::QmldirContent *qmldir = typeLoader()->qmldirContent(qmldirFilePath, qmldirUrl);
+                    foreach (const QQmlDirParser::Script &script, qmldir->scripts()) {
+                        QUrl scriptUrl = libraryUrl.resolved(QUrl(script.fileName));
+                        QQmlScriptBlob *blob = typeLoader()->getScript(scriptUrl);
+                        addDependency(blob);
+
+                        scriptImported(blob, p->location, script.nameSpace, importQualifier);
+                    }
+                }
+
+
+            } else {
+                if (!addImport(p, &unit->errors))
+                    return false;
+            }
+
         } else if (p->type == QV4::CompiledData::Import::ImportFile) {
             // load file import
             // qqmltypeloader.cpp:1384

@@ -125,7 +125,7 @@ make %{?jobs:-j%jobs}
 %{_libdir}/qt5/tests/qmlc/manual/plugins/Charts/QmlInPlugin.qmc
 %{_libdir}/qt5/tests/qmlc/manual/plugins/Charts/QmlInPlugin.qml
 %{_libdir}/qt5/tests/qmlc/manual/plugins/Charts/qmldir
-%{_libdir}/qt5/tests/qmlc/manual/plugins/Charts/qmldir_compile
+%{_libdir}/qt5/tests/qmlc/manual/plugins/Charts/qmldir_loader
 
 %files examples
 
