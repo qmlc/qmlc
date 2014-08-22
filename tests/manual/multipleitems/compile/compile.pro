@@ -2,6 +2,7 @@ QT += qml quick
 
 QMLCBASEPATH = ../../../../
 PROJECTBASEPATH = ../
+VPATH = $$PROJECTBASEPATH
 
 INCLUDEPATH += $$QMLCBASEPATH/qmccompiler $$PROJECTBASEPATH
 LIBS += -L$$QMLCBASEPATH/qmccompiler
@@ -17,10 +18,10 @@ INCLUDEPATH += $$QMLCBASEPATH/3rdparty/masm/disassembler
 include($$QMLCBASEPATH/3rdparty/masm/masm-defs.pri)
 DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 
-SOURCES += main.cpp \
-           $$PROJECTBASEPATH/cppsubitem.cpp
+SOURCES += compile.cpp \
+           cppsubitem.cpp
 
-HEADERS += $$PROJECTBASEPATH/cppsubitem.h
+HEADERS += cppsubitem.h
 
 RESOURCES += $$PROJECTBASEPATH/res.qrc
 

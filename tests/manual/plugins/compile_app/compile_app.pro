@@ -3,12 +3,13 @@ QT += qml quick
 
 QMLCBASEPATH = ../../../../
 PROJECTBASEPATH = ../
+VPATH = $$PROJECTBASEPATH
 
 INCLUDEPATH += $$QMLCBASEPATH/qmccompiler $$PROJECTBASEPATH
 LIBS += -L$$QMLCBASEPATH/qmccompiler
 LIBS += -lqmccompiler
 
-SOURCES += main.cpp
+SOURCES += compile_app.cpp
 RESOURCES += $$PROJECTBASEPATH/app.qrc
 
 # run the target that was compiled to compile the .qml etc. files

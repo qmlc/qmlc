@@ -3,6 +3,7 @@ QT += qml quick
 
 QMLCBASEPATH = ../../../../
 PROJECTBASEPATH = ../import
+VPATH = $$PROJECTBASEPATH
 
 INCLUDEPATH += $$QMLCBASEPATH/qmccompiler $$PROJECTBASEPATH
 LIBS += -L$$QMLCBASEPATH/qmccompiler
@@ -13,14 +14,14 @@ LIBS += -lqmccompiler
 # import path for the Charts module.
 win32: DESTDIR = ./
 
-HEADERS += $$PROJECTBASEPATH/piechart.h \
-           $$PROJECTBASEPATH/pieslice.h \
-           $$PROJECTBASEPATH/chartsplugin.h
+HEADERS += piechart.h \
+           pieslice.h \
+           chartsplugin.h
 
-SOURCES += main.cpp \
-           $$PROJECTBASEPATH/piechart.cpp \
-           $$PROJECTBASEPATH/pieslice.cpp \
-           $$PROJECTBASEPATH/chartsplugin.cpp
+SOURCES += compile_plugin.cpp \
+           piechart.cpp \
+           pieslice.cpp \
+           chartsplugin.cpp
 
 RESOURCES += $$PROJECTBASEPATH/res.qrc
 
