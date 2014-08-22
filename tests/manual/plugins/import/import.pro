@@ -18,12 +18,12 @@ DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/manual/plugins/Charts
 target.path=$$DESTPATH
 qmldir.files=$$PWD/qmldir $$PWD/qmldir_compile
 qmldir.path=$$DESTPATH
-compiled_files.files=$$PWD/QmlInPlugin.qmc
+compiled_files.files=$$PWD/QmlInPlugin.qmc $$PWD/QmlInPlugin.qml
 compiled_files.path=$$DESTPATH
 
 INSTALLS += target compiled_files qmldir
 
-OTHER_FILES += qmldir qmldir_compile QmlInPlugin.qmc
+OTHER_FILES += qmldir qmldir_compile QmlInPlugin.qmc $$PWD/QmlInPlugin.qml
 
 RESOURCES += res.qrc
 
@@ -33,3 +33,5 @@ QMAKE_POST_LINK += ;
 QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/qmldir_compile) $$DESTDIR), /, $$QMAKE_DIR_SEP)
 QMAKE_POST_LINK += ;
 QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/*.qmc) $$DESTDIR), /, $$QMAKE_DIR_SEP)
+QMAKE_POST_LINK += ;
+QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/*.qml) $$DESTDIR), /, $$QMAKE_DIR_SEP)
