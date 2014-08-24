@@ -3,6 +3,7 @@ include(config.pri)
 TEMPLATE = subdirs
 
 SUBDIRS = \
+	3rdparty \
 	qmccompiler \
 	qmcloader \
 	qmc \
