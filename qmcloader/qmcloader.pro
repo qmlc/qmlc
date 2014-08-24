@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+include(../config.pri)
+
 QT       += qml qml-private core-private
 QT       -= gui
 
@@ -51,23 +53,23 @@ HEADERS += qmcloader.h \
 
 
 devheaders.files = qmcloader.h qmcloader_global.h qrcloader.h
-devheaders.path = /usr/include/qmcloader
+devheaders.path = $$INCLUDEDIR/qmcloader
 
 system("ln -s ../3rdparty")
 INSTALL_HEADERS=$$system("find 3rdparty/ -name '*.h' -o -name '*pri'")
 
 for(header, INSTALL_HEADERS) {
-  hpath = /usr/include/qmcloader/$${dirname(header)}
+  hpath = $$INCLUDEDIR/qmcloader/$${dirname(header)}
   eval(headers_$${hpath}.files += $$header)
   eval(headers_$${hpath}.path = $$hpath)
   eval(INSTALLS *= headers_$${hpath})
 }
 
-
 unix {
-    target.path = /usr/lib
+    target.path = $$LIBDIR
     INSTALLS += target devheaders
 }
-QMAKE_PKGCONFIG_PREFIX = /usr
+
+QMAKE_PKGCONFIG_PREFIX = $$PREFIX
 QMAKE_PKGCONFIG_INCDIR = $$devheaders.path
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig

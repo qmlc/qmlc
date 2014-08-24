@@ -3,6 +3,7 @@
 # Project created by QtCreator 2014-07-14T21:10:27
 #
 #-------------------------------------------------
+include(../config.pri)
 
 QT       += core qml
 
@@ -27,6 +28,6 @@ HEADERS += \
     comp.h
 
 unix {
-    target.path = /usr/bin
+    target.path = $$BINDIR
     INSTALLS += target
 }

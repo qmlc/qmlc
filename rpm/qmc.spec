@@ -80,7 +80,7 @@ Examples for qmc compiler/loader
 %setup -q
 
 %build
-qtchooser -run-tool=qmake -qt=5
+qtchooser -run-tool=qmake -qt=5 PREFIX="%{_prefix}" LIBDIR="%{_libdir}" BINDIR="%{_bindir}" INCLUDEDIR="%{_includedir}"
 make %{?jobs:-j%jobs}
 
 %install

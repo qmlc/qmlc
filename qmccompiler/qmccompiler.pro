@@ -3,6 +3,7 @@
 # Project created by QtCreator 2014-07-14T20:44:03
 #
 #-------------------------------------------------
+include(../config.pri)
 
 QT       += qml qml-private core-private
 QT       -= gui
@@ -74,14 +75,14 @@ HEADERS += qmccompiler_global.h \
     qrccompiler.h
 
 devheaders.files = $$HEADERS
-devheaders.path = /usr/include/qmccompiler
+devheaders.path = $$INCLUDEDIR/qmccompiler
 
 unix {
-    target.path = /usr/lib
+    target.path = $$LIBDIR
     INSTALLS += target devheaders
 }
 
-QMAKE_PKGCONFIG_PREFIX = /usr
+QMAKE_PKGCONFIG_PREFIX = $$PREFIX
 QMAKE_PKGCONFIG_INCDIR = $$devheaders.path
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 
