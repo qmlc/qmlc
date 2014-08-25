@@ -445,10 +445,10 @@ void TestSimpleQmlLoad::loadScript1()
     int width = item->width();
     QVERIFY(width == 100);
     int height = item->height();
-    QVERIFY(height == 200);
+    QVERIFY(height == 201);
     item->setWidth(15);
     height = item->height();
-    QVERIFY(height == 30);
+    QVERIFY(height == 31);
     delete component;
     delete engine;
 }
@@ -468,10 +468,10 @@ void TestSimpleQmlLoad::compileAndLoadScript1()
     int width = item->width();
     QVERIFY(width == 100);
     int height = item->height();
-    QVERIFY(height == 200);
+    QVERIFY(height == 201);
     item->setWidth(15);
     height = item->height();
-    QVERIFY(height == 30);
+    QVERIFY(height == 31);
     delete component;
     delete engine;
 }

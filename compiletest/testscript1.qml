@@ -21,6 +21,10 @@ import "testscript1.js" as SS
 Item {
     width: 100
     height: {
-        return SS.testfunc(width)
+        var h =  SS.testfunc(width)
+        console.log(h);
+        h += 1;
+        console.log(h);
+        return h;
     }
 }
