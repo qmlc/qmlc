@@ -134,7 +134,15 @@ int QrcCompiler::compileQml(const QString &inputFile, const QString &outputFile)
     f.close();
 
     if (!success){
-        qDebug() << "Compilation failed" << inputFile;
+        qWarning() << "Qml Compilation failed" << inputFile;
+        if (c.errors().empty()){
+            qWarning() << "Error compiling <no reason>";
+        }else{
+            foreach (QQmlError error, c.errors()) {
+                qWarning() << "Error: " << error.toString();
+            }
+        }
+
         f.remove();
         return -2;
     }
@@ -160,6 +168,13 @@ int QrcCompiler::compileJs(const QString &inputFile, const QString &outputFile)
 
     if (!success){
         qWarning() << "JS Compilation failed" << inputFile;
+        if (jsc.errors().empty()){
+            qWarning() << "Error compiling <no reason>";
+        }else{
+            foreach (QQmlError error, jsc.errors()) {
+                qWarning() << "Error: " << error.toString();
+            }
+        }
         f.remove();
         return -4;
     }
