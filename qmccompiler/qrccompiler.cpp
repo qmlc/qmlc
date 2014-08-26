@@ -15,6 +15,16 @@
 #include "qmlc.h"
 #include "scriptc.h"
 
+QrcCompiler::QrcCompiler():
+    exitOnError(true)
+{
+}
+
+void QrcCompiler::exitOnCompileError(bool exit)
+{
+    exitOnError = exit;
+}
+
 int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
         const QString &qrcFile)
 {
@@ -144,7 +154,9 @@ int QrcCompiler::compileQml(const QString &inputFile, const QString &outputFile)
         }
 
         f.remove();
-        return -2;
+        if(exitOnError){
+            return -2;
+        }
     }
 
     return 0;
@@ -176,7 +188,9 @@ int QrcCompiler::compileJs(const QString &inputFile, const QString &outputFile)
             }
         }
         f.remove();
-        return -4;
+        if(exitOnError){
+            return -4;
+        }
     }
 
     return 0;
