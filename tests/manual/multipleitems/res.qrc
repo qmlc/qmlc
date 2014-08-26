@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/qmlfiles">
-        <file>qml/content</file>
         <file>qml/multipleitems.qml</file>
     </qresource>
     <qresource prefix="/qmlfiles2">

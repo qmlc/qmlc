@@ -201,12 +201,9 @@ bool QmcTypeUnit::addImports()
                 }
             }
 
-            QString uri;
-            QString path = QmcLoader::getBaseUrl(unit->loadedUrl);
-            uri = path + importUri;
 
 
-            if (!m_importCache.addFileImport(typeLoader()->importDatabase(), uri, importQualifier, p->majorVersion,
+            if (!m_importCache.addFileImport(typeLoader()->importDatabase(), importUri, importQualifier, p->majorVersion,
                                        p->minorVersion, false, &unit->errors))
                 return false;
 

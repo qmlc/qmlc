@@ -100,6 +100,11 @@ QQmlComponent *QmcLoader::loadComponent(QDataStream &stream, const QUrl &loadedU
         return NULL;
     }
 
+    // replace with loaded url cause we aren't always loading from the same
+    // directories as we compiled
+    unit->url = loadedUrl;
+    unit->urlString = loadedUrl.toString();
+
     if (unit->type != QMC_QML) {
         QQmlError error;
         error.setDescription("Cannot have Script unit as main unit");
@@ -208,8 +213,13 @@ QString QmcLoader::precompiledUrl(const QString &url)
 
 QmcScriptUnit *QmcLoader::getScript(const QString &url, const QUrl &loaderUrl)
 {
-    QString newUrl = getBaseUrl(loaderUrl);
-    newUrl.append(url);
+    QString newUrl;
+    if(url.startsWith("file:")){
+        newUrl = url;
+    }else{
+        newUrl = getBaseUrl(loaderUrl);
+        newUrl.append(url);
+    }
 
     QmcUnit *unit = getUnit(newUrl);
     if (!unit)

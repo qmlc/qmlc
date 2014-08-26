@@ -175,10 +175,10 @@ int QrcLoader::loadTopLevelQmc(QString qmcFile)
     }
 
     QDataStream in(&inputFile);
-    QString qrcPath = "qrc" + qmcFile;
+    QString fullPath = QString("file://") + QDir::currentPath() + "/" + file;
 
-    qDebug() << "Loading component " << qrcPath;
-    rootComponent = loader->loadComponent(in, QUrl(qrcPath));
+    qDebug() << "Loading component " << fullPath;
+    rootComponent = loader->loadComponent(in, QUrl(fullPath));
     qDebug() << (rootComponent ? "OK" : "Failed");
 
     inputFile.close();

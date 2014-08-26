@@ -25,6 +25,8 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
     engine = new QQmlEngine;
 
     QDir::setCurrent(projectBaseDir);
+    QString absProjectBaseDir = QDir::currentPath();
+    qDebug() << "absProjectBaseDir" << absProjectBaseDir;
     setenv("QML2_IMPORT_PATH", ".", 1);
 
     ret = parseQrc(qrcFile);
@@ -44,7 +46,13 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
             foreach(QString file, qrcQmlFiles){
                 if(dir.path().contains(file)){
                     qDebug() << "Compiling" << file;
-                    ret = compileQml("qrc" + dir.path(), file.replace(".qml", ".qmc"));
+                    QFileInfo fileInfo(file);
+                    QString in = fileInfo.fileName();
+                    QString out = in;
+                    out.replace(".qml", ".qmc");
+                    QDir::setCurrent(fileInfo.path());
+                    ret = compileQml("file:" + in, out);
+                    QDir::setCurrent(absProjectBaseDir);
                     break;
                 }
             }
@@ -52,7 +60,13 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
             foreach(QString file, qrcJsFiles){
                 if(dir.path().contains(file)){
                     qDebug() << "Compiling" << file;
-                    ret = compileJs("qrc" + dir.path(), file.replace(".js", ".jsc"));
+                    QFileInfo fileInfo(file);
+                    QString in = fileInfo.fileName();
+                    QString out = in;
+                    out.replace(".js", ".jsc");
+                    QDir::setCurrent(fileInfo.path());
+                    ret = compileJs("file:" + in, out);
+                    QDir::setCurrent(absProjectBaseDir);
                     break;
                 }
             }
