@@ -37,7 +37,21 @@ int QrcCompiler::compile(int argc, char **argv, const QString &projectBaseDir,
     QDir::setCurrent(projectBaseDir);
     QString absProjectBaseDir = QDir::currentPath();
     qDebug() << "absProjectBaseDir" << absProjectBaseDir;
-    setenv("QML2_IMPORT_PATH", ".", 1);
+
+    // update import path to include .
+    char *curvalue = getenv("QML2_IMPORT_PATH");
+    if(curvalue){
+        char *newvalue = (char *)malloc(strlen(curvalue) + 2);
+        if(!newvalue){
+            qWarning("malloc failed, couldn't update QML_IMPORT_PATH");
+        }else{
+            sprintf(newvalue, "%s:%s", curvalue, ".");
+            setenv("QML2_IMPORT_PATH", newvalue, 1);
+            free(newvalue);
+        }
+    }else{
+        setenv("QML2_IMPORT_PATH", ".", 1);
+    }
 
     ret = parseQrc(qrcFile);
     if(ret != 0){
