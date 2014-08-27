@@ -44,6 +44,22 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    // update import path to include .
+    // engine->addImportPath(".");  doesn't work?
+    char *curvalue = getenv("QML2_IMPORT_PATH");
+    if(curvalue){
+        char *newvalue = (char *)malloc(strlen(curvalue) + 2);
+        if(!newvalue){
+            qWarning("malloc failed, couldn't update QML_IMPORT_PATH");
+        }else{
+            sprintf(newvalue, "%s:%s", curvalue, ".");
+            setenv("QML2_IMPORT_PATH", newvalue, 1);
+            free(newvalue);
+        }
+    }else{
+        setenv("QML2_IMPORT_PATH", ".", 1);
+    }
+
     Compiler *compiler = NULL;
     if (fileName.endsWith(".js")) {
         compiler = new ScriptC(engine);
