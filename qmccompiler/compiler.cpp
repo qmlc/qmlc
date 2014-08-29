@@ -149,6 +149,9 @@ bool Compiler::compile(const QString &url)
     Q_D(Compiler);
     clearError();
 
+    // set env var so one can test in plugins if needed
+    setenv("QMC_COMPILE", "1", 1);
+
     // check that engine is using correct factory
     if (!qgetenv("QV4_FORCE_INTERPRETER").isEmpty()) {
         QQmlError error;
@@ -156,6 +159,7 @@ bool Compiler::compile(const QString &url)
         appendError(error);
         return false;
     }
+
 
     Q_ASSERT(d->compilation == NULL);
     QmlCompilation* c = new QmlCompilation(url, QUrl(url), d->engine);
