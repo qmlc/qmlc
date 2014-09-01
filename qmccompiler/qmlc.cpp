@@ -38,6 +38,7 @@ int QmlC::MAX_RECURSION = 10;
 
 QmlC::QmlC(QQmlEngine *engine, QObject *parent) :
     Compiler(engine, parent),
+    implicitImportLoaded(false),
     recursion(0),
     components(new QHash<QString, QmlCompilation *>()),
     ownComponents(true)
@@ -46,6 +47,7 @@ QmlC::QmlC(QQmlEngine *engine, QObject *parent) :
 
 QmlC::QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, QObject *parent) :
     Compiler(engine, parent),
+    implicitImportLoaded(false),
     recursion(0),
     components(components),
     ownComponents(false)
@@ -138,13 +140,7 @@ bool QmlC::loadImplicitImport()
     // qqmltypeloader.cpp:2186
     implicitImportLoaded = true; // Even if we hit an error, count as loaded (we'd just keep hitting the error)
 
-    if (!compilation()->url.toLocalFile().startsWith(":/") && !compilation()->urlString.startsWith("qrc:/")) {
-        QDir dd;
-        QString newUrl = "file://" + dd.absolutePath() + "/" + compilation()->url.toLocalFile();
-        compilation()->importCache->setBaseUrl(QUrl(newUrl), newUrl);
-    }else{
-        compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
-    }
+    compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
 
     QQmlImportDatabase *importDatabase = compilation()->importDatabase;
     // For local urls, add an implicit import "." as most overridden lookup.
