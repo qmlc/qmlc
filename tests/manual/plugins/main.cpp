@@ -62,13 +62,8 @@ int main(int argc, char *argv[])
     QQmlEngine *engine = view.engine();
 
 #if 1
-    QrcLoader qrcloader(engine);
-    ret = qrcloader.load(":/app.qmc", "app.qrc");
-    if(ret != 0){
-        qWarning() << "Couldn't load from qrc file error=%d" << ret;
-        return 0;
-    }
-    QQmlComponent *component = qrcloader.getRootComponent();
+    QmcLoader loader(engine);
+    QQmlComponent *component = loader.loadComponent("app.qmc");
 #else
     QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
 #endif
