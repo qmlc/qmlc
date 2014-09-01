@@ -89,7 +89,9 @@ bool QmlC::continueLoadFromIR()
 {
     compilation()->document->collectTypeReferences();
     QUrl baseUrl = compilation()->url;
-    if (!compilation()->url.toLocalFile().startsWith(":/") && !compilation()->urlString.startsWith("qrc:/")) {
+    if (!compilation()->url.toLocalFile().startsWith(":/") &&
+            !compilation()->urlString.startsWith("qrc:/") &&
+            !compilation()->urlString.startsWith("file:/")) {
         QDir dd;
         QString newUrl = "file://" + dd.absolutePath() + "/" + compilation()->url.toLocalFile();
         compilation()->importCache->setBaseUrl(QUrl(newUrl), newUrl);
