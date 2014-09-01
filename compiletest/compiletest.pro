@@ -61,7 +61,11 @@ OTHER_FILES += \
     testmod1.qml \
     modsimple.qmldir \
     SimpleItem.qml \
-    testmod1.qml
+    testmod1.qml \
+    testkeys.qml \
+    testproperty1.qml \
+    SimpleObject.qml \
+    EnclosedSimpleObject.qml
 
 RESOURCES += \
     testqml.qrc

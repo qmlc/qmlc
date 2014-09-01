@@ -19,6 +19,10 @@
         <file>testmod2.qml</file>
         <file>testmod1.qml</file>
         <file>testcppsubitem.qml</file>
+        <file>testkeys.qml</file>
+        <file>testproperty1.qml</file>
+        <file>EnclosedSimpleObject.qml</file>
+        <file>SimpleObject.qml</file>
     </qresource>
     <qresource prefix="/testqml/mod">
         <file>ModItem11.qml</file>

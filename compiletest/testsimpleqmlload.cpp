@@ -770,5 +770,73 @@ void TestSimpleQmlLoad::compileAndLoadCppSubItem()
     delete engine;
 }
 
+void TestSimpleQmlLoad::loadKeys()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testkeys.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVariant val;
+
+    val = myObject->property("height");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 62);
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileAndLoadKeys()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testkeys.qml");
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVariant val;
+
+    val = myObject->property("height");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 62);
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::loadProperty1()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testproperty1.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVariant val;
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileAndLoadProperty1()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testproperty1.qml");
+    const QString TEST_QML1(":/testqml/EnclosedSimpleObject.qml");
+    const QString TEST_QML2(":/testqml/SimpleObject.qml");
+    QList<QString> dependencies;
+    dependencies.append(TEST_QML1);
+    dependencies.append(TEST_QML2);
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE, dependencies);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVariant val;
+
+    delete component;
+    delete engine;
+}
 
 //#include "testsimpleqmlload.moc"

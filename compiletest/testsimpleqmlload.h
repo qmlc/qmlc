@@ -74,6 +74,12 @@ private slots:
     void loadCppSubItem();
     void compileAndLoadCppSubItem();
 
+    void loadKeys();
+    void compileAndLoadKeys();
+
+    void loadProperty1();
+    void compileAndLoadProperty1();
+
     void initTestCase();
     void cleanupTestCase();
 
