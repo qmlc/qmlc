@@ -140,7 +140,16 @@ bool QmlC::loadImplicitImport()
     // qqmltypeloader.cpp:2186
     implicitImportLoaded = true; // Even if we hit an error, count as loaded (we'd just keep hitting the error)
 
-    compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
+    if (!compilation()->url.toLocalFile().startsWith(":/") &&
+            !compilation()->urlString.startsWith("qrc:/") &&
+            !compilation()->urlString.startsWith("file:/")) {
+        QDir dd;
+        QString newUrl = "file://" + dd.absolutePath() + "/" + compilation()->url.toLocalFile();
+        compilation()->importCache->setBaseUrl(QUrl(newUrl), newUrl);
+    }else{
+        compilation()->importCache->setBaseUrl(compilation()->url, compilation()->urlString);
+    }
+
 
     QQmlImportDatabase *importDatabase = compilation()->importDatabase;
     // For local urls, add an implicit import "." as most overridden lookup.
