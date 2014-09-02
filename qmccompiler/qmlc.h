@@ -43,6 +43,7 @@ protected:
     virtual bool createExportStructures();
 
 private:
+    QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, QObject *parent = 0);
     bool compileComponent(int recursion);
     bool dataReceived();
     bool continueLoadFromIR();
@@ -56,7 +57,9 @@ private:
     static int MAX_RECURSION;
     int recursion;
 
-    QHash<QString, QmlCompilation *> components;
+    QHash<QString, QmlCompilation *> *components;
+
+    bool ownComponents;
 
     Q_DISABLE_COPY(QmlC)
 };

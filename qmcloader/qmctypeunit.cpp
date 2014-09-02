@@ -41,6 +41,7 @@ QmcTypeUnit::QmcTypeUnit(QmcUnit *qmcUnit, QQmlTypeLoader *typeLoader)
       propertyCaches(compiledData->propertyCaches),
       doneLinking(false)
 {
+    compiledData->url = qmcUnit->url;
 }
 
 

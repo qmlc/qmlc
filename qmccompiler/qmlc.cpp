@@ -38,16 +38,28 @@ int QmlC::MAX_RECURSION = 10;
 
 QmlC::QmlC(QQmlEngine *engine, QObject *parent) :
     Compiler(engine, parent),
-    recursion(0)
+    recursion(0),
+    components(new QHash<QString, QmlCompilation *>()),
+    ownComponents(true)
+{
+}
+
+QmlC::QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, QObject *parent) :
+    Compiler(engine, parent),
+    recursion(0),
+    components(components),
+    ownComponents(false)
 {
 }
 
 QmlC::~QmlC()
 {
-    foreach (QmlCompilation *compilation, components) {
-        delete compilation;
+    if (ownComponents) {
+        foreach (QmlCompilation *compilation, *components) {
+            delete compilation;
+        }
+        components->clear();
     }
-    components.clear();
 }
 
 bool QmlC::dataReceived()
@@ -430,8 +442,8 @@ QmlCompilation* QmlC::getComponent(const QUrl& url)
 {
     //qDebug() << "Load dependency" << url.toString();
     QString str = url.toString();
-    if (components.contains(str))
-        return components[str];
+    if (components->contains(str))
+        return (*components)[str];
     else {
         if (recursion > MAX_RECURSION) {
             QQmlError error;
@@ -442,7 +454,7 @@ QmlCompilation* QmlC::getComponent(const QUrl& url)
         }
 
         // compile
-        QmlC compiler(engine());
+        QmlC compiler(engine(), components);
         compiler.recursion = this->recursion + 1;
         if (!compiler.compile(url.toString())) {
             appendErrors(compiler.errors());
@@ -450,7 +462,7 @@ QmlCompilation* QmlC::getComponent(const QUrl& url)
         }
 
         QmlCompilation* compilation = compiler.takeCompilation();
-        components.insert(str, compilation);
+        components->insert(str, compilation);
         return compilation;
     }
 }
