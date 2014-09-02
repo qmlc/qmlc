@@ -336,20 +336,11 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
                     }
 
                     if (qmltype->isComposite()) {
-                        // TBD: how to handle composite type
-                        qDebug() << "Composite type not supported";
-#if 0
-                        QQmlTypeData *tdata = NULL; //enginePrivate->typeLoader.getType(qmltype->sourceUrl());
-                        Q_ASSERT(tdata);
-                        Q_ASSERT(tdata->isComplete());
-
-                        QQmlCompiledData *data = tdata->compiledData();
-
-                        paramTypes[i + 1] = data->metaTypeId;
-
-                        tdata->release();
-#endif
-                        return false;
+                        // Composite type usage
+                        qDebug() << "Composite type usage2" << qmltype->sourceUrl() << "Line" << param->location.line << "Col" << param->location.column;
+                        QmlCompilation::TypeReference *typeRef = compiler->findTypeRef(param->customTypeNameIndex);
+                        Q_ASSERT(typeRef->component->compiledData != NULL);
+                        paramTypes[i + 1] = typeRef->component->compiledData->metaTypeId;
                     } else {
                         paramTypes[i + 1] = qmltype->typeId();
                     }
@@ -436,15 +427,10 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
 
             Q_ASSERT(qmltype);
             if (qmltype->isComposite()) {
-                qDebug() << "Composite type not supported" << qmltype->sourceUrl();
-                if (qmltype->isCompositeSingleton()) {
-                    qDebug() << "CompositeSingleton type not supported";
-                }
-                QQmlTypeData *tdata = enginePrivate->typeLoader.getType(qmltype->sourceUrl());
-                Q_ASSERT(tdata);
-                Q_ASSERT(tdata->isComplete());
-
-                QQmlCompiledData *data = tdata->compiledData();
+                // Composite type usage
+                QmlCompilation::TypeReference *typeRef = compiler->findTypeRef(p->customTypeNameIndex);
+                Q_ASSERT(typeRef->component->compiledData != NULL);
+                QQmlCompiledData *data = typeRef->component->compiledData;
 
                 if (p->type == QV4::CompiledData::Property::Custom) {
                     propertyType = data->metaTypeId;
@@ -454,7 +440,6 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
                     vmePropertyType = qMetaTypeId<QQmlListProperty<QObject> >();
                 }
 
-                tdata->release();
             } else {
                 if (p->type == QV4::CompiledData::Property::Custom) {
                     propertyType = qmltype->typeId();

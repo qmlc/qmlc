@@ -177,6 +177,13 @@ void QmcTypeCompiler::scanScriptStrings()
     sss.scan();
 }
 
+QmlCompilation::TypeReference *QmcTypeCompiler::findTypeRef(int index)
+{
+    QHash<int, QmlCompilation::TypeReference> &refList = compilation->typeReferences;
+    Q_ASSERT(refList.contains(index));
+    return &refList[index];
+}
+
 bool QmcTypeCompiler::createTypeMap()
 {
     // qqmltypecompiler.cpp:81
@@ -438,8 +445,21 @@ bool QmcTypeCompiler::precompile()
     compiledData->qmlUnit = qmlUnit; // ownership transferred to m_compiledData
 
     // add to type registry
-    // TBD
     // qqmltypecompiler.cpp:248
+    if (compiledData->isCompositeType())
+        QQmlEnginePrivate::get(compilation->engine)->registerInternalCompositeType(compiledData);
+    else {
+        const QV4::CompiledData::Object *obj = qmlUnit->objectAt(qmlUnit->indexOfRootObject);
+        QQmlCompiledData::TypeReference *typeRef = compiledData->resolvedTypes.value(obj->inheritedTypeNameIndex);
+        Q_ASSERT(typeRef);
+        if (typeRef->component) {
+            compiledData->metaTypeId = typeRef->component->metaTypeId;
+            compiledData->listMetaTypeId = typeRef->component->listMetaTypeId;
+        } else {
+            compiledData->metaTypeId = typeRef->type->typeId();
+            compiledData->listMetaTypeId = typeRef->type->qListTypeId();
+        }
+    }
 
     // Sanity check property bindings and compile custom parsers
     if (!validateProperties())

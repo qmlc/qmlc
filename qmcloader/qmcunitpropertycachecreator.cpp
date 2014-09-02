@@ -170,6 +170,7 @@ bool QmcUnitPropertyCacheCreator::buildMetaObjectRecursively(int objectIndex, in
     Q_ASSERT(rootIndex < qmcTypeUnit->compiledData->qmlUnit->nObjects);
     qmcTypeUnit->compiledData->rootPropertyCache = qmcTypeUnit->propertyCaches[rootIndex];
     Q_ASSERT(qmcTypeUnit->compiledData->rootPropertyCache);
+    qmcTypeUnit->compiledData->rootPropertyCache->addref();
 
     return true;
 }
@@ -340,26 +341,17 @@ bool QmcUnitPropertyCacheCreator::createMetaObject(int objectIndex, const QV4::C
                 } else {
                     // lazily resolved type
                     Q_ASSERT(param->type == QV4::CompiledData::Property::Custom);
-                    const QString customTypeName = qmcTypeUnit->stringAt(param->customTypeNameIndex);
-                    QQmlType *qmltype = 0;
-                    if (!qmcTypeUnit->m_importCache.resolveType(customTypeName, &qmltype, 0, 0, 0)) {
-                        recordError(s->location, tr("Invalid signal parameter type: %1").arg(customTypeName));
-                        return false;
-                    }
-
-                    if (qmltype->isComposite()) {
-                        QQmlTypeData *tdata = enginePrivate->typeLoader.getType(qmltype->sourceUrl());
-                        Q_ASSERT(tdata);
-                        Q_ASSERT(tdata->isComplete());
-
-                        QQmlCompiledData *data = tdata->compiledData();
-
+                    QQmlCompiledData *ddata = qmcTypeUnit->refCompiledData();
+                    Q_ASSERT(ddata->resolvedTypes.contains(param->customTypeNameIndex));
+                    QQmlCompiledData::TypeReference *typeRef = ddata->resolvedTypes[param->customTypeNameIndex];
+                    if (typeRef->component) { // isComposite = true
+                        QQmlCompiledData *data = typeRef->component;
                         paramTypes[i + 1] = data->metaTypeId;
-
-                        tdata->release();
                     } else {
+                        QQmlType *qmltype = typeRef->type;
                         paramTypes[i + 1] = qmltype->typeId();
                     }
+                    ddata->release();
                 }
             }
         }
@@ -440,20 +432,12 @@ bool QmcUnitPropertyCacheCreator::createMetaObject(int objectIndex, const QV4::C
             Q_ASSERT(p->type == QV4::CompiledData::Property::CustomList ||
                      p->type == QV4::CompiledData::Property::Custom);
 
-            QQmlType *qmltype = 0;
-            if (!qmcTypeUnit->m_importCache.resolveType(qmcTypeUnit->stringAt(p->customTypeNameIndex), &qmltype, 0, 0, 0)) {
-                recordError(p->location, tr("Invalid property type"));
-                return false;
-            }
-
-            Q_ASSERT(qmltype);
-            if (qmltype->isComposite()) {
-                QQmlTypeData *tdata = enginePrivate->typeLoader.getType(qmltype->sourceUrl());
-                Q_ASSERT(tdata);
-                Q_ASSERT(tdata->isComplete());
-
-                QQmlCompiledData *data = tdata->compiledData();
-
+            // composite type usage, uses compiled table instead of import cache
+            QQmlCompiledData *ddata = qmcTypeUnit->refCompiledData();
+            Q_ASSERT(ddata->resolvedTypes.contains(p->customTypeNameIndex));
+            QQmlCompiledData::TypeReference *typeRef = ddata->resolvedTypes[p->customTypeNameIndex];
+            if (typeRef->component) { // isComposite = true
+                QQmlCompiledData *data = typeRef->component;
                 if (p->type == QV4::CompiledData::Property::Custom) {
                     propertyType = data->metaTypeId;
                     vmePropertyType = QMetaType::QObjectStar;
@@ -461,9 +445,8 @@ bool QmcUnitPropertyCacheCreator::createMetaObject(int objectIndex, const QV4::C
                     propertyType = data->listMetaTypeId;
                     vmePropertyType = qMetaTypeId<QQmlListProperty<QObject> >();
                 }
-
-                tdata->release();
             } else {
+                QQmlType *qmltype = typeRef->type;
                 if (p->type == QV4::CompiledData::Property::Custom) {
                     propertyType = qmltype->typeId();
                     vmePropertyType = QMetaType::QObjectStar;
@@ -472,6 +455,7 @@ bool QmcUnitPropertyCacheCreator::createMetaObject(int objectIndex, const QV4::C
                     vmePropertyType = qMetaTypeId<QQmlListProperty<QObject> >();
                 }
             }
+            ddata->release();
 
             if (p->type == QV4::CompiledData::Property::Custom)
                 propertyFlags |= QQmlPropertyData::IsQObjectDerived;

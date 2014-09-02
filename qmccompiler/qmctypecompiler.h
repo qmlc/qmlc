@@ -32,6 +32,8 @@ class QmlCompilation;
 class QQmlCompiledData;
 class QQmlCustomParser;
 
+#include "qmlcompilation.h"
+
 class QmcTypeCompiler
 {
 public:
@@ -65,6 +67,8 @@ public:
 
     void setCustomParserBindings(const QVector<int> &bindings);
     void setDeferredBindingsPerObject(const QHash<int, QBitArray> &deferredBindingsPerObject);
+
+    QmlCompilation::TypeReference *findTypeRef(int index);
 
 private:
     void indexCustomParserScripts();
