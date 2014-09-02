@@ -270,6 +270,7 @@ bool QmlC::resolveTypes()
 
         ref.location.line = unresolvedRef->location.line;
         ref.location.column = unresolvedRef->location.column;
+        ref.needsCreation = unresolvedRef->needsCreation;
         ref.majorVersion = majorVersion;
         ref.minorVersion = minorVersion;
 
