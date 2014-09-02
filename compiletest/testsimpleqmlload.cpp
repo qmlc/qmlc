@@ -610,17 +610,19 @@ QQmlComponent* TestSimpleQmlLoad::compileAndLoad(QQmlEngine *engine, const QStri
         QDataStream out(buf, QIODevice::WriteOnly);
         bool ret = false;
         QString u("qrc" + dependency);
+        QQmlEngine *e = new QQmlEngine;
         if (dependency.endsWith(".js")) {
-            ScriptC jsc(engine);
+            ScriptC jsc(e);
             ret = jsc.compile(u, out);
             if (!ret)
                 printErrors(jsc.errors());
         } else {
-            QmlC qmlc(engine);
+            QmlC qmlc(e);
             ret = qmlc.compile(u, out);
             if (!ret)
                 printErrors(qmlc.errors());
         }
+        delete e;
         if (!ret || buf->length() < 500) {
             return NULL;
         }
