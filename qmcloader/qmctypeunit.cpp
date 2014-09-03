@@ -18,6 +18,7 @@
  */
 
 #include <QQmlEngine>
+#include <QDir>
 
 #include <private/qv4engine_p.h>
 #include <private/qqmltypeloader_p.h>
@@ -113,7 +114,15 @@ bool QmcTypeUnit::link()
 
 bool QmcTypeUnit::addImports()
 {
-    m_importCache.setBaseUrl(unit->url, unit->urlString);
+    if (!unit->url.toLocalFile().startsWith(":/") &&
+            !unit->urlString.startsWith("qrc:/") &&
+            !unit->urlString.startsWith("file:/")) {
+        QDir dd;
+        QString newUrl = "file://" + dd.absolutePath() + "/" + unit->url.toLocalFile();
+        m_importCache.setBaseUrl(QUrl(newUrl), newUrl);
+    }else{
+        m_importCache.setBaseUrl(unit->url, unit->urlString);
+    }
 
     compiledData->customParserData = qmcUnit()->customParsers;
     compiledData->customParserBindings = qmcUnit()->customParserBindings;
@@ -238,7 +247,7 @@ bool QmcTypeUnit::addImports()
         QQmlType *qmlType = NULL;
         if (!m_importCache.resolveType(name, &qmlType, &majorVersion, &minorVersion, &typeNamespace, &unit->errors)) {
             // try to load it as implicit import
-            QmcUnit *typeUnit = qmcUnit()->loader->getType(name, finalUrl());
+            QmcUnit *typeUnit = qmcUnit()->loader->getType(name, unit->loadedUrl);
             if (typeUnit) {
                 ref->component = ((QmcTypeUnit *)typeUnit->blob)->refCompiledData(); // addref
                 unit->errors.clear();
