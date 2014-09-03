@@ -278,7 +278,6 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         JSC::MacroAssemblerCodeRef codeRef = as->link(&dummySize);
         Q_ASSERT(dummySize == (int)codeRefLen);
         delete as;
-        this->codeRefData.append(codeRefData);
 #endif
 
         compilationUnit->codeRefs.append(codeRef);
