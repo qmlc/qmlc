@@ -243,9 +243,9 @@ bool Compiler::exportData(QDataStream &output)
 {
     Q_D(Compiler);
 
-    if (!d->compilation->checkData()) {
-        QQmlError error;
-        error.setDescription("Compiled data not valid. Internal error.");
+    QQmlError error;
+    if (!d->compilation->checkData(error)) {
+        error.setUrl(d->compilation->url);
         appendError(error);
         return false;
     }

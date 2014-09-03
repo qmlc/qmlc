@@ -30,7 +30,7 @@ public:
     QUrl loadUrl;
     QString code;
     QQmlCompiledData *compiledData;
-    bool checkData(int *sizeInBytes = NULL) const;
+    bool checkData(QQmlError &error, int *sizeInBytes = NULL) const;
     int calculateSize() const;
 
     QV4::CompiledData::QmlUnit *qmlUnit;
