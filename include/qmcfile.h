@@ -29,7 +29,7 @@
 
 static const char QMC_UNIT_MAGIC_STR[] = "qmcunit1";
 
-#define QMC_UNIT_STRING_MAX_LEN 256
+#define QMC_UNIT_STRING_MAX_LEN 16384
 
 #define QMC_UNIT_VERSION 1
 
@@ -43,7 +43,7 @@ static const char QMC_UNIT_MAGIC_STR[] = "qmcunit1";
 
 #define QMC_UNIT_MAX_IMPORTS 256
 
-#define QMC_UNIT_MAX_STRINGS 256
+#define QMC_UNIT_MAX_STRINGS 2048
 
 #define QMC_UNIT_MAX_NAMESPACES 256
 
