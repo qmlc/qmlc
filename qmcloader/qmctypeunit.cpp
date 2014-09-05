@@ -114,6 +114,10 @@ bool QmcTypeUnit::link()
 
 bool QmcTypeUnit::addImports()
 {
+
+    QList<QString> fileImports;
+    fileImports.append("."); // implicit import
+
     if(unit->loadedUrl.toString().startsWith("file:///")){
         // full, path this must be a plugin we are adding
         m_importCache.setBaseUrl(QUrl(unit->loadedUrl), unit->loadedUrl.toString());
@@ -220,6 +224,8 @@ bool QmcTypeUnit::addImports()
                                        p->minorVersion, false, &unit->errors))
                 return false;
 
+            fileImports.append(importUri);
+
         } else {
             QQmlError error;
             error.setDescription("Unknown type import");
@@ -249,13 +255,20 @@ bool QmcTypeUnit::addImports()
         QQmlCompiledData::TypeReference *ref = new QQmlCompiledData::TypeReference;
         QQmlType *qmlType = NULL;
         if (!m_importCache.resolveType(name, &qmlType, &majorVersion, &minorVersion, &typeNamespace, &unit->errors)) {
-            // try to load it as implicit import
-            QmcUnit *typeUnit = qmcUnit()->loader->getType(name, unit->loadedUrl);
-            if (typeUnit) {
-                ref->component = ((QmcTypeUnit *)typeUnit->blob)->refCompiledData(); // addref
-                unit->errors.clear();
-                dependencies.append(typeUnit);
-            } else {
+            // try to load it as implicit import or local file import
+            bool found = false;
+            foreach (const QString &path, fileImports){
+                qWarning() << "Calling getType" << path + "/" + name << unit->loadedUrl << finalUrl();
+                QmcUnit *typeUnit = qmcUnit()->loader->getType(path + "/" + name, unit->loadedUrl);
+                if (typeUnit) {
+                    ref->component = ((QmcTypeUnit *)typeUnit->blob)->refCompiledData(); // addref
+                    unit->errors.clear();
+                    dependencies.append(typeUnit);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
                 QQmlError error;
                 error.setDescription("Could not load implicit import");
                 unit->errors.append(error);
