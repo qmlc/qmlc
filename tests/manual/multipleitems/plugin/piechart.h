@@ -2,8 +2,6 @@
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
-** Copyright (C) 2014 Nomovok Ltd. All rights reserved.
-** Contact: info@nomovok.com
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -39,62 +37,33 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+#ifndef PIECHART_H
+#define PIECHART_H
 
-#include <QGuiApplication>
-#include <QQmlComponent>
-#include <QQuickView>
-#include <QDebug>
+#include <QtQuick/QQuickItem>
 
-#include "qmcloader.h"
+class PieSlice;
 
-int main(int argc, char *argv[])
+class PieChart : public QQuickItem
 {
-  int ret;
+    Q_OBJECT
+    Q_PROPERTY(QQmlListProperty<PieSlice> slices READ slices)
+    Q_PROPERTY(QString name READ name WRITE setName)
 
-    QGuiApplication app(argc, argv);
+public:
+    PieChart(QQuickItem *parent = 0);
 
-    QQuickView view;
+    QString name() const;
+    void setName(const QString &name);
 
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    //QQmlContext *ctxt = view.rootContext();
+    QQmlListProperty<PieSlice> slices();
 
-    QQmlEngine *engine = view.engine();
+private:
+    static void append_slice(QQmlListProperty<PieSlice> *list, PieSlice *slice);
 
-#if 1
-    QmcLoader loader(engine);
-    QQmlComponent *component = loader.loadComponent("app.qmc");
-#else
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
+    QString m_name;
+    QList<PieSlice *> m_slices;
+};
+
 #endif
 
-    if (!component) {
-        qDebug() << "Could not load component";
-        return -1;
-    }
-    if (!component->isReady()) {
-        qDebug() << "Component is not ready";
-        if (component->isError()) {
-            foreach (const QQmlError &error, component->errors()) {
-                qDebug() << error.toString();
-            }
-        }
-        return -1;
-    }
-    QObject *rootObject = component->create();
-    if (!rootObject) {
-        qDebug() << "Could not create root object";
-        return -1;
-    }
-
-    view.setContent(component->url(), component, rootObject);
-
-    view.show();
-
-    ret = app.exec();
-    delete rootObject;
-    delete component;
-    return ret;
-
-}
-//![0]

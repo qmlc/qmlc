@@ -2,8 +2,6 @@
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
-** Copyright (C) 2014 Nomovok Ltd. All rights reserved.
-** Contact: info@nomovok.com
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -39,62 +37,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "chartsplugin.h"
 //![0]
+#include "piechart.h"
+#include "pieslice.h"
+#include <qqml.h>
 
-#include <QGuiApplication>
-#include <QQmlComponent>
-#include <QQuickView>
-#include <QDebug>
-
-#include "qmcloader.h"
-
-int main(int argc, char *argv[])
+void ChartsPlugin::registerTypes(const char *uri)
 {
-  int ret;
-
-    QGuiApplication app(argc, argv);
-
-    QQuickView view;
-
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    //QQmlContext *ctxt = view.rootContext();
-
-    QQmlEngine *engine = view.engine();
-
-#if 1
-    QmcLoader loader(engine);
-    QQmlComponent *component = loader.loadComponent("app.qmc");
-#else
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
-#endif
-
-    if (!component) {
-        qDebug() << "Could not load component";
-        return -1;
-    }
-    if (!component->isReady()) {
-        qDebug() << "Component is not ready";
-        if (component->isError()) {
-            foreach (const QQmlError &error, component->errors()) {
-                qDebug() << error.toString();
-            }
-        }
-        return -1;
-    }
-    QObject *rootObject = component->create();
-    if (!rootObject) {
-        qDebug() << "Could not create root object";
-        return -1;
-    }
-
-    view.setContent(component->url(), component, rootObject);
-
-    view.show();
-
-    ret = app.exec();
-    delete rootObject;
-    delete component;
-    return ret;
-
+    qmlRegisterType<PieChart>(uri, 1, 0, "PieChart");
+    qmlRegisterType<PieSlice>(uri, 1, 0, "PieSlice");
 }
+
 //![0]
+

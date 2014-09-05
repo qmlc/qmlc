@@ -2,5 +2,5 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS = \
-	compile \
+	plugin \
     app.pro

@@ -2,10 +2,8 @@
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
-** Copyright (C) 2014 Nomovok Ltd. All rights reserved.
-** Contact: info@nomovok.com
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -39,22 +37,38 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef PIESLICE_H
+#define PIESLICE_H
 
-// always to include
-#include <QCoreApplication>
-#include <QtQml>
-#include "qrccompiler.h"
+#include <QtQuick/QQuickPaintedItem>
+#include <QColor>
 
-// include program specific cpp types
-#include "cppsubitem.h"
-
-int main(int argc, char **argv)
+class PieSlice : public QQuickPaintedItem
 {
-    // register all cpp types
-    qmlRegisterType<CppSubItem>("CppTests", 1, 0, "CppSubItem");
+    Q_OBJECT
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(int fromAngle READ fromAngle WRITE setFromAngle)
+    Q_PROPERTY(int angleSpan READ angleSpan WRITE setAngleSpan)
 
-    // compile all possible files in the qrc in this directory and put in the
-    // third args(dir)
-    QrcCompiler qrccompiler;
-    return qrccompiler.compile(argc, argv, "../", "res.qrc");
-}
+public:
+    PieSlice(QQuickItem *parent = 0);
+
+    QColor color() const;
+    void setColor(const QColor &color);
+
+    int fromAngle() const;
+    void setFromAngle(int angle);
+
+    int angleSpan() const;
+    void setAngleSpan(int span);
+
+    void paint(QPainter *painter);
+
+private:
+    QColor m_color;
+    int m_fromAngle;
+    int m_angleSpan;
+};
+
+#endif
+

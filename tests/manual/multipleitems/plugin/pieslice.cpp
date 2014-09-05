@@ -2,8 +2,6 @@
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
-** Copyright (C) 2014 Nomovok Ltd. All rights reserved.
-** Contact: info@nomovok.com
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -39,62 +37,50 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+#include "pieslice.h"
 
-#include <QGuiApplication>
-#include <QQmlComponent>
-#include <QQuickView>
-#include <QDebug>
+#include <QPainter>
 
-#include "qmcloader.h"
-
-int main(int argc, char *argv[])
+PieSlice::PieSlice(QQuickItem *parent)
+    : QQuickPaintedItem(parent)
 {
-  int ret;
-
-    QGuiApplication app(argc, argv);
-
-    QQuickView view;
-
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    //QQmlContext *ctxt = view.rootContext();
-
-    QQmlEngine *engine = view.engine();
-
-#if 1
-    QmcLoader loader(engine);
-    QQmlComponent *component = loader.loadComponent("app.qmc");
-#else
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
-#endif
-
-    if (!component) {
-        qDebug() << "Could not load component";
-        return -1;
-    }
-    if (!component->isReady()) {
-        qDebug() << "Component is not ready";
-        if (component->isError()) {
-            foreach (const QQmlError &error, component->errors()) {
-                qDebug() << error.toString();
-            }
-        }
-        return -1;
-    }
-    QObject *rootObject = component->create();
-    if (!rootObject) {
-        qDebug() << "Could not create root object";
-        return -1;
-    }
-
-    view.setContent(component->url(), component, rootObject);
-
-    view.show();
-
-    ret = app.exec();
-    delete rootObject;
-    delete component;
-    return ret;
-
 }
-//![0]
+
+QColor PieSlice::color() const
+{
+    return m_color;
+}
+
+void PieSlice::setColor(const QColor &color)
+{
+    m_color = color;
+}
+
+int PieSlice::fromAngle() const
+{
+    return m_fromAngle;
+}
+
+void PieSlice::setFromAngle(int angle)
+{
+    m_fromAngle = angle;
+}
+
+int PieSlice::angleSpan() const
+{
+    return m_angleSpan;
+}
+
+void PieSlice::setAngleSpan(int angle)
+{
+    m_angleSpan = angle;
+}
+
+void PieSlice::paint(QPainter *painter)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect().adjusted(1, 1, -1, -1), m_fromAngle * 16, m_angleSpan * 16);
+}
+

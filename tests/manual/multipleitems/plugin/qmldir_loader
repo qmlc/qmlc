@@ -1,0 +1,4 @@
+module Charts
+plugin chartsplugin
+QmlInPlugin 1.0 QmlInPlugin.qmc
+

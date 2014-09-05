@@ -1,8 +1,11 @@
 <RCC>
     <qresource prefix="/qmlfiles">
-        <file>qml/multipleitems.qml</file>
+        <file>app.qml</file>
     </qresource>
     <qresource prefix="/qmlfiles2">
+        <file>qml/QmlJSItems.qml</file>
+    </qresource>
+    <qresource prefix="/qmlfiles3">
         <file>qml/content/QmlSubItem.qml</file>
         <file>qml/content/CompositeItem.qml</file>
     </qresource>

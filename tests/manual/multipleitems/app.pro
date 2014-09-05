@@ -16,15 +16,9 @@ INCLUDEPATH += $$QMLCBASEPATH/3rdparty/masm/disassembler
 include($$QMLCBASEPATH/3rdparty/masm/masm-defs.pri)
 DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 
-SOURCES += main.cpp \
-           cppsubitem.cpp
+SOURCES += main.cpp
 
-HEADERS += cppsubitem.h
-
-OTHER_FILES += \
-    multipleitems.qmc \
-    QmlSubItem.qmc \
-    testscript1.jsc
+HEADERS +=
 
 RESOURCES += res.qrc
 
@@ -34,12 +28,39 @@ DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/manual/$$TARGET
 
 target.path = $$DESTPATH
 
-compiled_files.files =  qml/multipleitems.qmc
-compiled_files.path = $$DESTPATH/qml
+INSTALLS += target
 
-compiled_files2.files =  qml/content/QmlSubItem.qmc \
-                        qml/content/CompositeItem.qmc \
-                        qml/content/testscript1.jsc
-compiled_files2.path = $$DESTPATH/qml/content
+QML_FILES = app.qml \
+            qml/QmlJSItems.qml \
+            qml/content/QmlSubItem.qml \
+            qml/content/CompositeItem.qml \
+            qml/content/testscript1.js
 
-INSTALLS += target compiled_files compiled_files2
+CONFIG += qmc
+
+qmc {
+    QMAKE_POST_LINK += export PATH=$$PWD/$$QMLCBASEPATH/qmc:$$PATH;
+    QMAKE_POST_LINK += export LD_LIBRARY_PATH=$$PWD/$$QMLCBASEPATH/qmccompiler;
+    for(qmlfile, QML_FILES) {
+       # compile
+       contains(qmlfile, qmldir): next()
+       contains(qmlfile, qmldir_loader): next()
+       QMAKE_POST_LINK += cd ./$$dirname(qmlfile); qmc $$basename(qmlfile); cd -;
+
+       # install
+       qmcfile = $$replace(qmlfile, \\.qml, .qmc)
+       qmcfile = $$replace(qmcfile, \\.js, .jsc)
+
+       target = install_$$lower($$basename(qmlfile))
+       target = $$replace(target, \\.qml, _qmc)
+       target = $$replace(target, \\.js, _jsc)
+       path = $${target}.path
+
+       $$path = $$[QT_INSTALL_QML]/$$member(TARGETPATH, 0)
+       commands = $${target}.commands
+       $$commands += $$QMAKE_MKDIR $(INSTALL_ROOT)/$$DESTPATH/$$dirname(qmcfile);
+       $$commands += $$QMAKE_COPY $$qmcfile $(INSTALL_ROOT)/$$DESTPATH/$$dirname(qmcfile);
+       INSTALLS += $$target
+    }
+}
+

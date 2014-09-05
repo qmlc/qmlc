@@ -115,10 +115,16 @@ make %{?jobs:-j%jobs}
 %files tests
 %{_bindir}/compiletest
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/multipleitems
-%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/multipleitems.qmc
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/app.qmc
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/QmlJSItems.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/CompositeItem.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/QmlSubItem.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/testscript1.jsc
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/libchartsplugin.so
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/QmlInPlugin.qmc
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/QmlInPlugin.qml
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/qmldir
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/qmldir_loader
 %{_libdir}/qt5/tests/qmlc/manual/plugins/plugins
 %{_libdir}/qt5/tests/qmlc/manual/plugins/app.qmc
 %{_libdir}/qt5/tests/qmlc/manual/plugins/Charts/libchartsplugin.so

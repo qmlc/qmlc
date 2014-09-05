@@ -17,24 +17,36 @@
 
 import QtQuick 2.0
 import "content/testscript1.js" as SS
-import CppTests 1.0
 import "content"
 
 Item{
 
     Rectangle {
-        id: rect
-        width: 200
-        height: { return SS.testfunc(width) } // height should be double the width
-        color: cppsubitem.color;
+        id: rect0
+        x: 0
 
         QmlSubItem {
+            id: subitem0
+            y: 0
+            color: "red"
+            Text {
+                 text: "RGB"
+                 font.family: "Helvetica"
+                 font.pointSize: 12
+                 color: "black"
+             }
         }
 
-        CppSubItem {
-            id: cppsubitem
+        QmlSubItem {
+            id: subitem1
+            y: 100
+            color: "green"
+        }
+
+        QmlSubItem {
+            id: subitem2
+            y: { return SS.testfunc(subitem1.y) }
             color: "blue"
-            name: "noname"
         }
 
         CompositeItem {
@@ -46,4 +58,21 @@ Item{
         //   onClicked: { console.log(cppsubitem.name); }
         //}
     }
+
+    Rectangle {
+        id: rect1
+        x: 100
+        width: 100
+
+        height: { return SS.testfunc(width) } // height should be double the width
+        color: "yellow"
+        Text {
+             text: "h = 2 * w";
+             font.family: "Helvetica"
+             font.pointSize: 12
+             color: "black"
+         }
+    }
+
+
 }

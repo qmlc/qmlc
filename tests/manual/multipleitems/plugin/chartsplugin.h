@@ -2,8 +2,6 @@
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
-** Copyright (C) 2014 Nomovok Ltd. All rights reserved.
-** Contact: info@nomovok.com
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -39,62 +37,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef CHARTSPLUGIN_H
+#define CHARTSPLUGIN_H
+
+//![0]
+#include <QQmlExtensionPlugin>
+
+class ChartsPlugin : public QQmlExtensionPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface")
+
+public:
+    void registerTypes(const char *uri);
+};
 //![0]
 
-#include <QGuiApplication>
-#include <QQmlComponent>
-#include <QQuickView>
-#include <QDebug>
-
-#include "qmcloader.h"
-
-int main(int argc, char *argv[])
-{
-  int ret;
-
-    QGuiApplication app(argc, argv);
-
-    QQuickView view;
-
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    //QQmlContext *ctxt = view.rootContext();
-
-    QQmlEngine *engine = view.engine();
-
-#if 1
-    QmcLoader loader(engine);
-    QQmlComponent *component = loader.loadComponent("app.qmc");
-#else
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
 #endif
 
-    if (!component) {
-        qDebug() << "Could not load component";
-        return -1;
-    }
-    if (!component->isReady()) {
-        qDebug() << "Component is not ready";
-        if (component->isError()) {
-            foreach (const QQmlError &error, component->errors()) {
-                qDebug() << error.toString();
-            }
-        }
-        return -1;
-    }
-    QObject *rootObject = component->create();
-    if (!rootObject) {
-        qDebug() << "Could not create root object";
-        return -1;
-    }
-
-    view.setContent(component->url(), component, rootObject);
-
-    view.show();
-
-    ret = app.exec();
-    delete rootObject;
-    delete component;
-    return ret;
-
-}
-//![0]

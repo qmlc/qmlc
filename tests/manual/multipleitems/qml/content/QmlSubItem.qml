@@ -18,7 +18,6 @@
 import QtQuick 2.0
 
 Rectangle {
-    width: 10
-    height: 20
-    color: "green"
+    width: 100
+    height: 100
 }
