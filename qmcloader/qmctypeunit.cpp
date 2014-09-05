@@ -114,7 +114,10 @@ bool QmcTypeUnit::link()
 
 bool QmcTypeUnit::addImports()
 {
-    if (!unit->url.toLocalFile().startsWith(":/") &&
+    if(unit->loadedUrl.toString().startsWith("file:///")){
+        // full, path this must be a plugin we are adding
+        m_importCache.setBaseUrl(QUrl(unit->loadedUrl), unit->loadedUrl.toString());
+    }else if (!unit->url.toLocalFile().startsWith(":/") &&
             !unit->urlString.startsWith("qrc:/") &&
             !unit->urlString.startsWith("file:/")) {
         QDir dd;
