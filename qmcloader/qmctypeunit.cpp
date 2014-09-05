@@ -125,7 +125,7 @@ bool QmcTypeUnit::addImports()
             !unit->urlString.startsWith("qrc:/") &&
             !unit->urlString.startsWith("file:/")) {
         QDir dd;
-        QString newUrl = "file://" + dd.absolutePath() + "/" + unit->url.toLocalFile();
+        QString newUrl = "file://" + dd.absolutePath() + "/" + unit->loadedUrl.toLocalFile();
         m_importCache.setBaseUrl(QUrl(newUrl), newUrl);
     }else{
         m_importCache.setBaseUrl(unit->url, unit->urlString);
