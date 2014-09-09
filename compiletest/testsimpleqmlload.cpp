@@ -337,6 +337,59 @@ void TestSimpleQmlLoad::loadAlias1()
     delete engine;
 }
 
+void TestSimpleQmlLoad::compileAndLoadAlias2()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testalias2.qml");
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject* myObject = component->create();
+    QVERIFY(myObject);
+    QVariant v = myObject->property("color");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toString() == "#333333");
+
+    QObject *r1 = myObject->findChild<QObject*>("r1");
+    r1->setProperty("color", "#999999");
+
+    v = myObject->property("color");
+    QVERIFY(v.toString() == "#999999");
+
+    QObject *r0 = myObject->findChild<QObject*>("r0");
+    QVERIFY(r0->property("color").toString() == "#999999");
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::loadAlias2()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testalias2.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVERIFY(myObject != NULL);
+    QVariant v = myObject->property("color");
+    QVERIFY(!v.isNull());
+    qWarning() << v.toString();
+    QVERIFY(v.toString() == "#333333");
+
+    QObject *r1 = myObject->findChild<QObject*>("r1");
+    r1->setProperty("color", "#999999");
+
+    v = myObject->property("color");
+    QVERIFY(v.toString() == "#999999");
+
+    QObject *r0 = myObject->findChild<QObject*>("r0");
+    QVERIFY(r0->property("color").toString() == "#999999");
+
+    delete component;
+    delete engine;
+}
+
 void TestSimpleQmlLoad::printErrors(const QList<QQmlError> &errors)
 {
     foreach (QQmlError error, errors)

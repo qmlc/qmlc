@@ -11,6 +11,7 @@
         <file>testscript2.js</file>
         <file>testsubitem2.qml</file>
         <file>testalias1.qml</file>
+        <file>testalias2.qml</file>
         <file>testcomponent1.qml</file>
         <file>testsignal1.qml</file>
         <file>testsignal2.qml</file>
