@@ -225,6 +225,11 @@ bool ComponentAndAliasResolver::resolve()
     return true;
 }
 
+QHash<int, int> ComponentAndAliasResolver::getIdToObjectIndex()
+{
+    return _idToObjectIndex;
+}
+
 bool ComponentAndAliasResolver::collectIdsAndAliases(int objectIndex)
 {
     const QmlIR::Object *obj = qmlObjects->at(objectIndex);

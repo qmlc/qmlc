@@ -121,6 +121,7 @@ struct QmcUnitAlias { // need to be sorted by objectIndex, propertyIndex
     quint32 propertyIndex;
     // see QQmlVMEMetaObject::AliasData
     quint32 contextIndex; // contentIdx
+    quint32 targetObjectIndex; // targetObjectIndex
     quint32 targetPropertyIndex; // propertyIdx
     quint32 propertyType; // propType
     quint32 flags; // flags

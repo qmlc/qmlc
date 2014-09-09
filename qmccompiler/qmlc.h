@@ -61,6 +61,8 @@ private:
 
     bool ownComponents;
 
+    QHash<int, int> aliasIdToObjectIndex;
+
     Q_DISABLE_COPY(QmlC)
 };
 

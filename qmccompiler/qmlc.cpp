@@ -295,6 +295,7 @@ bool QmlC::doCompile()
         appendErrors(compiler.compilationErrors());
         return false;
     }
+    aliasIdToObjectIndex = compiler.aliasIdToObjectIndexData();
     return true;
 }
 
@@ -382,6 +383,7 @@ bool QmlC::createExportStructures()
                 QmcUnitAlias alias;
                 alias.objectIndex = i;
                 alias.propertyIndex = j;
+                alias.targetObjectIndex = aliasIdToObjectIndex.value(p->aliasIdValueIndex, -1);
 
                 // qqmltypecompiler.cpp:1687
                 typedef QQmlVMEMetaData VMD;

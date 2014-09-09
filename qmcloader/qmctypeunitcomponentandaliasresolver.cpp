@@ -110,7 +110,7 @@ bool QmcTypeUnitComponentAndAliasResolver::addAliases()
         const QString aliasPropertyValue = qmcTypeUnit->stringAt(p->aliasPropertyValueIndex);
 
         //const int idIndex = p->aliasIdValueIndex;
-        const int targetObjectIndex = alias.objectIndex;
+        const int targetObjectIndex = alias.targetObjectIndex;
 #if 0
         const int idIndex = p->aliasIdValueIndex;
         const int targetObjectIndex = _idToObjectIndex.value(idIndex, -1);
