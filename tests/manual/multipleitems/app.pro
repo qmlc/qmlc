@@ -33,7 +33,6 @@ INSTALLS += target
 QML_FILES = app.qml \
             qml/QmlJSItems.qml \
             qml/content/QmlSubItem.qml \
-            qml/content/CompositeItem.qml \
             qml/content/testscript1.js
 
 CONFIG += qmc

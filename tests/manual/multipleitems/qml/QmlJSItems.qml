@@ -49,10 +49,6 @@ Item{
             color: "blue"
         }
 
-        CompositeItem {
-        }
-
-
         //MouseArea {
         //   anchors.fill: parent;
         //   onClicked: { console.log(cppsubitem.name); }

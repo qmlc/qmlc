@@ -117,7 +117,6 @@ make %{?jobs:-j%jobs}
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/multipleitems
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/app.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/QmlJSItems.qmc
-%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/CompositeItem.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/QmlSubItem.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/testscript1.jsc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/libchartsplugin.so
