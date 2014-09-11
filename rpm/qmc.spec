@@ -106,6 +106,7 @@ make %{?jobs:-j%jobs}
 
 %files loader
 %{_libdir}/libqmcloader.so.*
+%{_bindir}/qmcloader
 
 %files loader-devel
 %{_libdir}/libqmcloader.so
