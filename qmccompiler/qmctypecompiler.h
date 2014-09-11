@@ -70,7 +70,8 @@ public:
 
     QmlCompilation::TypeReference *findTypeRef(int index);
 
-    QHash<int, int> aliasIdToObjectIndexData();
+    void setAliasIdToObjectIndex(const QHash<int, int> &idToObjectIndex);
+    void appendAliasIdToObjectIndexPerComponent(int index, const QHash<int, int> &idToObjectIndex);
 
 private:
     void indexCustomParserScripts();
@@ -89,7 +90,6 @@ private:
     QQmlCompiledData *compiledData;
     QList<QQmlError> errors;
     QHash<int, QQmlCustomParser *> customParsers;
-    QHash<int, int> aliasIdToObjectIndex;
 };
 
 #endif // QMCTYPECOMPILER_H

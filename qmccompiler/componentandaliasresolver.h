@@ -39,8 +39,6 @@ public:
 
     bool resolve();
 
-    QHash<int, int> getIdToObjectIndex();
-
 protected:
     void findAndRegisterImplicitComponents(const QmlIR::Object *obj, QQmlPropertyCache *propertyCache);
     bool collectIdsAndAliases(int objectIndex);

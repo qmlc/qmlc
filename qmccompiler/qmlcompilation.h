@@ -79,6 +79,9 @@ public:
     QList<ScriptReference> scripts;
 
     QList<QVector<QmcUnitCodeRefLinkCall > > linkData;
+
+    QHash<int, int> aliasIdToObjectIndex;
+    QHash<int, QHash<int, int> > aliasIdToObjectIndexPerComponent;
 };
 
 #endif // QMLCOMPILATION_H

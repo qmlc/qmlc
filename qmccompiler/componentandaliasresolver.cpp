@@ -206,7 +206,10 @@ bool ComponentAndAliasResolver::resolve()
 
         if (!resolveAliases())
             return false;
+
+        compiler->appendAliasIdToObjectIndexPerComponent(rootBinding->value.objectIndex, _idToObjectIndex);
     }
+
 
     // Collect ids and aliases for root
     _componentIndex = -1;
@@ -218,16 +221,13 @@ bool ComponentAndAliasResolver::resolve()
 
     resolveAliases();
 
+    compiler->setAliasIdToObjectIndex(_idToObjectIndex);
+
     // Implicit component insertion may have added objects and thus we also need
     // to extend the symmetric propertyCaches.
     compiler->setPropertyCaches(propertyCaches);
 
     return true;
-}
-
-QHash<int, int> ComponentAndAliasResolver::getIdToObjectIndex()
-{
-    return _idToObjectIndex;
 }
 
 bool ComponentAndAliasResolver::collectIdsAndAliases(int objectIndex)

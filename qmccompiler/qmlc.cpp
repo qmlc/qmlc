@@ -295,7 +295,6 @@ bool QmlC::doCompile()
         appendErrors(compiler.compilationErrors());
         return false;
     }
-    aliasIdToObjectIndex = compiler.aliasIdToObjectIndexData();
     return true;
 }
 
@@ -383,7 +382,13 @@ bool QmlC::createExportStructures()
                 QmcUnitAlias alias;
                 alias.objectIndex = i;
                 alias.propertyIndex = j;
-                alias.targetObjectIndex = aliasIdToObjectIndex.value(p->aliasIdValueIndex, -1);
+
+                // check if it's a component/delegate to lookup
+                if(compilation()->aliasIdToObjectIndexPerComponent.contains(alias.objectIndex)){
+                    alias.targetObjectIndex = compilation()->aliasIdToObjectIndexPerComponent[alias.objectIndex].value(p->aliasIdValueIndex, -1);
+                }else{
+                    alias.targetObjectIndex = compilation()->aliasIdToObjectIndex.value(p->aliasIdValueIndex, -1);
+                }
 
                 // qqmltypecompiler.cpp:1687
                 typedef QQmlVMEMetaData VMD;

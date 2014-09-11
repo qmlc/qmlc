@@ -184,9 +184,14 @@ QmlCompilation::TypeReference *QmcTypeCompiler::findTypeRef(int index)
     return &refList[index];
 }
 
-QHash<int, int> QmcTypeCompiler::aliasIdToObjectIndexData()
+void QmcTypeCompiler::setAliasIdToObjectIndex(const QHash<int, int> &idToObjectIndex)
 {
-    return aliasIdToObjectIndex;
+    compilation->aliasIdToObjectIndex = idToObjectIndex;
+}
+
+void QmcTypeCompiler::appendAliasIdToObjectIndexPerComponent(int index, const QHash<int, int> &idToObjectIndex)
+{
+    compilation->aliasIdToObjectIndexPerComponent.insert(index, idToObjectIndex);
 }
 
 bool QmcTypeCompiler::createTypeMap()
@@ -318,13 +323,8 @@ bool QmcTypeCompiler::validateProperties()
 
 bool QmcTypeCompiler::resolveComponentBoundariesAndAliases()
 {
-    bool ret;
     ComponentAndAliasResolver resolver(this);
-    ret = resolver.resolve();
-    if(ret){
-        aliasIdToObjectIndex = resolver.getIdToObjectIndex();
-    }
-    return ret;
+    return resolver.resolve();
 }
 
 bool QmcTypeCompiler::precompile()

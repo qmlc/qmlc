@@ -24,6 +24,7 @@
 #include <QUrl>
 #include <QDataStream>
 #include <QHash>
+#include <QVector>
 
 #include "compiler.h"
 #include "qmccompiler_global.h"
@@ -60,8 +61,6 @@ private:
     QHash<QString, QmlCompilation *> *components;
 
     bool ownComponents;
-
-    QHash<int, int> aliasIdToObjectIndex;
 
     Q_DISABLE_COPY(QmlC)
 };
