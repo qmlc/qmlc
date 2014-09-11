@@ -390,6 +390,117 @@ void TestSimpleQmlLoad::loadAlias2()
     delete engine;
 }
 
+void TestSimpleQmlLoad::compileAndLoadAlias3()
+{
+    QVariant v;
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testalias3.qml");
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject* myObject = component->create();
+    QVERIFY(myObject);
+
+    // test alias value in Component/delegate
+    {
+        QObject *i2 = myObject->findChild<QObject*>("i2");
+        QVERIFY(i2);
+        v = i2->property("prop2");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 222);
+
+        QObject *i3 = myObject->findChild<QObject*>("i3");
+        QVERIFY(i3);
+        v = i3->property("prop2");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 222);
+
+        i3->setProperty("prop2", 999);
+
+        v = i2->property("prop2");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 999);
+    }
+
+    // test alias value in non Component/delegate when Component/delegate exist
+    // in the qml document
+    {
+        v = myObject->property("prop");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 111);
+
+        QObject *i4 = myObject->findChild<QObject*>("i4");
+        v = i4->property("prop");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 111);
+
+        myObject->setProperty("prop", 999);
+
+        v = i4->property("prop");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 999);
+    }
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::loadAlias3()
+{
+    QVariant v;
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testalias3.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVERIFY(myObject != NULL);
+
+    // test alias value in Component/delegate
+    {
+        QObject *i2 = myObject->findChild<QObject*>("i2");
+        QVERIFY(i2);
+        v = i2->property("prop2");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 222);
+
+        QObject *i3 = myObject->findChild<QObject*>("i3");
+        QVERIFY(i3);
+        v = i3->property("prop2");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 222);
+
+        i3->setProperty("prop2", 999);
+
+        v = i2->property("prop2");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 999);
+    }
+
+    // test alias value in non Component/delegate when Component/delegate exist
+    // in the qml document
+    {
+        v = myObject->property("prop");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 111);
+
+        QObject *i4 = myObject->findChild<QObject*>("i4");
+        v = i4->property("prop");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 111);
+
+        myObject->setProperty("prop", 999);
+
+        v = i4->property("prop");
+        QVERIFY(!v.isNull());
+        QVERIFY(v.toInt() == 999);
+    }
+
+    delete component;
+    delete engine;
+}
+
+
 void TestSimpleQmlLoad::printErrors(const QList<QQmlError> &errors)
 {
     foreach (QQmlError error, errors)
