@@ -79,6 +79,7 @@ bool QmcTypeUnitComponentAndAliasResolver::addAliases()
     QQmlPropertyCache *propertyCache = NULL;
     foreach (const QmcUnitAlias &alias, qmcTypeUnit->unit->aliases) {
         if ((int)alias.objectIndex != currentObjectIndex) {
+            currentObjectIndex = alias.objectIndex;
             effectiveAliasIndex = 0;
             propertyCache = qmcTypeUnit->propertyCaches.at(alias.objectIndex);
             effectivePropertyIndex = propertyCache->propertyIndexCacheStart + propertyCache->propertyIndexCache.count();
