@@ -13,6 +13,7 @@
         <file>testalias1.qml</file>
         <file>testalias2.qml</file>
         <file>testalias3.qml</file>
+        <file>testalias4.qml</file>
         <file>testcomponent1.qml</file>
         <file>testsignal1.qml</file>
         <file>testsignal2.qml</file>

@@ -68,6 +68,9 @@ private slots:
     void loadAlias3();
     void compileAndLoadAlias3();
 
+    void loadAlias4();
+    void compileAndLoadAlias4();
+
     void loadFunction1();
     void compileAndLoadFunction1();
 

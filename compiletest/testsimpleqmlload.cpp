@@ -500,6 +500,131 @@ void TestSimpleQmlLoad::loadAlias3()
     delete engine;
 }
 
+void TestSimpleQmlLoad::compileAndLoadAlias4()
+{
+    QVariant v;
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testalias4.qml");
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject* myObject = component->create();
+    QVERIFY(myObject);
+
+    // check that the alias's work
+    v = myObject->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 111);
+
+    v = myObject->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 111);
+
+    QObject *i2 = myObject->findChild<QObject*>("i2");
+    v = i2->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 111);
+
+    v = myObject->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 222);
+
+    v = i2->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 222);
+
+    // change the aliases target values and check again.
+    QObject *i1 = myObject->findChild<QObject*>("i1");
+    QVERIFY(i1);
+    i1->setProperty("x", 666);
+
+    v = myObject->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 666);
+
+    v = i2->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 666);
+
+    QObject *r0 = myObject->findChild<QObject*>("r0");
+    QVERIFY(r0);
+    r0->setProperty("height", 777);
+
+    v = myObject->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 777);
+
+    v = i2->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 777);
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::loadAlias4()
+{
+    QVariant v;
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testalias4.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVERIFY(myObject != NULL);
+
+    // check that the alias's work
+    v = myObject->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 111);
+
+    v = myObject->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 111);
+
+    QObject *i2 = myObject->findChild<QObject*>("i2");
+    v = i2->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 111);
+
+    v = myObject->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 222);
+
+    v = i2->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 222);
+
+    // change the aliases target values and check again.
+    QObject *i1 = myObject->findChild<QObject*>("i1");
+    QVERIFY(i1);
+    i1->setProperty("x", 666);
+
+    v = myObject->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 666);
+
+    v = i2->property("i1_x");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 666);
+
+    QObject *r0 = myObject->findChild<QObject*>("r0");
+    QVERIFY(r0);
+    r0->setProperty("height", 777);
+
+    v = myObject->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 777);
+
+    v = i2->property("r0_height");
+    QVERIFY(!v.isNull());
+    QVERIFY(v.toInt() == 777);
+
+    delete component;
+    delete engine;
+}
+
+
 
 void TestSimpleQmlLoad::printErrors(const QList<QQmlError> &errors)
 {
