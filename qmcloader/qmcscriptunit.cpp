@@ -22,7 +22,7 @@
 #include "qmcloader.h"
 
 QmcScriptUnit::QmcScriptUnit(QmcUnit *qmcUnit, QQmlTypeLoader *typeLoader)
-    : QQmlScriptBlob(qmcUnit->url, typeLoader),
+    : QQmlScriptBlob(qmcUnit->loadedUrl, typeLoader),
       unit(qmcUnit)
 {
 }
