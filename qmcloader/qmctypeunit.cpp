@@ -120,14 +120,12 @@ bool QmcTypeUnit::addImports()
     if(unit->loadedUrl.toString().startsWith("file:///")){
         // full, path this must be a plugin we are adding
         m_importCache.setBaseUrl(QUrl(unit->loadedUrl), unit->loadedUrl.toString());
-    }else if (!unit->url.toLocalFile().startsWith(":/") &&
-            !unit->urlString.startsWith("qrc:/") &&
-            !unit->urlString.startsWith("file:/")) {
+    }else if (unit->url.toLocalFile().startsWith(":/") || unit->urlString.startsWith("qrc:/")){
+        m_importCache.setBaseUrl(unit->url, unit->urlString);
+    }else{
         QDir dd;
         QString newUrl = "file://" + dd.absolutePath() + "/" + unit->loadedUrl.toLocalFile();
         m_importCache.setBaseUrl(QUrl(newUrl), newUrl);
-    }else{
-        m_importCache.setBaseUrl(unit->url, unit->urlString);
     }
 
     compiledData->customParserData = qmcUnit()->customParsers;
