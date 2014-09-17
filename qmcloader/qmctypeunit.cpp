@@ -34,7 +34,7 @@
 #include "qmctypeunitcomponentandaliasresolver.h"
 
 QmcTypeUnit::QmcTypeUnit(QmcUnit *qmcUnit, QQmlTypeLoader *typeLoader)
-    : Blob(qmcUnit->url, QQmlDataBlob::QmlFile, typeLoader),
+    : Blob(qmcUnit->loadedUrl, QQmlDataBlob::QmlFile, typeLoader),
       unit(qmcUnit),
       compiledData(new QQmlCompiledData(qmcUnit->engine)),
       linked(false),
@@ -42,7 +42,7 @@ QmcTypeUnit::QmcTypeUnit(QmcUnit *qmcUnit, QQmlTypeLoader *typeLoader)
       propertyCaches(compiledData->propertyCaches),
       doneLinking(false)
 {
-    compiledData->url = qmcUnit->url;
+    compiledData->url = qmcUnit->loadedUrl;
 }
 
 
