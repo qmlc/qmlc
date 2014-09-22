@@ -17,6 +17,7 @@
 
 #include <QQmlEngine>
 #include <QMap>
+#include <QDir>
 
 #include <QQmlComponent>
 
@@ -157,8 +158,12 @@ QUrl QmcLoader::createLoadedUrl(const QString &file)
     QString urlStr;
     if (file.startsWith(":/"))
         urlStr = "qrc:";
-    else
-        urlStr = "file:";
+    else if(file.startsWith("/"))
+        urlStr = "file://";
+    else{
+        QDir dd;
+        urlStr = "file://" + dd.absolutePath() + "/";
+    }
     urlStr.append(file);
     return QUrl(urlStr);
 }
