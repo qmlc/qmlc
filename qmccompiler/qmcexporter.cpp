@@ -180,7 +180,7 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
         const JSC::MacroAssemblerCodeRef &codeRef = compilationUnit->codeRefs[i];
         const QVector<QmcUnitCodeRefLinkCall> &linkCalls = c->linkData[i];
         const QVector<QV4::Primitive> &constantValue = compilationUnit->constantValues[i];
-        if (!writeDataWithLen(stream, (const char *)codeRef.code().executableAddress(), codeRef.size()))
+        if (!writeDataWithLen(stream, (const char *)codeRef.code().dataLocation(), codeRef.size()))
             return false;
         quint32 linkCallCount = linkCalls.size();
         if (!writeData(stream, (const char *)&linkCallCount, sizeof(quint32)))
