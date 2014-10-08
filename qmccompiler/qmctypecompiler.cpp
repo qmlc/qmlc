@@ -437,6 +437,10 @@ bool QmcTypeCompiler::precompile()
         isel->setUseFastLookups(false);
         compilation->document->javaScriptCompilationUnit = isel->compile(/*generated unit data*/false);
         compilation->linkData = isel->linkData();
+#if CPU(ARM_THUMB2)
+        compilation->jumpsToLinkData = isel->linkRecordData();
+        compilation->unlinkedCodeData = isel->unlinkedCodeData();
+#endif
     }
 
     // Generate QML compiled type data structures

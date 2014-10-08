@@ -25,6 +25,10 @@
 
 #include "AbstractMacroAssembler.h"
 
+#if CPU(ARM_THUMB2)
+#include "ARMv7Assembler.h"
+#endif
+
 using namespace QV4;
 using namespace QV4::IR;
 using namespace QV4::JIT;
@@ -247,6 +251,33 @@ void QmcInstructionSelection::run(int functionIndex)
     }
 
     linkedCalls.append(calls);
+
+#if CPU(ARM_THUMB2)
+    QList<QmcUnitLinkRecord> records;
+
+    Vector<JSC::ARMv7Assembler::LinkRecord, 0, UnsafeVectorOverflow> jumpsToLink = _as->jumpsToLink();
+    unsigned jumpCount = jumpsToLink.size();
+    for (unsigned i = 0; i < jumpCount; ++i) {
+
+        QmcUnitLinkRecord record;
+        record.from = jumpsToLink[i].from();
+        record.to = jumpsToLink[i].to();
+        record.type = jumpsToLink[i].type();
+        record.linkType = jumpsToLink[i].linkType();
+        record.condition = jumpsToLink[i].condition();
+
+        records.append(record);
+    }
+
+    linkRecords.append(records);
+
+    // save the unlinked code
+    QmcUnitUnlinkedCodeData unlinkedCodeItem;
+    unlinkedCodeItem.size = _as->unlinkedCodeSize();
+    unlinkedCodeItem.data.resize(unlinkedCodeItem.size);
+    memcpy(unlinkedCodeItem.data.data(), _as->unlinkedCode(), unlinkedCodeItem.size);
+    unlinkedCode.append(unlinkedCodeItem);
+#endif
 
     JSC::MacroAssemblerCodeRef codeRef =_as->link(&dummySize);
     compilationUnit->codeRefs[functionIndex] = codeRef;

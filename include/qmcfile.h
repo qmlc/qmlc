@@ -27,6 +27,8 @@
 
 #include <private/qv4compileddata_p.h>
 
+#include <wtf/Platform.h>
+
 static const char QMC_UNIT_MAGIC_STR[] = "qmcunit1";
 
 #define QMC_UNIT_STRING_MAX_LEN 16384
@@ -53,6 +55,7 @@ static const char QMC_UNIT_MAGIC_STR[] = "qmcunit1";
 #define QMC_UNIT_MAX_CODE_REF_SIZE 65536
 
 #define QMC_UNIT_MAX_CODE_REF_LINK_CALLS 256
+#define QMC_UNIT_MAX_LINK_RECORDS 1024
 
 #define QMC_UNIT_MAX_CONSTANT_VECTORS 256
 #define QMC_UNIT_MAX_CONSTANT_VECTOR_SIZE 256
@@ -143,5 +146,25 @@ struct QmcUnitCodeRefLinkCall {
     quint32 index; // as in qmclinktable.h
     quint32 offset; // inside coderef
 };
+
+#if CPU(ARM_THUMB2)
+
+#include <wtf/Vector.h>
+#include <assembler/ARMv7Assembler.h>
+
+struct QmcUnitLinkRecord {
+    intptr_t to;
+    intptr_t from;
+    JSC::ARMv7Assembler::JumpType type;
+    JSC::ARMv7Assembler::JumpLinkType linkType;
+    JSC::ARMv7Assembler::Condition condition;
+};
+
+struct QmcUnitUnlinkedCodeData {
+    QVector<uint8_t> data;
+    size_t size;
+};
+
+#endif
 
 #endif // QMCFILE_H

@@ -60,7 +60,13 @@ public:
     }
 
     Vector<LinkRecord, 0, UnsafeVectorOverflow>& jumpsToLink() { return m_assembler.jumpsToLink(); }
+    void addJump(JSC::AssemblerLabel from, JSC::AssemblerLabel to,
+            JSC::ARMv7Assembler::JumpType type, JSC::ARMv7Assembler::Condition condition)
+    {
+        m_assembler.linkJump(from, to, type, condition);
+    }
     void* unlinkedCode() { return m_assembler.unlinkedCode(); }
+    size_t codeSize() { return m_assembler.codeSize(); }
     bool canCompact(JumpType jumpType) { return m_assembler.canCompact(jumpType); }
     JumpLinkType computeJumpType(JumpType jumpType, const uint8_t* from, const uint8_t* to) { return m_assembler.computeJumpType(jumpType, from, to); }
     JumpLinkType computeJumpType(LinkRecord& record, const uint8_t* from, const uint8_t* to) { return m_assembler.computeJumpType(record, from, to); }

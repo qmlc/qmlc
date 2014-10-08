@@ -80,6 +80,11 @@ public:
 
     QList<QVector<QmcUnitCodeRefLinkCall > > linkData;
 
+#if CPU(ARM_THUMB2)
+    QList<QList<QmcUnitLinkRecord> > jumpsToLinkData;
+    QList<QmcUnitUnlinkedCodeData> unlinkedCodeData;
+#endif
+
     QHash<int, int> aliasIdToObjectIndex;
     QHash<int, QHash<int, int> > aliasIdToObjectIndexPerComponent;
 };

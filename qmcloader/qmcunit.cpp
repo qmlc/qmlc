@@ -152,6 +152,23 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
     // coderefs
     codeRefSizes.resize(header->codeRefs);
     for (int i = 0; i < (int)header->codeRefs; i++) {
+
+#if CPU(ARM_THUMB2)
+        linkRecords.clear();
+        quint32 linkRecordsCount = 0;
+        if (!readData((char *)&linkRecordsCount, sizeof(quint32), stream))
+            return false;
+        if (linkRecordsCount > QMC_UNIT_MAX_LINK_RECORDS)
+            return false;
+
+        for (uint j = 0; j < linkRecordsCount; j++) {
+            QmcUnitLinkRecord record;
+            if (!readData((char *)&record, sizeof (QmcUnitLinkRecord), stream))
+                return false;
+            linkRecords.append(record);
+        }
+#endif
+
         quint32 codeRefLen = 0;
         if (!readData((char *)&codeRefLen, sizeof(quint32), stream))
             return false;
@@ -224,6 +241,13 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         QV4::IR::Function nullFunction(0, 0);
         QV4::JIT::Assembler* as = new QV4::JIT::Assembler(isel, &nullFunction, executableAllocator, 6); // 6 == max argc for calls to built-ins with an argument array
 
+#if CPU(ARM_THUMB2)
+        foreach (const QmcUnitLinkRecord &record, linkRecords) {
+            as->addJump(JSC::AssemblerLabel(record.from), JSC::AssemblerLabel(record.to),
+                    record.type, record.condition);
+        }
+#endif
+
         QList<QV4::JIT::Assembler::CallToLink>& callsToLink = as->callsToLink();
         foreach (const QmcUnitCodeRefLinkCall &call, linkData) {
             // resolve function pointer
@@ -276,7 +300,6 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         //  _labelPatches
         int dummySize;
         JSC::MacroAssemblerCodeRef codeRef = as->link(&dummySize);
-        Q_ASSERT(dummySize == (int)codeRefLen);
         delete as;
 #endif
 

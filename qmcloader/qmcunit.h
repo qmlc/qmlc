@@ -59,6 +59,9 @@ struct QmcUnit
     QList<QVector<QmcUnitCodeRefLinkCall> > linkCalls;
     QList<QVector<QV4::Primitive> > constantVectors;
     QList<QmcUnitTypeReference> typeReferences;
+#if CPU(ARM_THUMB2)
+    QList<QmcUnitLinkRecord> linkRecords;
+#endif
     QUrl url;
     QString urlString;
     QUrl loadedUrl;

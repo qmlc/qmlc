@@ -177,11 +177,28 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
     // codeRefs
     QV4::JIT::CompilationUnit* compilationUnit = static_cast<QV4::JIT::CompilationUnit *>(c->unit);
     for (int i = 0; i < compilationUnit->codeRefs.size(); i++) {
+
+#if CPU(ARM_THUMB2)
+        // linkRecords
+        QList<QmcUnitLinkRecord> records = c->jumpsToLinkData[i];
+        quint32 recordsCount = records.size();
+        if (!writeData(stream, (const char *)&recordsCount, sizeof(quint32)))
+            return false;
+        foreach (const QmcUnitLinkRecord record, records){
+            if (!writeData(stream, (const char *)&record, sizeof (QmcUnitLinkRecord)))
+                return false;
+        }
+        // save unlinkedCode in place of the codeRefs because it gets used after
+        // linking in the loading stage
+        if (!writeDataWithLen(stream, (const char *)c->unlinkedCodeData[i].data.data(), c->unlinkedCodeData[i].size))
+            return false;
+#else
         const JSC::MacroAssemblerCodeRef &codeRef = compilationUnit->codeRefs[i];
-        const QVector<QmcUnitCodeRefLinkCall> &linkCalls = c->linkData[i];
-        const QVector<QV4::Primitive> &constantValue = compilationUnit->constantValues[i];
         if (!writeDataWithLen(stream, (const char *)codeRef.code().dataLocation(), codeRef.size()))
             return false;
+#endif
+        const QVector<QmcUnitCodeRefLinkCall> &linkCalls = c->linkData[i];
+        const QVector<QV4::Primitive> &constantValue = compilationUnit->constantValues[i];
         quint32 linkCallCount = linkCalls.size();
         if (!writeData(stream, (const char *)&linkCallCount, sizeof(quint32)))
             return false;

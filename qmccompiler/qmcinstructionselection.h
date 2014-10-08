@@ -45,9 +45,18 @@ public:
 
     const QList<QVector<QmcUnitCodeRefLinkCall > >& linkData() const { return linkedCalls; }
 
+#if CPU(ARM_THUMB2)
+    const QList<QList<QmcUnitLinkRecord > >& linkRecordData() const { return linkRecords; }
+    const QList<QmcUnitUnlinkedCodeData>& unlinkedCodeData() const { return unlinkedCode; }
+#endif
+
 private:
 
     QList<QVector<QmcUnitCodeRefLinkCall > > linkedCalls;
+#if CPU(ARM_THUMB2)
+    QList<QList<QmcUnitLinkRecord > > linkRecords;
+    QList<QmcUnitUnlinkedCodeData> unlinkedCode;
+#endif
 
 };
 

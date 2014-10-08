@@ -141,6 +141,10 @@ QV4::CompiledData::CompilationUnit* ScriptC::precompile(QV4::IR::Module *module,
     isel->setUseFastLookups(false);
     QV4::CompiledData::CompilationUnit *ret =  isel->compile(/*generate unit data*/false);
     compilation()->linkData = isel->linkData();
+#if CPU(ARM_THUMB2)
+        compilation()->jumpsToLinkData = isel->linkRecordData();
+        compilation()->unlinkedCodeData = isel->unlinkedCodeData();
+#endif
     return ret;
 }
 
