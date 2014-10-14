@@ -253,6 +253,9 @@ void QmcInstructionSelection::run(int functionIndex)
     linkedCalls.append(calls);
 
 #if CPU(ARM_THUMB2)
+
+    _as->prelink();
+
     QList<QmcUnitLinkRecord> records;
 
     Vector<JSC::ARMv7Assembler::LinkRecord, 0, UnsafeVectorOverflow> jumpsToLink = _as->jumpsToLink();
