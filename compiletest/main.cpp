@@ -26,10 +26,10 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     TestSimpleQmlLoad st;
-    QTest::qExec(&st);
+    QTest::qExec(&st, argc, argv);
 
     TestCreateFile tf;
-    QTest::qExec(&tf);
+    QTest::qExec(&tf, argc, argv);
 
     return 0;
 }
