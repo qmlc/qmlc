@@ -15,6 +15,7 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
+#include <QDebug>
 #include <QCoreApplication>
 #include <QFile>
 #include <QDataStream>
@@ -26,21 +27,23 @@
 #include "scriptc.h"
 #include "comp.h"
 
-using std::cerr;
-using std::endl;
-
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     QQmlEngine *engine = new QQmlEngine;
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " input-file" << endl;
+        qWarning() << "Usage:" << argv[0] << " input-file";
         return EXIT_FAILURE;
     }
     QString fileName(argv[1]);
 
     if (fileName.lastIndexOf('.') <= 0) {
-        cerr << "Filename cannot be empty";
+        qWarning() << "Error: Filename cannot be empty";
+        return EXIT_FAILURE;
+    }
+
+    if (!QFile::exists(fileName)) {
+        qWarning() << "Error:" << fileName << "doesn't exist";
         return EXIT_FAILURE;
     }
 
@@ -50,7 +53,8 @@ int main(int argc, char *argv[])
     if(curvalue){
         char *newvalue = (char *)malloc(strlen(curvalue) + 2);
         if(!newvalue){
-            qWarning("malloc failed, couldn't update QML_IMPORT_PATH");
+            qWarning() << "Error: malloc failed, couldn't update QML_IMPORT_PATH";
+            return EXIT_FAILURE;
         }else{
             sprintf(newvalue, "%s:%s", curvalue, ".");
             setenv("QML2_IMPORT_PATH", newvalue, 1);
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
     } else if (fileName.endsWith(".qml")) {
         compiler = new QmlC(engine);
     } else {
-        cerr << "Supported filetypes include .js and .qml" << endl;
+        qWarning() << "Error: Supported filetypes include .js and .qml";
         return EXIT_FAILURE;
     }
     Comp comp;
@@ -85,6 +89,7 @@ int main(int argc, char *argv[])
     delete engine;
     if (Comp::retValue == 0)
         return EXIT_SUCCESS;
-    else
+    else{
         return EXIT_FAILURE;
+    }
 }

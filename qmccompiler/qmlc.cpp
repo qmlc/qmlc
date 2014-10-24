@@ -107,13 +107,15 @@ bool QmlC::continueLoadFromIR()
 
     foreach (const QV4::CompiledData::Import *import, compilation()->document->imports) {
         if (!addImport(import, &errors)) {
-            Q_ASSERT(errors.size());
-            QQmlError error(errors.takeFirst());
-            error.setUrl(compilation()->importCache->baseUrl());
-            error.setLine(import->location.line);
-            error.setColumn(import->location.column);
-            errors.prepend(error); // put it back on the list after filling out information.
-            appendError(error);
+            // if errors are empty the error has already been reported
+            if(errors.size()){
+                QQmlError error(errors.takeFirst());
+                error.setUrl(compilation()->importCache->baseUrl());
+                error.setLine(import->location.line);
+                error.setColumn(import->location.column);
+                errors.prepend(error); // put it back on the list after filling out information.
+                appendError(error);
+            }
             return false;
         }
     }

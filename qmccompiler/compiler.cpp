@@ -321,9 +321,8 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
                                               import->minorVersion, QString(), QString(), false, errors))
                     return false;
             } else {
-                qDebug() << "Encountered unresolved import";
                 QQmlError error;
-                error.setDescription("Unresolved import" + importUri);
+                error.setDescription("Unresolved import " + importUri);
                 error.setLine(import->location.line);
                 error.setColumn(import->location.column);
                 error.setUrl(d->compilation->url);
