@@ -34,31 +34,24 @@ QMAKE_POST_LINK += ;
 QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$_PRO_FILE_PWD_/*.qml) $$DESTDIR), /, $$QMAKE_DIR_SEP)
 QMAKE_POST_LINK += ;
 
+
 ### qmc start
 
 CONFIG += qmc
 
-CONFIG(qmc){
+# these are only needed because we are building in the same build as qmlc
+# they are not needed if qmlc is already installed in default paths
+QMLC_BASE_DIR = ../../../../
+QMAKE_POST_LINK += export PATH=$$PWD/$$QMLC_BASE_DIR/qmc:$(PATH);
+QMAKE_POST_LINK += export LD_LIBRARY_PATH=$$PWD/$$QMLC_BASE_DIR/qmccompiler;
 
-    # these are only needed because we are building in the same build as qmlc
-    # they are not needed if qmlc is already installed in default paths
-    QMLC_BASE_DIR = ../../../../
-    QMAKE_POST_LINK += export PATH=$$PWD/$$QMLC_BASE_DIR/qmc:$(PATH);
-    QMAKE_POST_LINK += export LD_LIBRARY_PATH=$$PWD/$$QMLC_BASE_DIR/qmccompiler;
+# we want to install into DESTDIR after building before installing so
+# ../app.pro that 'imports Charts' can be build
+QMLC_TMP_DEST_DIR = $$DESTDIR
 
-    # we want to install into DESTDIR after building before installing so
-    # ../app.pro can be build
-    QMLC_TMP_DEST_DIR = $$DESTDIR
-    QMLC_DEST_DIR = $$DESTPATH
-    QMLC_QML = QmlInPlugin.qml
-    QMLC_EXTRA = qmldir_loader
+# these will always be needed for a plugin
+QMLC_DEST_DIR = $$DESTPATH
+QMLC_QML = QmlInPlugin.qml
+QMLC_EXTRA = qmldir_loader
 
-    #QMLC_QML_BASE_DIR =
-    #QMLC_EXIT_ON_ERROR = false
-    #QMLC_QML2_IMPORT_PATH =
-
-    include($$QMLC_BASE_DIR/qmlc.pri)
-
-}
-
-### qmc end
+include($$QMLC_BASE_DIR/qmlc.pri)
