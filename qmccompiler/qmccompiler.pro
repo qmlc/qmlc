@@ -77,9 +77,12 @@ HEADERS += qmccompiler_global.h \
 devheaders.files = $$HEADERS
 devheaders.path = $$INCLUDEDIR/qmccompiler
 
+prifiles.files = ../qmlc.pri
+prifiles.path = $$MKSPECSDIR
+
 unix {
     target.path = $$LIBDIR
-    INSTALLS += target devheaders
+    INSTALLS += target devheaders prifiles
 }
 
 QMAKE_PKGCONFIG_PREFIX = $$PREFIX

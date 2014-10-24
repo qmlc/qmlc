@@ -103,6 +103,7 @@ make %{?jobs:-j%jobs}
 %{_libdir}/libqmccompiler.so
 %{_libdir}/pkgconfig/qmccompiler.pc
 %{_includedir}/qmccompiler
+%{_datadir}/qt5/mkspecs/features/qmlc.pri
 
 %files loader
 %{_libdir}/libqmcloader.so.*
@@ -116,6 +117,7 @@ make %{?jobs:-j%jobs}
 %files tests
 %{_bindir}/compiletest
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/multipleitems
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/multipleitems_loader
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/app.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/QmlJSItems.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/QmlSubItem.qmc

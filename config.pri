@@ -11,3 +11,6 @@ isEmpty(LIBDIR) {
 isEmpty(INCLUDEDIR) {
     INCLUDEDIR = $$PREFIX/include
 }
+isEmpty(MKSPECSDIR) {
+    MKSPECSDIR = $$PREFIX/share/qt5/mkspecs/features
+}

@@ -2,9 +2,8 @@ TEMPLATE = lib
 CONFIG += plugin
 QT += qml quick
 
-QMLCBASEPATH = ../../../../
-
 DESTDIR = ../Charts
+
 TARGET = $$qtLibraryTarget(chartsplugin)
 
 HEADERS += piechart.h \
@@ -18,28 +17,48 @@ SOURCES += piechart.cpp \
 DESTPATH=$$[QT_INSTALL_TESTS]/qmlc/manual/multipleitems/Charts
 
 target.path=$$DESTPATH
-qmldir.files=$$PWD/qmldir $$PWD/qmldir_loader
+qmldir.files=$$PWD/qmldir
 qmldir.path=$$DESTPATH
 qml_files.files=$$PWD/QmlInPlugin.qml
 qml_files.path=$$DESTPATH
 
-qmc_files.path = $$DESTPATH
-qmc_files.commands = $$QMAKE_COPY QmlInPlugin.qmc $(INSTALL_ROOT)$$DESTPATH
-
-INSTALLS += target qmldir qml_files qmc_files
+INSTALLS += target qmldir qml_files
 
 RESOURCES += res.qrc
 
-
-QMAKE_POST_LINK += LD_LIBRARY_PATH=$$QMLCBASEPATH/qmccompiler PATH=$$QMLCBASEPATH/qmc qmc QmlInPlugin.qml
+# Copy the qmldir file and qml files to the same folder as the plugin binary
+# cause we need it for running without installing and also for compiling
+# ../app.qml
+QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$_PRO_FILE_PWD_/qmldir) $$DESTDIR), /, $$QMAKE_DIR_SEP)
+QMAKE_POST_LINK += ;
+QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$_PRO_FILE_PWD_/*.qml) $$DESTDIR), /, $$QMAKE_DIR_SEP)
 QMAKE_POST_LINK += ;
 
-# Copy the qmldir file and compiled files to the same folder as the plugin binary
-QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/qmldir) $$DESTDIR), /, $$QMAKE_DIR_SEP)
-QMAKE_POST_LINK += ;
-QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/qmldir_loader) $$DESTDIR), /, $$QMAKE_DIR_SEP)
-QMAKE_POST_LINK += ;
-QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/*.qmc) $$DESTDIR), /, $$QMAKE_DIR_SEP)
-QMAKE_POST_LINK += ;
-QMAKE_POST_LINK += $$QMAKE_COPY $$replace($$list($$quote($$PWD/*.qml) $$DESTDIR), /, $$QMAKE_DIR_SEP)
+### qmc start
 
+CONFIG += qmc
+
+CONFIG(qmc){
+
+    # these are only needed because we are building in the same build as qmlc
+    # they are not needed if qmlc is already installed in default paths
+    QMLC_BASE_DIR = ../../../../
+    QMAKE_POST_LINK += export PATH=$$PWD/$$QMLC_BASE_DIR/qmc:$(PATH);
+    QMAKE_POST_LINK += export LD_LIBRARY_PATH=$$PWD/$$QMLC_BASE_DIR/qmccompiler;
+
+    # we want to install into DESTDIR after building before installing so
+    # ../app.pro can be build
+    QMLC_TMP_DEST_DIR = $$DESTDIR
+    QMLC_DEST_DIR = $$DESTPATH
+    QMLC_QML = QmlInPlugin.qml
+    QMLC_EXTRA = qmldir_loader
+
+    #QMLC_QML_BASE_DIR =
+    #QMLC_EXIT_ON_ERROR = false
+    #QMLC_QML2_IMPORT_PATH =
+
+    include($$QMLC_BASE_DIR/qmlc.pri)
+
+}
+
+### qmc end
