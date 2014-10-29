@@ -31,8 +31,8 @@ things work.
 Working architectures
 ---------------------
 
-X86(32/64 bit)
-ARM Thumb2
+* X86(32/64 bit)
+* ARM Thumb2
 
 Building the Qml Compiler/Loader
 --------------------------------
