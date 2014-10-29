@@ -30,6 +30,7 @@ public:
     virtual ~Comp();
     Compiler *compiler;
     QString fileName;
+    QString outputFileName;
     static int retValue;
 public slots:
     void compile();

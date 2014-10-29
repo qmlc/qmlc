@@ -21,6 +21,7 @@
 #include <QDataStream>
 #include <QTimer>
 #include <QQmlEngine>
+#include <QCommandLineParser>
 
 #include <iostream>
 #include "qmlc.h"
@@ -30,22 +31,34 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QQmlEngine *engine = new QQmlEngine;
-    if (argc != 2) {
-        qWarning() << "Usage:" << argv[0] << " input-file";
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("QML/JS compiler.");
+    parser.addHelpOption();
+    parser.addPositionalArgument("source", QCoreApplication::translate("main", "Source file."));
+    QCommandLineOption debugOption("g", QCoreApplication::translate("main", "Add debug information."));
+    parser.addOption(debugOption);
+
+    parser.process(app);
+    // Input file name.
+    const QStringList inputNames = parser.positionalArguments();
+    if (inputNames.size() != 1) {
+        qWarning() << "Input source file name must be given.";
         return EXIT_FAILURE;
     }
-    QString fileName(argv[1]);
-
+    QString fileName(inputNames[0]);
     if (fileName.lastIndexOf('.') <= 0) {
         qWarning() << "Error: Filename cannot be empty";
         return EXIT_FAILURE;
     }
-
     if (!QFile::exists(fileName)) {
         qWarning() << "Error:" << fileName << "doesn't exist";
         return EXIT_FAILURE;
     }
+
+    bool debug = parser.isSet(debugOption);
+
+    QQmlEngine *engine = new QQmlEngine;
 
     // update import path to include .
     // engine->addImportPath(".");  doesn't work?
@@ -64,6 +77,7 @@ int main(int argc, char *argv[])
         setenv("QML2_IMPORT_PATH", ".", 1);
     }
 
+    // Need to pass debug flag presence to compilers.
     Compiler *compiler = NULL;
     if (fileName.endsWith(".js")) {
         compiler = new ScriptC(engine);
@@ -84,6 +98,34 @@ int main(int argc, char *argv[])
     app.exec();
     */
     comp.compile();
+
+    if (debug && Comp::retValue == EXIT_SUCCESS) {
+        // Append source for debugging purposes.
+        QFile f(comp.fileName);
+        if (!f.open(QFile::ReadOnly)) {
+            qWarning() << "Error: could not read source for debug info inclusion.";
+            return EXIT_FAILURE;
+        }
+        QByteArray contents = f.readAll();
+        f.close();
+        // This must match what is read in Qt Creator QmlJSEditor plugin.
+        unsigned tmp = contents.size();
+        for (int k = 0; k < 4; ++k)
+            contents.append(static_cast<char*>((void*)(&tmp))[k]);
+        tmp = 0xdeb9512c;
+        for (int k = 0; k < 4; ++k)
+            contents.append(static_cast<char*>((void*)(&tmp))[k]);
+        QFile out(comp.outputFileName);
+        if (!out.open(QIODevice::Append)) {
+            qWarning() << "Error: could not open output file for append.";
+            return EXIT_FAILURE;
+        }
+        if (out.write(contents) != contents.size()) {
+            qWarning() << "Error: could not write debug source to output file.";
+            return EXIT_FAILURE;
+        }
+        out.close();
+    }
 
     delete compiler;
     delete engine;
