@@ -39,11 +39,13 @@ int Comp::retValue = EXIT_FAILURE;
 
 void Comp::compile()
 {
-    outputFileName = fileName;
-    if (outputFileName.endsWith("qml"))
-        outputFileName[outputFileName.size() - 1] = 'c';
-    else
-        outputFileName.append("c");
+    if (outputFileName.isEmpty()) {
+        outputFileName = fileName;
+        if (outputFileName.endsWith("qml"))
+            outputFileName[outputFileName.size() - 1] = 'c';
+        else
+            outputFileName.append("c");
+    }
 
     bool ret = compiler->compile("file:" + fileName, outputFileName);
 

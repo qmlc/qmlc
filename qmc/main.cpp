@@ -35,9 +35,15 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription("QML/JS compiler.");
     parser.addHelpOption();
-    parser.addPositionalArgument("source", QCoreApplication::translate("main", "Source file."));
-    QCommandLineOption debugOption("g", QCoreApplication::translate("main", "Add debug information."));
+    parser.addPositionalArgument("source",
+        QCoreApplication::translate("main", "Source file."));
+    QCommandLineOption debugOption("g",
+        QCoreApplication::translate("main", "Add debug information."));
     parser.addOption(debugOption);
+    QCommandLineOption outputOption("o",
+        QCoreApplication::translate("main", "Speficy output file."),
+        QCoreApplication::translate("main", "file name"));
+    parser.addOption(outputOption);
 
     parser.process(app);
     // Input file name.
@@ -55,6 +61,9 @@ int main(int argc, char *argv[])
         qWarning() << "Error:" << fileName << "doesn't exist";
         return EXIT_FAILURE;
     }
+    QString outputFileName;
+    if (parser.isSet(outputOption))
+        outputFileName = parser.value(outputOption);
 
     bool debug = parser.isSet(debugOption);
 
@@ -90,6 +99,7 @@ int main(int argc, char *argv[])
     Comp comp;
     comp.compiler = compiler;
     comp.fileName = fileName;
+    comp.outputFileName = outputFileName;
 
     /*
     QObject::connect(&comp, SIGNAL(finished()), &app, SLOT(quit()));
