@@ -95,6 +95,7 @@ make %{?jobs:-j%jobs}
 %files
 %defattr(-,root,root,-)
 %{_bindir}/qmc
+%{_bindir}/qmc-rcc.sh
 
 %files core
 %{_libdir}/libqmccompiler.so.*

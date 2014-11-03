@@ -28,6 +28,9 @@ HEADERS += \
     comp.h
 
 unix {
+    qmcrcc.files = qmc-rcc.sh
+    qmcrcc.path = $$BINDIR
+
     target.path = $$BINDIR
-    INSTALLS += target
+    INSTALLS += target qmcrcc
 }
