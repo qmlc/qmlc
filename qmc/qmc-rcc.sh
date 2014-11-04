@@ -45,16 +45,17 @@ RCCFLAGS=$*
 RMDIRS=
 RMFILES=
 CINS=
+TMP=$(echo $DEST/tmp$$)
 for F in $INS
 do
     B=$(basename $F)
     D=$(dirname $F)
-    TGT=$(echo $DEST/$B)
+    TGT=$(echo $DEST/_$B)
     CINS=$(echo $CINS" "$TGT)
     cat $F | sed -e 's/\.qml</.qmc</g' -e 's/\.js</.jsc</g' > "$TGT"
     # Find all files and compile or just copy.
-    cat $F | awk -F '</file>' '{ if (NF > 1) for (k = 1; k < NF; k++) { c = split($k, a, ">"); print a[c]; } }' >tmp$$
-    for L in $(cat tmp$$)
+    cat $F | awk -F '</file>' '{ if (NF > 1) for (k = 1; k < NF; k++) { c = split($k, a, ">"); print a[c]; } }' >$DEST/tmp$$
+    for L in $(cat $DEST/tmp$$)
     do
         T=$(echo $L | sed -e 's/\.qml$/.qmc/g' -e 's/\.js$/.jsc/g')
         TF=$(echo $DEST/$T)
@@ -72,17 +73,22 @@ do
             if [ $T == $L ]; then
                 cp $D/$L $TF
             else
-                qmc $QMCFLAGS $D/$L -o $TF
+                # Compilation must be done in source directory so that imports succeed.
+                cd $(dirname $D/$L)
+
+                qmc $QMCFLAGS $(basename $D/$L) -o $TF
             fi
         else
             # Not a shadow build. Delete only files we generate.
-            if [ $T == $L ]; then
-                qmc $QMCFLAGS $D/$L -o $DEST/$T
+            if [ $T != $L ]; then
+                cd $(dirname $D/$L)
+                # Source file must not have path in name. Go figure...
+                qmc $QMCFLAGS $(basename $D/$L) -o $TF
                 RMFILES=$(echo " "$RMFILES" "$TF" ")
             fi
         fi
     done
-    rm -f tmp$$
+    rm -f $DEST/tmp$$
 done
 
 cd $DEST
