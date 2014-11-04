@@ -42,8 +42,8 @@ RCCFLAGS=$*
 
 # Process all input .qrc files so that file names are modified and intermediate
 # files are kept track of.
-CLEANDIR=
-CLEANFILE=
+RMDIRS=
+RMFILES=
 CINS=
 for F in $INS
 do
@@ -60,28 +60,36 @@ do
         TF=$(echo $DEST/$T)
         TD=$(dirname $TF)
         # Keep track of files and directories to be deleted afterwards.
-        if [ "x$TD" == "x$DEST" ]; then
-            contains "$CLEANFILE" " $TF " || CLEANFILE=$(echo " "$CLEANFILE" "$TF" ")
+        if [ "$DEST" != "$D" ]; then
+            # Shadow build. Later delete directories and files we create.
+            if [ "x$TD" == "x$DEST" ]; then
+                contains "$RMFILES" " $TF " || RMFILES=$(echo " "$RMFILES" "$TF" ")
+            else
+                # Assumes that there will be nothing else in these directories.
+                contains "$RMDIRS" " $TD " || RMDIRS=$(echo " "$RMDIRS" "$TD" ")
+            fi
+            mkdir -p $TD
+            if [ $T == $L ]; then
+                cp $D/$L $TF
+            else
+                qmc $QMCFLAGS $D/$L -o $TF
+            fi
         else
-            # Assumes that there will be nothing else in these directories.
-            contains "$CLEANDIR" " $TD " || CLEANDIR=$(echo " "$CLEANDIR" "$TD" ")
+            # Not a shadow build. Delete only files we generate.
+            if [ $T == $L ]; then
+                qmc $QMCFLAGS $D/$L -o $DEST/$T
+                RMFILES=$(echo " "$RMFILES" "$TF" ")
+            fi
         fi
-        mkdir -p $(dirname $DEST/$T)
-        if [ $T == $L ]; then
-            cp $D/$L $DEST/$T
-        else
-            qmc $QMCFLAGS $D/$L -o $DEST/$T
-        fi
-        CLEAN=$(echo $CLEAN" "$DEST/$T)
     done
     rm -f tmp$$
 done
 
 cd $DEST
 rcc $RCCFLAGS -name res $CINS -o $(basename $OUT)
-# Cleaning could be done for full file list and only empry directories removed.
+# Cleaning could be done for full file list and only empty directories removed.
 # Technically, could leave files to be and check if there is need to compile or
 # copy as that would save time during build. Later.
-rm -rf $CLEANDIR
-rm -f $CLEANFILE $CINS
+rm -rf $RMDIRS
+rm -f $RMFILES $CINS
 

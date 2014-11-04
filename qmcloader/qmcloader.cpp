@@ -84,10 +84,41 @@ QmcLoader::QmcLoader(QQmlEngine *engine, QObject *parent) :
 
 QQmlComponent *QmcLoader::loadComponent(const QString &file)
 {
-    QFile f(file);
+    Q_D(QmcLoader);
+    if (QQmlFile::isBundle(file)) {
+        // Untested at this point.
+        QUrl url(file);
+        QQmlBundleData *bundle = QQmlEnginePrivate::get(d->engine)->typeLoader.getBundle(url.host());
+        if (!bundle) {
+            QQmlError error;
+            error.setDescription("Could not load bundle");
+            error.setUrl(url);
+            appendError(error);
+            return NULL;
+        }
+        QString fileName = url.path().mid(1);
+        const QQmlBundle::FileEntry *entry = bundle->find(fileName);
+        if (!entry) {
+            QQmlError error;
+            error.setDescription("Could not find file in bundle");
+            error.setUrl(QUrl(fileName));
+            appendError(error);
+            return NULL;
+        }
+        QByteArray contents(entry->contents(), entry->fileSize());
+        QDataStream in(contents);
+        QQmlComponent *ret = loadComponent(in, createLoadedUrl(file));
+        bundle->release();
+        return ret;
+    }
+    // This loads files and from bundles embedded in the application.
+    QUrl url(file);
+    QString fileName = QQmlFile::urlToLocalFileOrQrc(url);
+    QFile f(fileName);
     if (!f.open(QFile::ReadOnly)) {
         QQmlError error;
         error.setDescription("Could not open file for reading");
+        error.setUrl(QUrl(file));
         appendError(error);
         return NULL;
     }
@@ -110,6 +141,7 @@ QQmlComponent *QmcLoader::loadComponent(QDataStream &stream, const QUrl &loadedU
     if (!unit) {
         QQmlError error;
         error.setDescription("Error parsing / loading");
+        error.setUrl(loadedUrl);
         appendError(error);
         return NULL;
     }
@@ -122,6 +154,7 @@ QQmlComponent *QmcLoader::loadComponent(QDataStream &stream, const QUrl &loadedU
     if (unit->type != QMC_QML) {
         QQmlError error;
         error.setDescription("Cannot have Script unit as main unit");
+        error.setUrl(loadedUrl);
         appendError(error);
         unit->blob->release();
         return NULL;
@@ -282,10 +315,13 @@ bool QmcLoader::loadDependency(QDataStream &stream, const QUrl &loadedUrl)
 bool QmcLoader::loadDependency(const QString &file)
 {
     clearError();
-    QFile f(file);
+    QUrl url(file);
+    QString fileName = QQmlFile::urlToLocalFileOrQrc(url);
+    QFile f(fileName);
     if (!f.open(QFile::ReadOnly)) {
         QQmlError error;
         error.setDescription("Could not open file for reading");
+        error.setUrl(url);
         appendError(error);
         return NULL;
     }
@@ -299,8 +335,7 @@ bool QmcLoader::loadDependency(const QString &file)
 
 QmcUnit *QmcLoader::doloadDependency(const QString &url)
 {
-    QUrl u(url);
-    QString file = u.toLocalFile();
+    QString file = QQmlFile::urlToLocalFileOrQrc(url);
     QFile f(file);
     if (!f.open(QFile::ReadOnly)) {
         QQmlError error;
@@ -359,3 +394,4 @@ void QmcLoader::appendErrors(const QList<QQmlError> &errors)
     Q_D(QmcLoader);
     d->errors.append(errors);
 }
+

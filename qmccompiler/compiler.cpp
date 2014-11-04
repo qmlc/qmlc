@@ -227,6 +227,7 @@ bool Compiler::compile(const QString &url, const QString &outputFile)
         QQmlError error;
         error.setDescription("Could not open file for writing");
         error.setUrl(QUrl(outputFile));
+        appendError(error);
         return false;
     }
     QDataStream out(&f);

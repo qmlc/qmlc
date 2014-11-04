@@ -101,12 +101,6 @@ int main(int argc, char *argv[])
     comp.fileName = fileName;
     comp.outputFileName = outputFileName;
 
-    /*
-    QObject::connect(&comp, SIGNAL(finished()), &app, SLOT(quit()));
-    QTimer::singleShot(0, &comp, SLOT(compile()));
-
-    app.exec();
-    */
     comp.compile();
 
     if (debug && Comp::retValue == EXIT_SUCCESS) {
