@@ -226,7 +226,7 @@ bool QmcUnitPropertyCacheCreator::createMetaObject(int objectIndex, const QV4::C
     if (objectIndex == (int)qmcUnit->qmlUnit->indexOfRootObject) {
         QString path = qmcUnit->url.path();
         int lastSlash = path.lastIndexOf(QLatin1Char('/'));
-        if (lastSlash > -1) {
+        if (path.length()) {
             QString nameBase = path.mid(lastSlash + 1, path.length()-lastSlash-5);
             if (!nameBase.isEmpty() && nameBase.at(0).isUpper())
                 newClassName = nameBase.toUtf8() + "_QMLTYPE_" +
