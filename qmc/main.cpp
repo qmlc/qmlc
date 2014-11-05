@@ -22,6 +22,8 @@
 #include <QTimer>
 #include <QQmlEngine>
 #include <QCommandLineParser>
+#include <QFileInfo>
+#include <QDir>
 
 #include <iostream>
 #include "qmlc.h"
@@ -46,7 +48,9 @@ int main(int argc, char *argv[])
     parser.addOption(outputOption);
 
     parser.process(app);
-    // Input file name.
+    bool debug = parser.isSet(debugOption);
+
+    // Input and output file names.
     const QStringList inputNames = parser.positionalArguments();
     if (inputNames.size() != 1) {
         qWarning() << "Input source file name must be given.";
@@ -61,11 +65,20 @@ int main(int argc, char *argv[])
         qWarning() << "Error:" << fileName << "doesn't exist";
         return EXIT_FAILURE;
     }
+    // Compilation sometimes need to happen in the same directory as the source
+    // file. Therefore change to source directory and adjust the output file
+    // path accordingly, if it has been given.
     QString outputFileName;
-    if (parser.isSet(outputOption))
-        outputFileName = parser.value(outputOption);
-
-    bool debug = parser.isSet(debugOption);
+    if (parser.isSet(outputOption)) {
+        QFileInfo oname(parser.value(outputOption));
+        outputFileName = oname.absoluteFilePath();
+    }
+    QFileInfo iname(fileName);
+    QDir dir = iname.dir();
+    QDir::setCurrent(dir.path());
+    fileName = iname.fileName();
+    // A side effect is that compiler error messages lose path in file name.
+    // Add original file name to Comp if this is a problem.
 
     QQmlEngine *engine = new QQmlEngine;
 
@@ -73,20 +86,19 @@ int main(int argc, char *argv[])
     // engine->addImportPath(".");  doesn't work?
     char *curvalue = getenv("QML2_IMPORT_PATH");
     if(curvalue){
-        char *newvalue = (char *)malloc(strlen(curvalue) + 2);
+        char *newvalue = (char *)malloc(strlen(curvalue) + 3);
         if(!newvalue){
             qWarning() << "Error: malloc failed, couldn't update QML_IMPORT_PATH";
             return EXIT_FAILURE;
-        }else{
-            sprintf(newvalue, "%s:%s", curvalue, ".");
-            setenv("QML2_IMPORT_PATH", newvalue, 1);
-            free(newvalue);
         }
+        sprintf(newvalue, "%s:%s", curvalue, ".");
+        setenv("QML2_IMPORT_PATH", newvalue, 1);
+        free(newvalue);
     }else{
         setenv("QML2_IMPORT_PATH", ".", 1);
     }
 
-    // Need to pass debug flag presence to compilers.
+    // TODO: pass debug flag presence to compilers.
     Compiler *compiler = NULL;
     if (fileName.endsWith(".js")) {
         compiler = new ScriptC(engine);
@@ -107,7 +119,7 @@ int main(int argc, char *argv[])
         // Append source for debugging purposes.
         QFile f(comp.fileName);
         if (!f.open(QFile::ReadOnly)) {
-            qWarning() << "Error: could not read source for debug info inclusion.";
+            qWarning() << "Error: could not read source to add debug info.";
             return EXIT_FAILURE;
         }
         QByteArray contents = f.readAll();
@@ -115,10 +127,10 @@ int main(int argc, char *argv[])
         // This must match what is read in Qt Creator QmlJSEditor plugin.
         unsigned tmp = contents.size();
         for (int k = 0; k < 4; ++k)
-            contents.append(static_cast<char*>((void*)(&tmp))[k]);
+            contents.append(((char*)(&tmp))[k]);
         tmp = 0xdeb9512c;
         for (int k = 0; k < 4; ++k)
-            contents.append(static_cast<char*>((void*)(&tmp))[k]);
+            contents.append(((char*)(&tmp))[k]);
         QFile out(comp.outputFileName);
         if (!out.open(QIODevice::Append)) {
             qWarning() << "Error: could not open output file for append.";
@@ -133,9 +145,7 @@ int main(int argc, char *argv[])
 
     delete compiler;
     delete engine;
-    if (Comp::retValue == 0)
-        return EXIT_SUCCESS;
-    else{
+    if (Comp::retValue != 0)
         return EXIT_FAILURE;
-    }
+    return EXIT_SUCCESS;
 }

@@ -111,8 +111,11 @@ QQmlComponent *QmcLoader::loadComponent(const QString &file)
         return ret;
     }
     // This loads files and from bundles embedded in the application.
-    QUrl url(file);
-    QString fileName = QQmlFile::urlToLocalFileOrQrc(url);
+    QString fileName(file);
+    if (file.startsWith("qrc:") || file.startsWith("file:")) {
+        QUrl url(file);
+        fileName = QQmlFile::urlToLocalFileOrQrc(url);
+    }
     QFile f(fileName);
     if (!f.open(QFile::ReadOnly)) {
         QQmlError error;
@@ -201,7 +204,9 @@ bool QmcLoader::isLoadDependenciesAutomatically() const
 QUrl QmcLoader::createLoadedUrl(const QString &file)
 {
     QString urlStr;
-    if (file.startsWith(":/"))
+    if (file.startsWith("qrc:/"))
+        urlStr = "";
+    else if (file.startsWith(":/"))
         urlStr = "qrc:";
     else if(file.startsWith("/"))
         urlStr = "file://";
@@ -341,7 +346,6 @@ QmcUnit *QmcLoader::doloadDependency(const QString &url)
         error.setDescription("Could not open file for reading: " + f.errorString());
         qWarning() << "Could not open file for reading" << file;
         error.setUrl(QUrl(file));
-        qDebug() << "Cannot open" << file;
         appendError(error);
         return NULL;
     }

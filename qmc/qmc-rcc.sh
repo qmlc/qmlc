@@ -54,41 +54,37 @@ do
     CINS=$(echo $CINS" "$TGT)
     cat $F | sed -e 's/\.qml</.qmc</g' -e 's/\.js</.jsc</g' > "$TGT"
     # Find all files and compile or just copy.
-    cat $F | awk -F '</file>' '{ if (NF > 1) for (k = 1; k < NF; k++) { c = split($k, a, ">"); print a[c]; } }' >$DEST/tmp$$
-    for L in $(cat $DEST/tmp$$)
+    cat $F | awk -F '</file>' '{ if (NF > 1) for (k = 1; k < NF; k++) { c = split($k, a, ">"); print a[c]; } }' >$TMP
+    for L in $(cat $TMP)
     do
         T=$(echo $L | sed -e 's/\.qml$/.qmc/g' -e 's/\.js$/.jsc/g')
         TF=$(echo $DEST/$T)
         TD=$(dirname $TF)
+        SF=$(echo $D/$L)
         # Keep track of files and directories to be deleted afterwards.
         if [ "$DEST" != "$D" ]; then
             # Shadow build. Later delete directories and files we create.
             if [ "x$TD" == "x$DEST" ]; then
-                contains "$RMFILES" " $TF " || RMFILES=$(echo " "$RMFILES" "$TF" ")
+                RMFILES=$(echo " "$RMFILES" "$TF" ")
             else
                 # Assumes that there will be nothing else in these directories.
                 contains "$RMDIRS" " $TD " || RMDIRS=$(echo " "$RMDIRS" "$TD" ")
             fi
             mkdir -p $TD
             if [ $T == $L ]; then
-                cp $D/$L $TF
+                cp $SF $TF
             else
-                # Compilation must be done in source directory so that imports succeed.
-                cd $(dirname $D/$L)
-
-                qmc $QMCFLAGS $(basename $D/$L) -o $TF
+                qmc $QMCFLAGS $SF -o $TF
             fi
         else
             # Not a shadow build. Delete only files we generate.
             if [ $T != $L ]; then
-                cd $(dirname $D/$L)
-                # Source file must not have path in name. Go figure...
-                qmc $QMCFLAGS $(basename $D/$L) -o $TF
+                qmc $QMCFLAGS $SF -o $TF
                 RMFILES=$(echo " "$RMFILES" "$TF" ")
             fi
         fi
     done
-    rm -f $DEST/tmp$$
+    rm -f $TMP
 done
 
 cd $DEST

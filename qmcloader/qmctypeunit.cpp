@@ -215,8 +215,6 @@ bool QmcTypeUnit::addImports()
                 }
             }
 
-
-
             if (!m_importCache.addFileImport(typeLoader()->importDatabase(), importUri, importQualifier, p->majorVersion,
                                        p->minorVersion, false, &unit->errors))
                 return false;
