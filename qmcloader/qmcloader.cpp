@@ -36,12 +36,11 @@ static int DEPENDENCY_MAX_RECURSION_DEPTH = 10;
 
 /* This takes care when the user calls Qt.createComponent in javascript to load
  * the .qmc in place of creating a component from the .qml */
-static QQmlComponent *loadCallback(QQmlEngine *engine, QUrl url)
+static QQmlComponent *loadCallback(QQmlEngine *engine, QUrl url, void *data)
 {
-    QmcLoader loader(engine);
+    QmcLoader *loader = static_cast<QmcLoader*>(data);
     QString qmcfile = url.toString().replace("file://", "").replace(".qml", ".qmc");
-
-    return loader.loadComponent(qmcfile);
+    return loader->loadComponent(qmcfile);
 }
 
 class QmcLoaderPrivate : public QObjectPrivate
@@ -134,7 +133,7 @@ QQmlComponent *QmcLoader::loadComponent(QDataStream &stream, const QUrl &loadedU
     clearError();
     Q_D(QmcLoader);
 
-    d->engine->setLoadCallback(loadCallback);
+    d->engine->setLoadCallback(loadCallback, this);
 
     // TBD: check validity of all read values
     QmcUnit *unit = QmcUnit::loadUnit(stream, d->engine, this, loadedUrl);
