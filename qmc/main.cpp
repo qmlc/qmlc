@@ -115,34 +115,6 @@ int main(int argc, char *argv[])
 
     comp.compile();
 
-    if (debug && Comp::retValue == EXIT_SUCCESS) {
-        // Append source for debugging purposes.
-        QFile f(comp.fileName);
-        if (!f.open(QFile::ReadOnly)) {
-            qWarning() << "Error: could not read source to add debug info.";
-            return EXIT_FAILURE;
-        }
-        QByteArray contents = f.readAll();
-        f.close();
-        // This must match what is read in Qt Creator QmlJSEditor plugin.
-        unsigned tmp = contents.size();
-        for (int k = 0; k < 4; ++k)
-            contents.append(((char*)(&tmp))[k]);
-        tmp = 0xdeb9512c;
-        for (int k = 0; k < 4; ++k)
-            contents.append(((char*)(&tmp))[k]);
-        QFile out(comp.outputFileName);
-        if (!out.open(QIODevice::Append)) {
-            qWarning() << "Error: could not open output file for append.";
-            return EXIT_FAILURE;
-        }
-        if (out.write(contents) != contents.size()) {
-            qWarning() << "Error: could not write debug source to output file.";
-            return EXIT_FAILURE;
-        }
-        out.close();
-    }
-
     delete compiler;
     delete engine;
     if (Comp::retValue != 0)
