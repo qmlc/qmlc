@@ -32,7 +32,7 @@ double CPUTimer::getCPUTime()
        return -1.0;
    }
 #else
-#waring "Unable to define getCPUTime( ) for this OS."
+#warning "Unable to define getCPUTime( ) for this OS."
     return -1.0;
 #endif
 }
