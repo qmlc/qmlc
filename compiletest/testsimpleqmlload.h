@@ -89,6 +89,9 @@ private slots:
     void loadProperty1();
     void compileAndLoadProperty1();
 
+    void loadWarnings();
+    void compileAndLoadWarnings();
+
     void initTestCase();
     void cleanupTestCase();
 

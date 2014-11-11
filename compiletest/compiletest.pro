@@ -65,7 +65,8 @@ OTHER_FILES += \
     testkeys.qml \
     testproperty1.qml \
     SimpleObject.qml \
-    EnclosedSimpleObject.qml
+    EnclosedSimpleObject.qml \
+    testwarnings.qml
 
 RESOURCES += \
     testqml.qrc

@@ -1130,4 +1130,32 @@ void TestSimpleQmlLoad::compileAndLoadProperty1()
     delete engine;
 }
 
+// These testcases(loadWarnings and compileAndLoadWarnings) will give warnings
+// but shouldn't segfault
+void TestSimpleQmlLoad::loadWarnings()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testwarnings.qml");
+    QQmlComponent* component = load(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileAndLoadWarnings()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testwarnings.qml");
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+
+    delete component;
+    delete engine;
+}
+
 //#include "testsimpleqmlload.moc"
