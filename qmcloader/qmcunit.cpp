@@ -153,6 +153,21 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
     codeRefSizes.resize(header->codeRefs);
     for (int i = 0; i < (int)header->codeRefs; i++) {
 
+        if (!readData((char *)&exceptionReturnLabel, sizeof(QmcUnitExceptionReturnLabel), stream))
+            return false;
+
+        exceptionPropagationJumps.clear();
+        quint32 exceptionPropagationJumpsCount = 0;
+        if (!readData((char *)&exceptionPropagationJumpsCount, sizeof(quint32), stream))
+            return false;
+
+        for (uint j = 0; j < exceptionPropagationJumpsCount; j++) {
+            QmcUnitExceptionPropagationJump jump;
+            if (!readData((char *)&jump, sizeof (QmcUnitExceptionPropagationJump), stream))
+                return false;
+            exceptionPropagationJumps.append(jump);
+        }
+
 #if CPU(ARM_THUMB2)
         linkRecords.clear();
         quint32 linkRecordsCount = 0;
@@ -271,6 +286,24 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
             Q_ASSERT(idx == iii++);
         }
         as->appendData(code.data(), codeRefLen);
+
+        QV4::JIT::Assembler::Label label;
+        label.m_label.m_offset = exceptionReturnLabel.offset;
+        as->exceptionReturnLabel = label;
+
+        foreach (const QmcUnitExceptionPropagationJump &jump, exceptionPropagationJumps) {
+
+#if CPU(ARM_THUMB2)
+            QV4::JIT::Assembler::Jump asJump(jump.label, jump.type, jump.condition);
+#elif CPU(SH4)
+            QV4::JIT::Assembler::Jump asJump(jump.label, jump.type);
+#else
+            QV4::JIT::Assembler::Jump asJump(jump.label);
+#endif
+
+            as->exceptionPropagationJumps.append(asJump);
+        }
+
 
         // TBD: need to restore the state of the assembler
         // need done:

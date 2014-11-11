@@ -80,6 +80,9 @@ public:
 
     QList<QVector<QmcUnitCodeRefLinkCall > > linkData;
 
+    QList<QmcUnitExceptionReturnLabel> exceptionReturnLabels;
+    QList<QVector<QmcUnitExceptionPropagationJump> > exceptionPropagationJumps;
+
 #if CPU(ARM_THUMB2)
     QList<QList<QmcUnitLinkRecord> > jumpsToLinkData;
     QList<QmcUnitUnlinkedCodeData> unlinkedCodeData;

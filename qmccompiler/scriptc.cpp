@@ -141,6 +141,8 @@ QV4::CompiledData::CompilationUnit* ScriptC::precompile(QV4::IR::Module *module,
     isel->setUseFastLookups(false);
     QV4::CompiledData::CompilationUnit *ret =  isel->compile(/*generate unit data*/false);
     compilation()->linkData = isel->linkData();
+    compilation()->exceptionReturnLabels = isel->exceptionReturnLabelsData();
+    compilation()->exceptionPropagationJumps = isel->exceptionPropagationJumpsData();
 #if CPU(ARM_THUMB2)
         compilation()->jumpsToLinkData = isel->linkRecordData();
         compilation()->unlinkedCodeData = isel->unlinkedCodeData();

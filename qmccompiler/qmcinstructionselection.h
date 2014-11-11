@@ -45,6 +45,9 @@ public:
 
     const QList<QVector<QmcUnitCodeRefLinkCall > >& linkData() const { return linkedCalls; }
 
+    const QList<QmcUnitExceptionReturnLabel>& exceptionReturnLabelsData() const { return exceptionReturnLabels; }
+    const QList<QVector<QmcUnitExceptionPropagationJump> >& exceptionPropagationJumpsData() const { return exceptionPropagationJumps; }
+
 #if CPU(ARM_THUMB2)
     const QList<QList<QmcUnitLinkRecord > >& linkRecordData() const { return linkRecords; }
     const QList<QmcUnitUnlinkedCodeData>& unlinkedCodeData() const { return unlinkedCode; }
@@ -53,6 +56,9 @@ public:
 private:
 
     QList<QVector<QmcUnitCodeRefLinkCall > > linkedCalls;
+    QList<QmcUnitExceptionReturnLabel> exceptionReturnLabels;
+    QList<QVector<QmcUnitExceptionPropagationJump> > exceptionPropagationJumps;
+
 #if CPU(ARM_THUMB2)
     QList<QList<QmcUnitLinkRecord > > linkRecords;
     QList<QmcUnitUnlinkedCodeData> unlinkedCode;

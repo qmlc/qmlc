@@ -252,6 +252,29 @@ void QmcInstructionSelection::run(int functionIndex)
 
     linkedCalls.append(calls);
 
+    Assembler::Label& aslabel = _as->exceptionReturnLabel;
+    QmcUnitExceptionReturnLabel label;
+    label.offset = aslabel.m_label.m_offset;
+    exceptionReturnLabels.append(label);
+
+    QVector<QmcUnitExceptionPropagationJump> exceptionJumps;
+
+    QVector<QV4::JIT::Assembler::Jump> allExceptionPropagationJumps = _as->exceptionPropagationJumps;
+    unsigned exceptionPropogationJumpsCount = _as->exceptionPropagationJumps.size();
+    for (unsigned i = 0; i < exceptionPropogationJumpsCount; ++i) {
+        QmcUnitExceptionPropagationJump jump;
+        jump.label = allExceptionPropagationJumps[i].assemblerLabel();
+#if CPU(ARM_THUMB2)
+        jump.type = allExceptionPropagationJumps[i].jumpType();
+        jump.condition = allExceptionPropagationJumps[i].condition();
+#elif CPU(SH4)
+        jump.type = allExceptionPropagationJumps[i].jumpType();
+#endif
+        exceptionJumps.append(jump);
+    }
+
+    exceptionPropagationJumps.append(exceptionJumps);
+
 #if CPU(ARM_THUMB2)
 
     _as->prelink();

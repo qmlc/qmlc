@@ -178,6 +178,18 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
     QV4::JIT::CompilationUnit* compilationUnit = static_cast<QV4::JIT::CompilationUnit *>(c->unit);
     for (int i = 0; i < compilationUnit->codeRefs.size(); i++) {
 
+        QmcUnitExceptionReturnLabel label = c->exceptionReturnLabels[i];
+        if (!writeData(stream, (const char *)&label, sizeof (QmcUnitExceptionReturnLabel)))
+            return false;
+
+        quint32 exceptionPropagationJumpsCount = c->exceptionPropagationJumps[i].size();
+        if (!writeData(stream, (const char *)&exceptionPropagationJumpsCount, sizeof(quint32)))
+            return false;
+        foreach (const QmcUnitExceptionPropagationJump &jump, c->exceptionPropagationJumps[i]){
+            if (!writeData(stream, (const char *)&jump, sizeof (QmcUnitExceptionPropagationJump)))
+                return false;
+        }
+
 #if CPU(ARM_THUMB2)
         // linkRecords
         QList<QmcUnitLinkRecord> records = c->jumpsToLinkData[i];

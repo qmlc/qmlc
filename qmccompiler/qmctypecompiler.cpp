@@ -437,6 +437,8 @@ bool QmcTypeCompiler::precompile()
         isel->setUseFastLookups(false);
         compilation->document->javaScriptCompilationUnit = isel->compile(/*generated unit data*/false);
         compilation->linkData = isel->linkData();
+        compilation->exceptionReturnLabels = isel->exceptionReturnLabelsData();
+        compilation->exceptionPropagationJumps = isel->exceptionPropagationJumpsData();
 #if CPU(ARM_THUMB2)
         compilation->jumpsToLinkData = isel->linkRecordData();
         compilation->unlinkedCodeData = isel->unlinkedCodeData();

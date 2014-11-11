@@ -26,6 +26,7 @@
 #include <QByteArray>
 
 #include <private/qv4compileddata_p.h>
+#include <private/qv4assembler_p.h>
 
 #include <wtf/Platform.h>
 
@@ -166,5 +167,21 @@ struct QmcUnitUnlinkedCodeData {
 };
 
 #endif
+
+struct QmcUnitExceptionReturnLabel {
+    quint32 offset;
+};
+
+/* To store info of Jump class in 3rdparty/masm/assembler/AbstractMacroAssembler.h */
+struct QmcUnitExceptionPropagationJump {
+    JSC::AssemblerLabel label;
+#if CPU(ARM_THUMB2)
+    JSC::ARMv7Assembler::JumpType type;
+    JSC::ARMv7Assembler::Condition condition;
+#endif
+#if CPU(SH4)
+    JSC::SH4Assembler::JumpType type;
+#endif
+};
 
 #endif // QMCFILE_H
