@@ -516,11 +516,23 @@ public:
             , m_condition(condition)
         {
         }
+        ARMv7Assembler::JumpType jumpType() const
+        {
+            return m_type;
+        }
+        ARMv7Assembler::Condition condition() const
+        {
+            return m_condition;
+        }
 #elif CPU(SH4)
         Jump(AssemblerLabel jmp, SH4Assembler::JumpType type = SH4Assembler::JumpFar)
             : m_label(jmp)
             , m_type(type)
         {
+        }
+        SH4Assembler::JumpType jumpType const
+        {
+            return m_type;
         }
 #else
         Jump(AssemblerLabel jmp)    
@@ -529,6 +541,11 @@ public:
         }
 #endif
         
+        AssemblerLabel assemblerLabel() const
+        {
+            return m_label;
+        }
+
         Label label() const
         {
             Label result;
