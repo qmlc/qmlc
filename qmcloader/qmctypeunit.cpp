@@ -145,7 +145,7 @@ bool QmcTypeUnit::addImports()
                 error.setLine(p->location.line);
                 error.setUrl(finalUrl());
                 error.setDescription("Could not find imported script");
-
+                unit->errors.append(error);
                 return false;
             }
             QQmlTypeData::ScriptReference ref;
