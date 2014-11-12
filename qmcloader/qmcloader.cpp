@@ -207,7 +207,7 @@ QUrl QmcLoader::createLoadedUrl(const QString &file)
     if (file.startsWith("qrc:/"))
         urlStr = "";
     else if (file.startsWith(":/"))
-        urlStr = "qrc:";
+        urlStr = "qrc";
     else if(file.startsWith("/"))
         urlStr = "file://";
     else{
