@@ -100,6 +100,7 @@ git clone https://github.com/qmlc/qmlc.git
 * Build
 
 <pre>
+cd qmlc
 source qmlc.env
 qmake
 make
@@ -147,7 +148,7 @@ compiles them doesn't matter, only that the raw qml is available.
 <pre>
 qmc A.qml
 qmc B.qml
-qmcloader A.qml
+qmcloader A.qmc
 </pre>
 
 If one is importing and using a c++ plugin extension that contains qml/js those
@@ -200,9 +201,9 @@ Example tests/manual/multipleitems/plugin/plugin.pro.
 
 Basic steps are,
 
-* Make a copy of qmldir and name it qmldir_loader. Change the qml/js extensions
-to qmc/jsc extensions. This is used by the loader program to load the qmc/jsc
-files. Check for example the difference between
+* Make a copy of qmldir and name it qmldir_loader and in it change qml/js
+  extensions to qmc/jsc extensions. This is used by the loader program to load
+the qmc/jsc files. Check for example the difference between
 tests/manual/multipleitems/plugin/qmldir and
 tests/manual/multipleitems/plugin/qmldir_loader.
 
