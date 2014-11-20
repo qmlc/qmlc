@@ -27,6 +27,8 @@
         <file>EnclosedSimpleObject.qml</file>
         <file>SimpleObject.qml</file>
         <file>testwarnings.qml</file>
+        <file>testscriptref.qml</file>
+        <file>testscriptref.js</file>
     </qresource>
     <qresource prefix="/testqml/mod">
         <file>ModItem11.qml</file>

@@ -1158,4 +1158,49 @@ void TestSimpleQmlLoad::compileAndLoadWarnings()
     delete engine;
 }
 
+void TestSimpleQmlLoad::loadScriptRef()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testscriptref.qml");
+
+    QQmlComponent* component = load(engine, TEST_FILE);
+
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileAndLoadScriptRef()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testscriptref.qml");
+    const QString TEST_JS1(":/testqml/testscriptref.js");
+
+    QList<QString> dependencies;
+    dependencies.append(TEST_JS1);
+
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE, dependencies);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+
+    QObject *conn = myObject->findChild<QObject*>("connections");
+
+    QVariant val;
+    val = conn->property("target");
+    QObject *obj = qvariant_cast<QObject *>(val);
+    QVERIFY(val.isValid() && !val.isNull());
+
+    val = obj->property("width");
+    QVERIFY(val.isValid() && !val.isNull());
+    QVERIFY(val.toInt() == 249);
+
+    delete component;
+    delete engine;
+}
+
+
 //#include "testsimpleqmlload.moc"

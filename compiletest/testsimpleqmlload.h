@@ -92,6 +92,9 @@ private slots:
     void loadWarnings();
     void compileAndLoadWarnings();
 
+    void loadScriptRef();
+    void compileAndLoadScriptRef();
+
     void initTestCase();
     void cleanupTestCase();
 
