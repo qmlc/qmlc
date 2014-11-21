@@ -41,6 +41,7 @@ public:
     QList<QString> namespaces;
 
     QList<QmcUnitTypeReference> exportTypeRefs;
+    QList<QmcUnitScriptReference> exportScriptRefs;
 
     QmcFileType type;
 
@@ -77,6 +78,8 @@ public:
     };
 
     QList<ScriptReference> scripts;
+
+    QList<QmcUnitScriptReference> scriptrefs;
 
     QList<QVector<QmcUnitCodeRefLinkCall > > linkData;
 

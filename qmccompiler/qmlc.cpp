@@ -341,6 +341,13 @@ bool QmlC::createExportStructures()
         compilation()->exportTypeRefs.append(typeRef);
     }
 
+    // script refs
+    foreach (const QmlCompilation::ScriptReference script, compilation()->scripts) {
+       QmcUnitScriptReference scriptRef;
+       scriptRef.qualifier = script.qualifier;
+       compilation()->exportScriptRefs.append(scriptRef);
+    }
+
     // root object index to id mapping
     const QHash<int, int> &objectIdList = compilation()->compiledData->objectIndexToIdForRoot;
     for (QHash<int, int>::ConstIterator objectRef = objectIdList.constBegin(), end = objectIdList.constEnd();

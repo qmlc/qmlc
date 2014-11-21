@@ -95,6 +95,7 @@ struct QmcUnitHeader {
     quint32 strings;
     quint32 namespaces;
     quint32 typeReferences;
+    quint32 scriptReferences;
     quint32 codeRefs;
     quint32 objectIndexToIdRoot;
     quint32 objectIndexToIdComponent;
@@ -103,6 +104,12 @@ struct QmcUnitHeader {
     quint32 customParserBindings;
     quint32 deferredBindings;
 };
+
+struct QmcUnitScriptReference {
+    QString qualifier;
+};
+
+
 
 struct QmcUnitTypeReference {
     quint32 index;

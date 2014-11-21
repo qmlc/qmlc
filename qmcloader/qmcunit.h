@@ -59,6 +59,7 @@ struct QmcUnit
     QList<QVector<QmcUnitCodeRefLinkCall> > linkCalls;
     QList<QVector<QV4::Primitive> > constantVectors;
     QList<QmcUnitTypeReference> typeReferences;
+    QList<QString> scriptReferences;
     QmcUnitExceptionReturnLabel exceptionReturnLabel;
     QList<QmcUnitExceptionPropagationJump> exceptionPropagationJumps;
 #if CPU(ARM_THUMB2)

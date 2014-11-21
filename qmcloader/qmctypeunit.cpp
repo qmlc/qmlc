@@ -382,6 +382,20 @@ bool QmcTypeUnit::addImports()
         scripts.append(ref);
     }
 
+    for (int scriptIndex = 0; scriptIndex < unit->scriptReferences.count(); ++scriptIndex) {
+
+        QString qualifier = unit->scriptReferences[scriptIndex];
+        QString enclosingNamespace;
+
+        const int lastDotIndex = qualifier.lastIndexOf(QLatin1Char('.'));
+        if (lastDotIndex != -1) {
+            enclosingNamespace = qualifier.left(lastDotIndex);
+            qualifier = qualifier.mid(lastDotIndex+1);
+        }
+
+        compiledData->importCache->add(qualifier, scriptIndex, enclosingNamespace);
+    }
+
     return true;
 }
 

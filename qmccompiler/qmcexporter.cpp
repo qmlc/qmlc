@@ -45,6 +45,7 @@ void QmcExporter::createHeader(QmcUnitHeader &header, QmlCompilation *c)
     header.strings = c->unit->data->stringTableSize;
     header.namespaces = c->namespaces.size();
     header.typeReferences = c->exportTypeRefs.size();
+    header.scriptReferences = c->exportScriptRefs.size();
     QV4::JIT::CompilationUnit* compilationUnit = static_cast<QV4::JIT::CompilationUnit *>(c->unit);
     header.codeRefs = compilationUnit->codeRefs.size();
     header.objectIndexToIdRoot = c->objectIndexToIdRoot.size();
@@ -171,6 +172,11 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
     // type references
     foreach (const QmcUnitTypeReference &typeRef, c->exportTypeRefs) {
         if (!writeData(stream, (const char *)&typeRef, sizeof (QmcUnitTypeReference)))
+            return false;
+    }
+
+    foreach (const QmcUnitScriptReference &scriptRef, c->exportScriptRefs) {
+        if (!writeString(stream, scriptRef.qualifier))
             return false;
     }
 

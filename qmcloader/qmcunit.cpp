@@ -149,6 +149,13 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
         typeReferences.append(typeRef);
     }
 
+    for (int i = 0; i < (int)header->scriptReferences; i++) {
+        QString string;
+        if (!readString(string, stream))
+            return false;
+        scriptReferences.append(string);
+    }
+
     // coderefs
     codeRefSizes.resize(header->codeRefs);
     for (int i = 0; i < (int)header->codeRefs; i++) {
