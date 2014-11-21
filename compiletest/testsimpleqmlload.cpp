@@ -1105,7 +1105,7 @@ void TestSimpleQmlLoad::loadProperty1()
     QVERIFY(component);
 
     QObject *myObject = component->create();
-    QVariant val;
+    QVERIFY(myObject);
 
     delete component;
     delete engine;
@@ -1124,35 +1124,37 @@ void TestSimpleQmlLoad::compileAndLoadProperty1()
     QVERIFY(component);
 
     QObject *myObject = component->create();
-    QVariant val;
+    QVERIFY(myObject);
 
     delete component;
     delete engine;
 }
 
-// These testcases(loadWarnings and compileAndLoadWarnings) will give warnings
-// but shouldn't segfault
-void TestSimpleQmlLoad::loadWarnings()
+// These testcases(loadExceptions and compileAndLoadExceptions) will give warnings
+// and continue when exceptions occur but shouldn't segfault
+void TestSimpleQmlLoad::loadExceptions()
 {
     QQmlEngine *engine = new QQmlEngine;
-    const QString TEST_FILE(":/testqml/testwarnings.qml");
+    const QString TEST_FILE(":/testqml/testexceptions.qml");
     QQmlComponent* component = load(engine, TEST_FILE);
     QVERIFY(component);
 
     QObject *myObject = component->create();
+    QVERIFY(myObject);
 
     delete component;
     delete engine;
 }
 
-void TestSimpleQmlLoad::compileAndLoadWarnings()
+void TestSimpleQmlLoad::compileAndLoadExceptions()
 {
     QQmlEngine *engine = new QQmlEngine;
-    const QString TEST_FILE(":/testqml/testwarnings.qml");
+    const QString TEST_FILE(":/testqml/testexceptions.qml");
     QQmlComponent* component = compileAndLoad(engine, TEST_FILE);
     QVERIFY(component);
 
     QObject *myObject = component->create();
+    QVERIFY(myObject);
 
     delete component;
     delete engine;
@@ -1168,6 +1170,7 @@ void TestSimpleQmlLoad::loadScriptRef()
     QVERIFY(component);
 
     QObject *myObject = component->create();
+    QVERIFY(myObject);
 
     delete component;
     delete engine;

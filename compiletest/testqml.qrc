@@ -26,7 +26,7 @@
         <file>testproperty1.qml</file>
         <file>EnclosedSimpleObject.qml</file>
         <file>SimpleObject.qml</file>
-        <file>testwarnings.qml</file>
+        <file>testexceptions.qml</file>
         <file>testscriptref.qml</file>
         <file>testscriptref.js</file>
     </qresource>
