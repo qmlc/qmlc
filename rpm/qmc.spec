@@ -114,6 +114,7 @@ make %{?jobs:-j%jobs}
 %{_libdir}/libqmcloader.so
 %{_libdir}/pkgconfig/qmcloader.pc
 %{_includedir}/qmcloader
+%{_bindir}/qmcdump
 
 %files tests
 %{_bindir}/compiletest

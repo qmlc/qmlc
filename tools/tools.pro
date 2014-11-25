@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 
-SUBDIRS = qmcloader
+SUBDIRS = qmcloader qmcdump
