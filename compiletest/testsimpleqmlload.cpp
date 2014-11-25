@@ -20,6 +20,7 @@
 #include <QtQml/QQmlComponent>
 #include <QQmlContext>
 #include <QtQuick/QQuickItem>
+#include <QQmlListProperty>
 #include <QString>
 #include <QUrl>
 #include "qmlc.h"
@@ -1204,6 +1205,52 @@ void TestSimpleQmlLoad::compileAndLoadScriptRef()
     delete component;
     delete engine;
 }
+
+
+    void loadDefaultPropertyAlias();
+    void compileAndLoadDefaultPropertyAlias();
+void TestSimpleQmlLoad::loadDefaultPropertyAlias()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testdefaultpropertyalias.qml");
+
+    QQmlComponent* component = load(engine, TEST_FILE);
+
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVERIFY(myObject);
+
+    delete component;
+    delete engine;
+}
+
+void TestSimpleQmlLoad::compileAndLoadDefaultPropertyAlias()
+{
+    QQmlEngine *engine = new QQmlEngine;
+    const QString TEST_FILE(":/testqml/testdefaultpropertyalias.qml");
+    const QString TEST_QML1(":/testqml/DefaultPropertyAlias.qml");
+
+    QList<QString> dependencies;
+    dependencies.append(TEST_QML1);
+
+    QQmlComponent* component = compileAndLoad(engine, TEST_FILE, dependencies);
+    QVERIFY(component);
+
+    QObject *myObject = component->create();
+    QVERIFY(myObject);
+
+    // check that the children were added to the default property alias
+    QVariant val;
+    val = myObject->property("content");
+    QVERIFY(val.isValid() && !val.isNull());
+    QQmlListProperty<QQuickItem> children = qvariant_cast<QQmlListProperty<QQuickItem> >(val);
+    QVERIFY(children.count(&children) == 3);
+
+    delete component;
+    delete engine;
+}
+
 
 
 //#include "testsimpleqmlload.moc"

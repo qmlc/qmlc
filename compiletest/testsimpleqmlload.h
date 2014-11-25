@@ -95,6 +95,9 @@ private slots:
     void loadScriptRef();
     void compileAndLoadScriptRef();
 
+    void loadDefaultPropertyAlias();
+    void compileAndLoadDefaultPropertyAlias();
+
     void initTestCase();
     void cleanupTestCase();
 

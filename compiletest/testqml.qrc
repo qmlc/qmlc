@@ -29,6 +29,8 @@
         <file>testexceptions.qml</file>
         <file>testscriptref.qml</file>
         <file>testscriptref.js</file>
+        <file>testdefaultpropertyalias.qml</file>
+        <file>DefaultPropertyAlias.qml</file>
     </qresource>
     <qresource prefix="/testqml/mod">
         <file>ModItem11.qml</file>
