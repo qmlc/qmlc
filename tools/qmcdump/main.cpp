@@ -116,9 +116,12 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
     stream << "Namespaces:\n";
     foreach (const QString &s, unit.namespaces)
         stream << s << "\n";
+    stream << "Script references:\n";
+    foreach (const QString &s, unit.scriptReferences)
+        stream << " " << s << "\n";
     stream << "Type references:\n";
     foreach (const QmcUnitTypeReference& r, unit.typeReferences)
-        stream << "index: " << r.index
+        stream << " index: " << r.index
             << " syntheticComponent: " << r.syntheticComponent
             << " composite: " << r.composite << "\n";
     for (int k = 0; k < unit.codeRefData.size(); ++k) {
@@ -135,7 +138,7 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
         if ((count - 1) & 7) stream << "\n";
         stream << "linkCalls:\n";
         foreach (const QmcUnitCodeRefLinkCall &r, unit.linkCalls[k])
-            stream << "index: " << r.index
+            stream << " index: " << r.index
                 << " offset: " << r.offset << "\n";
         stream << "constantVectors:\n";
         foreach (const QV4::Primitive &p, unit.constantVectors[k]) {
@@ -164,14 +167,14 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
     }
     stream << "QmcUnitAlias:\n";
     foreach (const QmcUnitAlias &tmp, unit.aliases) {
-        stream << "objectIndex: " << tmp.objectIndex
-            << " propertyIndex: " << tmp.propertyIndex
-            << " contextIndex: " << tmp.contextIndex
-            << " targetObjectIndex: " << tmp.targetObjectIndex
-            << " targetPropertyIndex: " << tmp.targetPropertyIndex
-            << " propertyType: " << tmp.propertyType
-            << " flags: " << tmp.flags
-            << " notifySignal: " << tmp.notifySignal << "\n";
+        stream << " objectIndex: " << tmp.objectIndex
+            << "  propertyIndex: " << tmp.propertyIndex
+            << "  contextIndex: " << tmp.contextIndex
+            << "  targetObjectIndex: " << tmp.targetObjectIndex
+            << "  targetPropertyIndex: " << tmp.targetPropertyIndex
+            << "  propertyType: " << tmp.propertyType
+            << "  flags: " << tmp.flags
+            << "  notifySignal: " << tmp.notifySignal << "\n";
     }
     return stream;
 }
