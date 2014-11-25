@@ -213,7 +213,7 @@ bool QmcTypeUnitComponentAndAliasResolver::addAliases()
         else
             propertyFlags &= ~QQmlPropertyData::IsResettable;
 
-        if ((int)alias.propertyIndex == obj->indexOfDefaultProperty) propertyCache->defaultPropertyName() = propertyName;
+        if ((int)alias.propertyIndex == obj->indexOfDefaultProperty) propertyCache->_defaultPropertyName = propertyName;
         propertyCache->appendProperty(propertyName, propertyFlags, effectivePropertyIndex++,
                                       type, effectiveSignalIndex++);
     }
