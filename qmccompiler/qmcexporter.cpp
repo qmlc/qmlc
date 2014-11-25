@@ -40,7 +40,6 @@ void QmcExporter::createHeader(QmcUnitHeader &header, QmlCompilation *c)
     header.version = QMC_UNIT_VERSION;
     header.type = (quint32)c->type;
     header.sizeQmlUnit = c->qmlUnit->qmlUnitSize;
-    header.sizeUnit = c->unit->data->unitSize;
     header.imports = c->qmlUnit->nImports;
     header.strings = c->unit->data->stringTableSize;
     header.namespaces = c->namespaces.size();
@@ -134,9 +133,6 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
 
     QV4::CompiledData::QmlUnit *qmlUnit = c->qmlUnit;
     if (!writeData(stream, (const char*)qmlUnit, qmlUnit->qmlUnitSize))
-        return false;
-    QV4::CompiledData::Unit *unit = c->unit->data;
-    if (!writeData(stream, (const char*)unit, unit->unitSize))
         return false;
 
 #if 0
