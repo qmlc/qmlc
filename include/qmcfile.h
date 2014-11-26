@@ -90,7 +90,6 @@ struct QmcUnitHeader {
     qint16 architecture;
     qint16 version;
     quint32 sizeQmlUnit;
-    quint32 sizeUnit;
     quint32 imports;
     quint32 strings;
     quint32 namespaces;
