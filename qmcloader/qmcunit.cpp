@@ -64,7 +64,6 @@ QmcUnit::~QmcUnit()
 {
     delete header;
     delete qmlUnit;
-    compilationUnit->data = NULL; // Otherwise attempts to free it.
     compilationUnit->deref();
     for (int i = 0; i < allocations.size(); i++) {
         QV4::ExecutableAllocator::Allocation *a = allocations[i];
@@ -106,12 +105,17 @@ QmcUnit *QmcUnit::loadUnit(QDataStream &stream, QQmlEngine *engine, QmcLoader *l
 bool QmcUnit::loadUnitData(QDataStream &stream)
 {
     char *qmlUnitPtr = new char[header->sizeQmlUnit];
+    char *dataPtr = new char[header->sizeUnit];
     qmlUnit = reinterpret_cast<QV4::CompiledData::QmlUnit*>(qmlUnitPtr);
-    if (!qmlUnit)
+    unit = reinterpret_cast<QV4::CompiledData::Unit*>(dataPtr);
+    compilationUnit->data = unit;
+    if (!qmlUnit || !unit)
         return false;
-    compilationUnit->data = unit = &(qmlUnit->header);
 
     if (!readData(qmlUnitPtr, header->sizeQmlUnit, stream))
+        return false;
+
+    if (!readData(dataPtr, header->sizeUnit, stream))
         return false;
 
     // load imports
@@ -499,6 +503,9 @@ bool QmcUnit::checkHeader(QmcUnitHeader *header)
         return false;
 
     if (header->sizeQmlUnit > QMC_UNIT_MAX_QML_UNIT_SIZE || header->sizeQmlUnit < sizeof (QV4::CompiledData::QmlUnit))
+        return false;
+
+    if (header->sizeUnit > QMC_UNIT_MAX_COMPILATION_UNIT_SIZE || header->sizeUnit < sizeof (QV4::CompiledData::Unit))
         return false;
 
     if (header->imports > QMC_UNIT_MAX_IMPORTS)
