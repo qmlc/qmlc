@@ -39,7 +39,10 @@ static int DEPENDENCY_MAX_RECURSION_DEPTH = 10;
 static QQmlComponent *loadCallback(QQmlEngine *engine, QUrl url, void *data)
 {
     QmcLoader *loader = static_cast<QmcLoader*>(data);
-    QString qmcfile = url.toString().replace("file://", "").replace(".qml", ".qmc");
+    QString dotqml = ".qml";
+    QString qmcfile = url.toString().replace("file://", "");
+    qmcfile = qmcfile.replace(qmcfile.size() - dotqml.size(), dotqml.size(), ".qmc");
+    qDebug() << "Loading Component" << qmcfile;
     return loader->loadComponent(qmcfile);
 }
 
