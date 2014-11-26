@@ -63,7 +63,7 @@ QmcUnit::QmcUnit(QmcUnitHeader *header, const QUrl& url, const QString &urlStrin
 QmcUnit::~QmcUnit()
 {
     delete header;
-    delete qmlUnit;
+    //delete qmlUnit; QV4::CompiledData::CompilationUnit::unlink() frees this.
     compilationUnit->data = NULL; // Otherwise attempts to free it.
     compilationUnit->deref();
     for (int i = 0; i < allocations.size(); i++) {
