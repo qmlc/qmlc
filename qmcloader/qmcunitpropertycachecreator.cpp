@@ -508,7 +508,7 @@ bool QmcUnitPropertyCacheCreator::createMetaObject(int objectIndex, const QV4::C
     ((QQmlVMEMetaData *)dynamicData.data())->aliasCount = aliasCount;
     // Dynamic slot data - comes after the property data
     for (uint i = 0; i < obj->nFunctions; i++) {
-        const QV4::CompiledData::Function* function = qmcUnit->unit->functionAt(i);
+        const QV4::CompiledData::Function* function = qmcUnit->unit->functionAt(obj->functionOffsetTable()[i]);
 
         VMD::MethodData methodData = { /* runtimeFunctionIndex*/ 0, // ###
                                        /* formalsCount*/ (int)function->nFormals,
