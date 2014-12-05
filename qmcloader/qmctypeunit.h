@@ -37,11 +37,24 @@ public:
     QmcUnit *qmcUnit();
     QQmlCompiledData *refCompiledData();
 
+    // qqmltypeloader_p.h:540
+    struct ScriptReference
+    {
+        ScriptReference() : script(0) {}
+
+        QV4::CompiledData::Location location;
+        QString qualifier;
+        QString nameSpace;
+        QQmlScriptBlob *script;
+    };
+
 protected:
     virtual void dataReceived(const Data &);
     virtual void initializeFromCachedUnit(const QQmlPrivate::CachedQmlUnit*);
     virtual QString stringAt(int) const;
     virtual void done();
+
+    virtual void scriptImported(QQmlScriptBlob *blob, const QV4::CompiledData::Location &location, const QString &qualifier, const QString &nameSpace);
 
 private:
     bool addImports();
@@ -58,7 +71,7 @@ private:
     QVector<QQmlPropertyCache*>& propertyCaches;
     //QList<QQmlTypeData::TypeReference> compositeSingletons;
     bool doneLinking;
-    QList<QQmlTypeData::ScriptReference> scripts;
+    QList<ScriptReference> scripts;
     QList<QmcUnit *> dependencies;
     friend class QmcUnitPropertyCacheCreator;
     friend class QmcTypeUnitComponentAndAliasResolver;

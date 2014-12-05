@@ -48,7 +48,7 @@ QmcTypeUnit::QmcTypeUnit(QmcUnit *qmcUnit, QQmlTypeLoader *typeLoader)
 
 QmcTypeUnit::~QmcTypeUnit()
 {
-    foreach (const QQmlTypeData::ScriptReference &ref, scripts) {
+    foreach (const ScriptReference &ref, scripts) {
         ref.script->release();
     }
     scripts.clear();
@@ -112,6 +112,17 @@ bool QmcTypeUnit::link()
     return true;
 }
 
+void QmcTypeUnit::scriptImported(QQmlScriptBlob *blob, const QV4::CompiledData::Location &location, const QString &qualifier, const QString &nameSpace)
+{
+    // qqmltypeloader.cpp:2778
+    ScriptReference ref;
+    ref.script = blob;
+    ref.location = location;
+    ref.qualifier = qualifier;
+    ref.nameSpace = nameSpace;
+    scripts << ref;
+}
+
 bool QmcTypeUnit::addImports()
 {
 
@@ -148,7 +159,7 @@ bool QmcTypeUnit::addImports()
                 unit->errors.append(error);
                 return false;
             }
-            QQmlTypeData::ScriptReference ref;
+            ScriptReference ref;
             ref.location = p->location;
             ref.qualifier = stringAt(p->qualifierIndex);
             ref.script = scriptUnit;
@@ -376,7 +387,7 @@ bool QmcTypeUnit::addImports()
             return false;
         }
         //compiledData->scripts.append(script->scriptData());
-        QQmlTypeData::ScriptReference ref;
+        ScriptReference ref;
         ref.script = script;
         ref.qualifier = scriptRef.qualifier;
         scripts.append(ref);
@@ -436,7 +447,7 @@ QQmlCompiledData *QmcTypeUnit::refCompiledData()
 
 bool QmcTypeUnit::initDependencies()
 {
-    foreach (const QQmlTypeData::ScriptReference &scriptRef, scripts) {
+    foreach (const ScriptReference &scriptRef, scripts) {
         QmcScriptUnit *script = (QmcScriptUnit *)scriptRef.script;
         if (!script->initialize())
             return false;
@@ -477,7 +488,7 @@ bool QmcTypeUnit::initQml()
     // add to import cache
     // QQmlTypeData::ScriptReference->scriptData -> compiledData->scripts
 
-    foreach (const QQmlTypeData::ScriptReference &scriptRef, scripts) {
+    foreach (const ScriptReference &scriptRef, scripts) {
         // create QQmlScriptData and link it to QmcScriptUnit
         QQmlScriptData *scriptData = scriptRef.script->scriptData();
         scriptData->addref();

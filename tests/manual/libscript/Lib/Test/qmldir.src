@@ -1,0 +1,3 @@
+module Lib.Test
+Control 1.0 Control.qml
+CalendarUtils 1.0 CalendarUtils.js

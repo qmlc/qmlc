@@ -301,18 +301,10 @@ bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlErro
                 QUrl libraryUrl(qmldirUrl);
                 QQmlTypeLoader* typeLoader = &QQmlEnginePrivate::get(d->compilation->engine)->typeLoader;
                 const QQmlTypeLoader::QmldirContent *qmldir = typeLoader->qmldirContent(qmldirFilePath, qmldirUrl);
-#if 0
-                foreach (const QQmlDirParser::Script &script, qmldir->scripts()) {
-#else
-                if (qmldir->scripts().size() > 0) {
-#endif
-                    // TBD: qqmltypeloader.cpp:1343
-                    qDebug() << "Library contains scripts";
-                    QQmlError error;
-                    error.setDescription("Libraries with scripts not supported");
-                    appendError(error);
-                    return false;
-                }
+                // File loading will import the dependency and takes care of
+                // everything there. Adding a script reference here just seems
+                // to add an unnecessary reference that might actually be a bug.
+                // In case something is needed, see: qqmltypeloader.cpp:1343
             }
         } else {
             // Is this a module?
