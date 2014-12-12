@@ -428,6 +428,15 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
 
     }
 
+    for (uint i = 0; i < header->singletonReferences; ++i) {
+        QmcSingletonTypeReference ref;
+        if (!readString(ref.typeName, stream))
+            return false;
+        if (!readString(ref.prefix, stream))
+            return false;
+        compositeSingletons.append(ref);
+    }
+
 #if 0
     // script references
     for (int i = 0; i < (int)header->scriptReferences; i++) {

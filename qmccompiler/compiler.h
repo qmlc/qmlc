@@ -29,6 +29,7 @@
 class QmlCompilation;
 class CompilerPrivate;
 class QQmlEngine;
+class QQmlTypeLoader;
 
 namespace QV4 {
 namespace CompiledData {
@@ -67,6 +68,7 @@ public:
     QList<QQmlError> errors() const;
     bool isError() const;
     const QList<QQmlError>& compileErrors() const;
+    QQmlTypeLoader *typeLoader();
 protected:
     Compiler(QQmlEngine *engine, QObject *parent = 0);
     bool compile(const QString &url);

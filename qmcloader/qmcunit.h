@@ -80,6 +80,7 @@ struct QmcUnit
     QList<QmcUnitAlias> aliases;
     QList<QmcUnitObjectIndexToId> objectIndexToIdRoot;
     QList<QmcUnitObjectIndexToIdComponent> objectIndexToIdComponent;
+    QList<QmcSingletonTypeReference> compositeSingletons;
 
     QHash<int, QQmlCompiledData::CustomParserData> customParsers;
     QVector<int> customParserBindings;

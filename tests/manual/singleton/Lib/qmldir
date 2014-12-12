@@ -1,0 +1,2 @@
+module Lib
+singleton OnlyOne 1.0 OnlyOne.qml

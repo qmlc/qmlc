@@ -102,6 +102,7 @@ struct QmcUnitHeader {
     quint32 customParsers;
     quint32 customParserBindings;
     quint32 deferredBindings;
+    quint32 singletonReferences;
 };
 
 struct QmcUnitScriptReference {
@@ -188,6 +189,15 @@ struct QmcUnitExceptionPropagationJump {
 #if CPU(SH4)
     JSC::SH4Assembler::JumpType type;
 #endif
+};
+
+// To store singleton info so we can use them in code.
+struct QmcSingletonTypeReference {
+    QString typeName;
+    QString prefix;
+    // We need url but we must use load-time, not compile-time info. QmcUnit
+    // has url that is modified to be the loadedUrl but it's for the object
+    // begin loaded, not the one referred to. Does it help to store the QString?
 };
 
 #endif // QMCFILE_H

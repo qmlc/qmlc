@@ -18,6 +18,7 @@
  */
 
 #include  <QDir>
+#include <private/qqmltypeloader_p.h>
 
 #include "qmlc.h"
 #include "qmcfile.h"
@@ -128,10 +129,7 @@ bool QmlC::continueLoadFromIR()
             // TBD: qqmltypeloader.cpp:1413
             return false;
         } else {
-            QQmlError error;
-            error.setDescription("Pragma not supported");
-            appendError(error);
-            return false;
+            compilation()->singleton = true;
         }
     }
     return true;
@@ -203,6 +201,43 @@ bool QmlC::resolveTypes()
     }
 
     // TBD: qqmltypeloader.cpp:2377 resolved composite singletons
+    // Lets handle resolved composite singleton types
+    foreach (const QQmlImports::CompositeSingletonReference &csRef, compilation()->importCache->resolvedCompositeSingletons()) {
+        QmlCompilation::TypeReference ref;
+        QString typeName = csRef.typeName;
+        QQmlImportNamespace *typeNamespace = 0;
+        QList<QQmlError> errors;
+
+        if (!csRef.prefix.isEmpty()) {
+            typeName.prepend(csRef.prefix + QLatin1Char('.'));
+            // Add a reference to the enclosing namespace
+            compilation()->namespaces.append(csRef.prefix);
+        }
+
+        int majorVersion = -1;
+        int minorVersion = -1;
+
+        bool typeFound = compilation()->importCache->resolveType(typeName, &ref.type,
+                                          &majorVersion, &minorVersion, &typeNamespace, &errors);
+
+        if (!typeNamespace && !typeFound && !implicitImportLoaded) {
+            if (loadImplicitImport()) {
+                typeFound = compilation()->importCache->resolveType(typeName, &ref.type,
+                                          &majorVersion, &minorVersion, &typeNamespace, &errors);
+            }
+            else {
+                appendErrors(errors);
+                return false; //loadImplicitImport() hit an error, and called setError already
+            }
+        }
+
+        if (ref.type->isCompositeSingleton()) { 
+            ref.name = typeName;
+            ref.typeData = typeLoader()->getType(ref.type->sourceUrl());
+            ref.prefix = csRef.prefix;
+            compilation()->m_compositeSingletons << ref;
+        }
+    }
 
     // qqmltypeloader.cpp:2402 resolve type references
     const QV4::CompiledData::TypeReferenceMap &typeReferences = compilation()->document->typeReferences;
@@ -304,11 +339,26 @@ bool QmlC::done()
 {
     // TBD: qqmltypeloader.cpp:2103 check scripts for errors
 
-    // TBD: qqmltypeloader.cpp:2119 check type references for errors
+    // qqmltypeloader.cpp:2119 check type references for errors
+    // Check all composite singleton type dependencies for errors
+    for (int ii = 0; ii < compilation()->m_compositeSingletons.count(); ++ii) {
+        const QmlCompilation::TypeReference &type = compilation()->m_compositeSingletons.at(ii);
+        if (!type.typeData) {
 
-    // TBD: qqmltypeloader.cpp:2138 check composite singletons for errors
+            return false;
+        } else if (type.typeData && type.typeData->isError()) {
 
-    // TBD: qqmltypeloader.cpp:2157 check if this type is composite singleton
+            return false;
+        }
+    }
+
+    // If the type is CompositeSingleton but there was no pragma Singleton in the
+    // QML file, lets report an error.
+    QQmlType *type = QQmlMetaType::qmlType(compilation()->url, true);
+    if (type && type->isCompositeSingleton() && !compilation()->singleton) {
+
+        return false;
+    }
 
     // qqmltypeloader.cpp:2169 compile
     return doCompile();
@@ -316,9 +366,23 @@ bool QmlC::done()
 
 bool QmlC::createExportStructures()
 {
+    int i, ii;
     compilation()->qmlUnit = compilation()->compiledData->qmlUnit;
     compilation()->unit = compilation()->compiledData->compilationUnit;
     compilation()->unit->ref();
+
+    for (i=0;i<compilation()->m_compositeSingletons.size();i++) {
+        QmcUnitTypeReference typeRef;
+        typeRef.syntheticComponent = 0;
+        typeRef.composite = 1;
+        for (ii=0;ii<compilation()->unit->data->stringTableSize;ii++) {
+            if (compilation()->unit->data->stringAt(ii) == compilation()->m_compositeSingletons[i].name) {
+                typeRef.index  = ii;
+                compilation()->exportTypeRefs.append(typeRef);
+                break;
+            }
+        }
+    } 
 
     // resolved types list
     const QHash<int, QQmlCompiledData::TypeReference*> &typeRefHash = compilation()->compiledData->resolvedTypes;

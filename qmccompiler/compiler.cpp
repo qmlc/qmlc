@@ -18,6 +18,7 @@
 #include <QQmlFile>
 #include <private/qobject_p.h>
 #include <private/qqmlengine_p.h>
+#include <private/qqmltypeloader_p.h>
 
 #include "compiler.h"
 #include "qmlcompilation.h"
@@ -265,6 +266,14 @@ QString Compiler::stringAt(int index) const
 {
     const Q_D(Compiler);
     return d->compilation->document->jsGenerator.stringTable.stringForIndex(index);
+}
+
+QQmlTypeLoader *Compiler::typeLoader()
+{
+    Q_D(Compiler);
+
+    QQmlTypeLoader* typeLoader = &QQmlEnginePrivate::get(d->compilation->engine)->typeLoader;
+    return typeLoader;
 }
 
 bool Compiler::addImport(const QV4::CompiledData::Import *import, QList<QQmlError> *errors)

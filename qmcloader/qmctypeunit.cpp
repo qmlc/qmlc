@@ -348,11 +348,23 @@ bool QmcTypeUnit::addImports()
 
     foreach (const QString &ns, unit->namespaces)
         compiledData->importCache->add(ns);
-#if 0
-    // Add any Composite Singletons that were used to the import cache
-    foreach (const QQmlTypeData::TypeReference &singleton, compositeSingletons)
-        compiledData->importCache->add(singleton.type->qmlTypeName(), singleton.type->sourceUrl(), singleton.prefix);
-#endif
+
+    // Here take the info from the new list in the file and add to import cache.
+    // Seems it can't be done earlier. QString probably fine.
+    foreach (const QmcSingletonTypeReference &ref, unit->compositeSingletons) {
+        // Now we'd need to know the loaded url instead of the compile-time url
+        // If the latter helps, save it here. Maybe find during import when
+        // qmldir is processed?
+        int majorVersion = -1;
+        int minorVersion = -1;
+        QQmlImportNamespace *typeNamespace = 0;
+
+        QQmlType *qmlType = NULL;
+        if (m_importCache.resolveType(ref.typeName, &qmlType, &majorVersion, &minorVersion, &typeNamespace, &unit->errors)) {
+
+            compiledData->importCache->add(QHashedString(ref.typeName), QUrl(qmlType->sourceUrl()), QHashedString(ref.prefix));
+        }
+    }
 
     // TBD: is import cache required at all ? Cannot be null though.
     m_importCache.populateCache(compiledData->importCache);

@@ -31,7 +31,8 @@ QmlCompilation::QmlCompilation(const QString &urlString, const QUrl &url, QQmlEn
       compiledData(NULL),
       unit(NULL),
       engine(engine),
-      document(NULL)
+      document(NULL),
+      singleton(false)
 {
     if (QQmlDebugService::isDebuggingEnabled())
         // disable debugging

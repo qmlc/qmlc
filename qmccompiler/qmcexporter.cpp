@@ -53,6 +53,7 @@ void QmcExporter::createHeader(QmcUnitHeader &header, QmlCompilation *c)
     header.customParsers = c->customParsers.size();
     header.customParserBindings = c->customParserBindings.size();
     header.deferredBindings = c->deferredBindings.size();
+    header.singletonReferences = c->m_compositeSingletons.size();
 }
 
 bool QmcExporter::writeBitArray(QDataStream &stream, const QBitArray &array)
@@ -278,6 +279,17 @@ bool QmcExporter::writeQmcUnit(QmlCompilation *c, QDataStream &stream)
             return false;
         if (!writeBitArray(stream, deferredBinding.bindings))
             return false;
+    }
+
+    // composite singleton references
+    foreach (const QmlCompilation::TypeReference &typeRef, c->m_compositeSingletons)
+    {
+        if (!writeString(stream, typeRef.type->qmlTypeName()))
+            return false;
+        if (!writeString(stream, typeRef.prefix))
+            return false;
+        // The source URL when compiled is not the same as when used.
+        // Here it would be typeRef.type->sourceUrl(). 
     }
 
     return true;

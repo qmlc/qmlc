@@ -58,6 +58,8 @@ public:
     QQmlImportDatabase* importDatabase;
 
     struct TypeReference {
+        TypeReference() : type(0), majorVersion(0), minorVersion(0), typeData(0), needsCreation(true) {}
+
         QString name;
         QV4::CompiledData::Location location;
         bool composite;
@@ -66,6 +68,8 @@ public:
         int minorVersion;
         QQmlType *type;
         QmlCompilation *component;
+        QString prefix; // used by CompositeSingleton types
+        QQmlTypeData *typeData;
     };
 
     QHash<int, TypeReference> typeReferences;
@@ -85,6 +89,7 @@ public:
 
     QList<QmcUnitExceptionReturnLabel> exceptionReturnLabels;
     QList<QVector<QmcUnitExceptionPropagationJump> > exceptionPropagationJumps;
+    QList<TypeReference> m_compositeSingletons;
 
 #if CPU(ARM_THUMB2)
     QList<QList<QmcUnitLinkRecord> > jumpsToLinkData;
@@ -93,6 +98,7 @@ public:
 
     QHash<int, int> aliasIdToObjectIndex;
     QHash<int, QHash<int, int> > aliasIdToObjectIndexPerComponent;
+    bool singleton;
 };
 
 #endif // QMLCOMPILATION_H

@@ -342,7 +342,11 @@ bool QmcTypeCompiler::precompile()
 
     // TBD: qqmltypecompiler.cpp:72 namespaces, copy from QmlCompilation->namespaces
 
-    // TBD: qqmltypecompiler.cpp:76 composite singletons
+    // qqmltypecompiler.cpp:76 composite singletons
+    // Add any Composite Singletons that were used to the import cache
+    foreach (const QmlCompilation::TypeReference &singleton, compilation->m_compositeSingletons) {
+        compiledData->importCache->add(singleton.type->qmlTypeName(), singleton.type->sourceUrl(), singleton.prefix);
+    }
 
     compilation->importCache->populateCache(compiledData->importCache);
 
@@ -462,9 +466,15 @@ bool QmcTypeCompiler::precompile()
 
     // add to type registry
     // qqmltypecompiler.cpp:248
-    if (compiledData->isCompositeType())
+    if (compiledData->isCompositeType()) {
+        if (compilation->singleton)
+            qmlUnit->header.flags |= QV4::CompiledData::Unit::IsSingleton;
         QQmlEnginePrivate::get(compilation->engine)->registerInternalCompositeType(compiledData);
-    else {
+    } else {
+        if (compilation->singleton) {
+             qmlUnit->header.flags = qmlUnit->header.flags | QV4::CompiledData::Unit::IsSingleton;
+        }
+
         const QV4::CompiledData::Object *obj = qmlUnit->objectAt(qmlUnit->indexOfRootObject);
         QQmlCompiledData::TypeReference *typeRef = compiledData->resolvedTypes.value(obj->inheritedTypeNameIndex);
         Q_ASSERT(typeRef);
