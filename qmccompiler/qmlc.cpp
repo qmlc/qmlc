@@ -463,6 +463,19 @@ bool QmlC::createExportStructures()
                     alias.targetObjectIndex = compilation()->aliasIdToObjectIndex.value(p->aliasIdValueIndex, -1);
                 }
 
+                if (alias.targetObjectIndex == -1) {
+                    QHash<int, QHash<int, int> >::const_iterator iteratorAliases = compilation()->aliasIdToObjectIndexPerComponent.constBegin();
+                    while (iteratorAliases != compilation()->aliasIdToObjectIndexPerComponent.constEnd()) {
+
+                        alias.targetObjectIndex = iteratorAliases.value().value(p->aliasIdValueIndex, -1);
+                        if (alias.targetObjectIndex != -1) {
+                            break;
+                        }    
+                        ++iteratorAliases;
+                    }
+                }
+
+
                 // qqmltypecompiler.cpp:1687
                 typedef QQmlVMEMetaData VMD;
                 QByteArray &dynamicData = compilation()->compiledData->metaObjects[i];
