@@ -29,7 +29,7 @@ class CompilerPrivate : QObjectPrivate
     Q_DECLARE_PUBLIC(Compiler)
 
 public:
-    CompilerPrivate();
+    CompilerPrivate(CompilerOptions *options);
     virtual ~CompilerPrivate();
 
     QList<QQmlError> errors;
@@ -37,11 +37,13 @@ public:
     QQmlEngine *engine;
     QString basePath;
     bool basePathSet;
+    CompilerOptions *options;
 };
 
-CompilerPrivate::CompilerPrivate()
+CompilerPrivate::CompilerPrivate(CompilerOptions *options)
     : compilation(NULL),
-      basePathSet(false)
+      basePathSet(false),
+      options(options)
 {
 }
 
@@ -50,8 +52,8 @@ CompilerPrivate::~CompilerPrivate()
     delete compilation;
 }
 
-Compiler::Compiler(QQmlEngine *engine, QObject *parent) :
-    QObject(*(new CompilerPrivate), parent)
+Compiler::Compiler(QQmlEngine *engine, CompilerOptions *options, QObject *parent) :
+    QObject(*(new CompilerPrivate(options)), parent)
 {
     Q_D(Compiler);
     d->engine = engine;
@@ -106,6 +108,8 @@ bool Compiler::loadData()
         return false;
     }
     d->compilation->code = QString::fromUtf8(f.data());
+    if (options()->debug)
+        options()->debug->gatherInfo(*d->compilation);
     return true;
 }
 
@@ -131,6 +135,12 @@ void Compiler::appendErrors(const QList<QQmlError> &errors)
 {
     Q_D(Compiler);
     d->errors.append(errors);
+}
+
+CompilerOptions *Compiler::options()
+{
+    const Q_D(Compiler);
+    return d->options;
 }
 
 QmlCompilation* Compiler::compilation()

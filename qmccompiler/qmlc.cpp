@@ -35,10 +35,10 @@
 #include <private/qqmldebugserver_p.h>
 #include <private/qqmlvmemetaobject_p.h>
 
-int QmlC::MAX_RECURSION = 10;
+int QmlC::MAX_RECURSION = 20;
 
-QmlC::QmlC(QQmlEngine *engine, QObject *parent) :
-    Compiler(engine, parent),
+QmlC::QmlC(QQmlEngine *engine, CompilerOptions *options, QObject *parent) :
+    Compiler(engine, options, parent),
     implicitImportLoaded(false),
     recursion(0),
     components(new QHash<QString, QmlCompilation *>()),
@@ -46,8 +46,8 @@ QmlC::QmlC(QQmlEngine *engine, QObject *parent) :
 {
 }
 
-QmlC::QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, QObject *parent) :
-    Compiler(engine, parent),
+QmlC::QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, CompilerOptions *options, QObject *parent) :
+    Compiler(engine, options, parent),
     implicitImportLoaded(false),
     recursion(0),
     components(components),
@@ -122,14 +122,14 @@ bool QmlC::continueLoadFromIR()
     }
 
     foreach (QmlIR::Pragma *pragma, compilation()->document->pragmas) {
-        if (pragma->type != QmlIR::Pragma::PragmaSingleton) {
+        if (pragma->type == QmlIR::Pragma::PragmaSingleton) {
+            compilation()->singleton = true;
+        } else {
             QQmlError error;
-            error.setDescription("Pragma singleton not supported");
+            error.setDescription("Unknown pragma not supported");
             appendError(error);
             // TBD: qqmltypeloader.cpp:1413
             return false;
-        } else {
-            compilation()->singleton = true;
         }
     }
     return true;
@@ -327,7 +327,7 @@ bool QmlC::doCompile()
     compiledData->name = compilation()->urlString;
 
     //qDebug() << "Compile" << compilation()->url;
-    QmcTypeCompiler compiler(compilation());
+    QmcTypeCompiler compiler(compilation(), options());
     if (!compiler.precompile()) {
         appendErrors(compiler.compilationErrors());
         return false;
@@ -407,9 +407,9 @@ bool QmlC::createExportStructures()
 
     // script refs
     foreach (const QmlCompilation::ScriptReference script, compilation()->scripts) {
-       QmcUnitScriptReference scriptRef;
-       scriptRef.qualifier = script.qualifier;
-       compilation()->exportScriptRefs.append(scriptRef);
+        QmcUnitScriptReference scriptRef;
+        scriptRef.qualifier = script.qualifier;
+        compilation()->exportScriptRefs.append(scriptRef);
     }
 
     // root object index to id mapping
@@ -555,7 +555,7 @@ QmlCompilation* QmlC::getComponent(const QUrl& url)
         }
 
         // compile
-        QmlC compiler(engine(), components);
+        QmlC compiler(engine(), components, options());
         compiler.recursion = this->recursion + 1;
         if (!compiler.compile(url.toString())) {
             appendErrors(compiler.errors());

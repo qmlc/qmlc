@@ -49,7 +49,8 @@ SOURCES += \
     irfunctioncleanser.cpp \
     qmcinstructionselection.cpp \
     scriptc.cpp \
-    qrccompiler.cpp
+    qmcdebuginfo.cpp \
+    compileroptions.cpp
 
 
 HEADERS += qmccompiler_global.h \
@@ -72,7 +73,8 @@ HEADERS += qmccompiler_global.h \
     irfunctioncleanser.h \
     qmcinstructionselection.h \
     scriptc.h \
-    qrccompiler.h
+    qmcdebuginfo.h \
+    compileroptions.h
 
 devheaders.files = $$HEADERS
 devheaders.path = $$INCLUDEDIR/qmccompiler

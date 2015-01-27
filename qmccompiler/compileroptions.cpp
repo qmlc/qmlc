@@ -15,10 +15,15 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-import QtQuick 2.0
+#include "compileroptions.h"
 
-Rectangle {
-    width: 100
-    height: 100
-    Component.onCompleted: console.log("QmlSubItem completed")
+CompilerOptions::CompilerOptions()
+    : debug(NULL)
+{
 }
+
+CompilerOptions::~CompilerOptions()
+{
+    delete debug;
+}
+

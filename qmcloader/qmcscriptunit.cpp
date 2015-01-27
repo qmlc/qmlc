@@ -37,10 +37,13 @@ QmcScriptUnit::~QmcScriptUnit()
     delete unit;
 }
 
-bool QmcScriptUnit::initialize()
+bool QmcScriptUnit::initialize(QmcUnit *includerUnit)
 {
-    if (isComplete())
+    if (isComplete()) {
+        // This adds the names to includer so has to be called.
+        initForIncluder(includerUnit);
         return true;
+    }
     setStatus(Complete);
 
     initializeFromCompilationUnit(unit->compilationUnit, false);
@@ -81,8 +84,25 @@ bool QmcScriptUnit::initialize()
 
     // call done
     done();
+    initForIncluder(includerUnit);
     if (!isError())
         return true;
     else
         return false;
 }
+
+void QmcScriptUnit::setCacheBaseUrl(const QUrl &url, const QString &name)
+{
+    m_importCache.setBaseUrl(url, name);
+}
+
+void QmcScriptUnit::initForIncluder(QmcUnit *includerUnit)
+{
+    if (!includerUnit)
+        return;
+    QmcScriptUnit* qsu = dynamic_cast<QmcScriptUnit*>(includerUnit->blob);
+    m_scriptData->program(includerUnit->engine)->qml = qsu->m_scriptData->program(includerUnit->engine)->qml;
+    m_scriptData->program(includerUnit->engine)->run();
+    // Should check for exception. Maybe in callback that calls initialize?
+}
+

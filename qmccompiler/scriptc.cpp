@@ -30,8 +30,8 @@
 #include "qmcinstructionselection.h"
 
 
-ScriptC::ScriptC(QQmlEngine *engine, QObject *parent) :
-    Compiler(engine, parent)
+ScriptC::ScriptC(QQmlEngine *engine, CompilerOptions *options, QObject *parent) :
+    Compiler(engine, options, parent)
 {
 }
 
@@ -137,7 +137,7 @@ QV4::CompiledData::CompilationUnit* ScriptC::precompile(QV4::IR::Module *module,
 
     QScopedPointer<QmcInstructionSelection> isel(
                 new QmcInstructionSelection(enginePrivate, v4->executableAllocator,
-                                        module, unitGenerator));
+                                        module, unitGenerator, options()));
     isel->setUseFastLookups(false);
     QV4::CompiledData::CompilationUnit *ret =  isel->compile(/*generate unit data*/false);
     compilation()->linkData = isel->linkData();

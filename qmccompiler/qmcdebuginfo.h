@@ -13,47 +13,31 @@
  * give you certain additional rights.  These rights are described in
  * the Digia Qt LGPL Exception version 1.1, included in the file
  * LGPL_EXCEPTION.txt in this package.
- *
- * Author: Mikko Hurskainen <mikko.hurskainen@nomovok.com>
  */
 
-#ifndef JSC_H
-#define JSC_H
+#ifndef QMCDEBUGINFO_H
+#define QMCDEBUGINFO_H
 
-#include <QObject>
-#include <QDataStream>
-
-#include "compiler.h"
+#include "qmcfile.h"
+#include "qmlcompilation.h"
 #include "qmccompiler_global.h"
 
-namespace QV4 {
-namespace IR {
-struct Module;
-}
+#include <QString>
+#include <QByteArray>
 
-namespace Compiler {
-struct JSUnitGenerator;
-}
 
-namespace CompiledData {
-class CompilationUnit;
-}
-}
-
-class QQmlEngine;
-
-class QMCCOMPILERSHARED_EXPORT ScriptC : public Compiler
+class QMCCOMPILERSHARED_EXPORT QmcDebugInfo
 {
-    Q_OBJECT
 public:
-    explicit ScriptC(QQmlEngine *engine, CompilerOptions *options = 0, QObject *parent = 0);
-    virtual ~ScriptC();
+    QmcDebugInfo(const QString &name);
+    void gatherInfo(const QmlCompilation &compilation);
 
-protected:
-    virtual bool compileData();
-    virtual bool createExportStructures();
+    quint32 id() const { return info.sourceId; }
+
+    bool append(const QString &fileName) const;
+
 private:
-    QV4::CompiledData::CompilationUnit* precompile(QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *unitGenerator);
+    QmcDebug info;
 };
 
-#endif // JSC_H
+#endif // QMCDEBUGINFO_H

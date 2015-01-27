@@ -5,8 +5,7 @@
 #-------------------------------------------------
 include(../config.pri)
 
-QT       += core qml
-
+QT       += core qml qml-private core-private
 QT       -= gui
 
 TARGET = qmc
@@ -16,9 +15,17 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 INCLUDEPATH += ../qmccompiler
+INCLUDEPATH += ../3rdparty/masm
+INCLUDEPATH += ../3rdparty/masm/stubs
+INCLUDEPATH += ../3rdparty/masm/stubs/wtf
+INCLUDEPATH += ../3rdparty/masm/jit
+INCLUDEPATH += ../3rdparty/masm/disassembler
+INCLUDEPATH += ../include
+
+include(../3rdparty/masm/masm-defs.pri)
+DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 
 LIBS += -L../qmccompiler
-
 LIBS += -lqmccompiler
 
 SOURCES += main.cpp \

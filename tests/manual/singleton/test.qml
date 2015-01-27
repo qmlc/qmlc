@@ -1,5 +1,5 @@
 import QtQuick 2.2
-import skytree.singleton.Lib 1.0
+import "Lib"
 import "."
 
 Item {

@@ -87,6 +87,7 @@ struct QmcUnit
     QHash<int, QBitArray> deferredBindings;
     QVector<int> codeRefSizes;
 
+    static QmcUnit* findUnit(QV4::CompiledData::Unit* u);
 private:
     QmcUnit(QmcUnitHeader *header, const QUrl &url, const QString &urlString, QQmlEngine *engine, QmcLoader *loader, const QString &name, const QUrl &loadedUrl);
     bool loadUnitData(QDataStream &stream);

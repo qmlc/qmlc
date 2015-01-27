@@ -120,8 +120,9 @@ static QVector<int> getFpRegisters()
 #endif
 
 QmcInstructionSelection::QmcInstructionSelection(QQmlEnginePrivate *qmlEngine, QV4::ExecutableAllocator *execAllocator,
-                                                 QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *jsGenerator)
-    : QV4::JIT::InstructionSelection(qmlEngine, execAllocator, module, jsGenerator)
+                                                 QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *jsGenerator,
+                                                 CompilerOptions *options)
+    : QV4::JIT::InstructionSelection(qmlEngine, execAllocator, module, jsGenerator), options(options)
 {
 }
 
@@ -195,10 +196,29 @@ void QmcInstructionSelection::run(int functionIndex)
         foreach (IR::Stmt *s, _block->statements) {
 #endif
             if (s->location.isValid()) {
-                if (int(s->location.startLine) != lastLine) {
-                    Assembler::Address lineAddr(Assembler::ContextRegister, qOffsetOf(QV4::ExecutionContext, lineNumber));
-                    _as->store32(Assembler::TrustedImm32(s->location.startLine), lineAddr);
+                if (options->debug && int(s->location.startLine) != lastLine) {
                     lastLine = s->location.startLine;
+                    // Construct expressions for a statement that calls the
+                    // function that checks for break.
+                    // This whole thing may leak memory or the pointers remain
+                    // stored somewhere. ~Stmt is marked unreachable and there
+                    // are no destructors for Call or Exp so maybe ok as is.
+                    IR::Name *funcName = _function->New<IR::Name>();
+                    QString name("checkBreakpoint");
+                    funcName->initGlobal(&name, 0, 0);
+                    IR::Const *sourceId = _function->New<IR::Const>();
+                    sourceId->init(IR::SInt32Type, qint32(options->debug->id()));
+                    ExprList arg;
+                    arg.init(sourceId, NULL);
+                    IR::Const *lineNumber = _function->New<IR::Const>();
+                    lineNumber->init(IR::SInt32Type, lastLine);
+                    ExprList argList;
+                    argList.init(lineNumber, &arg);
+                    IR::Call *call = _function->New<IR::Call>();
+                    call->init(funcName, &argList);
+                    IR::Exp *statement = _function->New<IR::Exp>();
+                    statement->init(call);
+                    statement->accept(this);
                 }
             }
             s->accept(this);

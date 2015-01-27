@@ -15,10 +15,18 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
-import QtQuick 2.0
+#ifndef COMPILEROPTIONS_H
+#define COMPILEROPTIONS_H
 
-Rectangle {
-    width: 100
-    height: 100
-    Component.onCompleted: console.log("QmlSubItem completed")
-}
+#include "qmcdebuginfo.h"
+
+class QMCCOMPILERSHARED_EXPORT CompilerOptions
+{
+public:
+    CompilerOptions();
+    ~CompilerOptions();
+
+    QmcDebugInfo* debug;
+};
+
+#endif // COMPILEROPTIONS_H

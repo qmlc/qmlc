@@ -25,6 +25,7 @@
 #include <private/qv4isel_masm_p.h>
 
 #include "qmcfile.h"
+#include "compileroptions.h"
 
 namespace QV4 {
 namespace IR {
@@ -39,7 +40,8 @@ class QmcInstructionSelection : public QV4::JIT::InstructionSelection
 {
 public:
     QmcInstructionSelection(QQmlEnginePrivate *qmlEngine, QV4::ExecutableAllocator *execAllocator,
-                            QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *jsGenerator);
+                            QV4::IR::Module *module, QV4::Compiler::JSUnitGenerator *jsGenerator,
+                            CompilerOptions *options);
 
     virtual void run(int functionIndex);
 
@@ -64,6 +66,7 @@ private:
     QList<QmcUnitUnlinkedCodeData> unlinkedCode;
 #endif
 
+    CompilerOptions *options;
 };
 
 #endif // QMCINSTRUCTIONSELECTION_H

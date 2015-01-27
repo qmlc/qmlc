@@ -23,6 +23,7 @@ INCLUDEPATH += ../3rdparty/masm/stubs/wtf
 INCLUDEPATH += ../3rdparty/masm/jit
 INCLUDEPATH += ../3rdparty/masm/disassembler
 INCLUDEPATH += ../include
+INCLUDEPATH += ../qmcdebugger/
 
 include(../3rdparty/masm/masm-defs.pri)
 
@@ -38,7 +39,7 @@ SOURCES += qmcloader.cpp \
     qmctypeunitcomponentandaliasresolver.cpp \
     qmcbackedinstructionselection.cpp \
     qmcloadingmeasurer.cpp \
-    qrcloader.cpp
+    qmcdebugdata.cpp
 
 HEADERS += qmcloader.h \
     qmcloader_global.h \
@@ -49,10 +50,10 @@ HEADERS += qmcloader.h \
     qmctypeunitcomponentandaliasresolver.h \
     qmcbackedinstructionselection.h \
     qmcloadingmeasurer.h \
-    qrcloader.h
+    qmcdebugdata.h
 
 
-devheaders.files = qmcloader.h qmcloader_global.h qrcloader.h
+devheaders.files = qmcloader.h qmcloader_global.h
 devheaders.path = $$INCLUDEDIR/qmcloader
 
 unix {

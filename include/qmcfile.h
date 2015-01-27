@@ -195,9 +195,15 @@ struct QmcUnitExceptionPropagationJump {
 struct QmcSingletonTypeReference {
     QString typeName;
     QString prefix;
-    // We need url but we must use load-time, not compile-time info. QmcUnit
-    // has url that is modified to be the loadedUrl but it's for the object
-    // begin loaded, not the one referred to. Does it help to store the QString?
+};
+
+#define QMC_DEBUG_INFO_FOOTER 0xdeb95712
+
+// To store all info that only debugger needs.
+struct QmcDebug {
+    quint32 sourceId;
+    QString sourceName;
 };
 
 #endif // QMCFILE_H
+

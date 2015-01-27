@@ -32,11 +32,14 @@ public:
     QmcScriptUnit(QmcUnit *unit, QQmlTypeLoader *typeLoader);
     virtual ~QmcScriptUnit();
 
-    bool initialize();
+    bool initialize(QmcUnit *includerUnit = NULL);
 
-private:
+    void setCacheBaseUrl(const QUrl &url, const QString &name);
     QmcUnit *unit;
+private:
     QList<QmcUnit *> dependencies;
+
+    void initForIncluder(QmcUnit *includerUnit);
 };
 
 #endif // QMCSCRIPTUNIT_H

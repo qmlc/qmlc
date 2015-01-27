@@ -1,6 +1,6 @@
 Name:       qmc      
-Version:    5.3.0
-Release:    1%{?dist}
+Version:    5.3.0.skytree37
+Release:    2%{?dist}
 Summary:    QML Compiler
 License:    LGPLv2.1 with exception
 
@@ -56,6 +56,27 @@ Requires:       %{name}-loader = %{version}-%{release}
 Development files for the qmc loader library
 
 
+%package debugger
+Summary:        Debugger for compiled files
+Group:          System/Libraries
+Requires:       %{name} >= %{version}
+Requires:       %{name}-loader = %{version}-%{release}
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+
+%description debugger
+Debugger support library for compiled files
+
+
+%package debugger-devel
+Summary:        Development files for the qmc debugger library
+Group:          System/Libraries
+Requires:       %{name}-debugger = %{version}-%{release}
+
+%description debugger-devel
+Development files for the qmc debugger library
+
+
 %package tests
 Summary:        Tests for qmc compiler/loader
 Group:          System/Libraries
@@ -85,12 +106,19 @@ make %{?jobs:-j%jobs}
 
 %install
 %make_install
+%{__cp} tests/manual/multipleitems/app.qml  %{buildroot}%{_libdir}/qt5/tests/qmlc/manual/multipleitems/app.qml
+%{__cp} tests/manual/multipleitems/qml/content/*.qml  %{buildroot}%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/
+%{__cp} tests/manual/multipleitems/qml/content/testscript1.js  %{buildroot}%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/
+%{__cp} tests/manual/multipleitems/qml/*.qml  %{buildroot}%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/
 
 %post core -p /sbin/ldconfig
 %postun core -p /sbin/ldconfig
 
 %post loader -p /sbin/ldconfig
 %postun loader -p /sbin/ldconfig
+
+%post debugger -p /sbin/ldconfig
+%postun debugger -p /sbin/ldconfig
 
 %files
 %defattr(-,root,root,-)
@@ -116,12 +144,24 @@ make %{?jobs:-j%jobs}
 %{_includedir}/qmcloader
 %{_bindir}/qmcdump
 
+%files debugger
+%{_libdir}/libqmcdebugger.so.*
+
+%files debugger-devel
+%{_libdir}/libqmcdebugger.so
+%{_libdir}/pkgconfig/qmcdebugger.pc
+%{_includedir}/qmcdebugger
+
 %files tests
 %{_bindir}/compiletest
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/multipleitems
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/multipleitems_loader
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/app.qmc
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/app.qml
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/QmlSubItem.qml
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/testscript1.js
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/QmlJSItems.qmc
+%{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/QmlJSItems.qml
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/QmlSubItem.qmc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/qml/content/testscript1.jsc
 %{_libdir}/qt5/tests/qmlc/manual/multipleitems/Charts/libchartsplugin.so

@@ -39,9 +39,10 @@
 
 #define tr(x) QString(x)
 
-QmcTypeCompiler::QmcTypeCompiler(QmlCompilation *compilation)
+QmcTypeCompiler::QmcTypeCompiler(QmlCompilation *compilation, CompilerOptions *options)
     : compilation(compilation),
-      compiledData(compilation->compiledData)
+      compiledData(compilation->compiledData),
+      options(options)
 {
 }
 
@@ -437,7 +438,7 @@ bool QmcTypeCompiler::precompile()
 #endif
         QScopedPointer<QmcInstructionSelection> isel(
                     new QmcInstructionSelection(enginePrivate, v4->executableAllocator,
-                                            &compilation->document->jsModule, &compilation->document->jsGenerator));
+                                            &compilation->document->jsModule, &compilation->document->jsGenerator, options));
         isel->setUseFastLookups(false);
         compilation->document->javaScriptCompilationUnit = isel->compile(/*generated unit data*/false);
         compilation->linkData = isel->linkData();

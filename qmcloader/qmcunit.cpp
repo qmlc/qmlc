@@ -17,6 +17,7 @@
  * LGPL_EXCEPTION.txt in this package.
  */
 
+#include <QMap>
 #include "qmcunit.h"
 
 #include <sys/mman.h>
@@ -38,6 +39,8 @@
 QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
+
+static QMap<QV4::CompiledData::Unit*, QmcUnit*> unit2qmc;
 
 QmcUnit::QmcUnit(QmcUnitHeader *header, const QUrl& url, const QString &urlString, QQmlEngine *engine, QmcLoader *loader, const QString &name, const QUrl &loadedUrl) :
     engine(engine),
@@ -447,6 +450,7 @@ bool QmcUnit::loadUnitData(QDataStream &stream)
     }
 #endif
 
+    unit2qmc[unit] = this;
     return true;
 }
 
@@ -550,6 +554,14 @@ QString QmcUnit::stringAt(int index) const
 {
     Q_ASSERT(index < strings.size());
     return strings.at(index);
+}
+
+QmcUnit* QmcUnit::findUnit(QV4::CompiledData::Unit* u)
+{
+    QMap<QV4::CompiledData::Unit*,QmcUnit*>::const_iterator iter = unit2qmc.find(u);
+    if (iter != unit2qmc.end())
+        return iter.value();
+    return NULL;
 }
 
 QT_END_NAMESPACE
