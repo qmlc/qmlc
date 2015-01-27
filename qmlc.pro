@@ -7,6 +7,7 @@ SUBDIRS = \
 	3rdparty \
 	qmccompiler \
 	qmcloader \
+    qmcdebugger \
 	qmc \
     tools \
 	compiletest \

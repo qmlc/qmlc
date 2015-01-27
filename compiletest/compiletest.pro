@@ -25,6 +25,7 @@ INCLUDEPATH += ../3rdparty/masm/stubs
 INCLUDEPATH += ../3rdparty/masm/stubs/wtf
 INCLUDEPATH += ../3rdparty/masm/jit
 INCLUDEPATH += ../3rdparty/masm/disassembler
+INCLUDEPATH += ../include
 include(../3rdparty/masm/masm-defs.pri)
 DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 

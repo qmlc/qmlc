@@ -24,11 +24,19 @@
 #include <QCommandLineParser>
 #include <QFileInfo>
 #include <QDir>
+#include <private/qv4context_p.h>
+#include <private/qv8engine_p.h>
 
 #include <iostream>
 #include "qmlc.h"
 #include "scriptc.h"
 #include "comp.h"
+#include "qmcdebuginfo.h"
+
+QV4::ReturnedValue checkBreakpoint(QV4::CallContext *ctx)
+{
+    return QV4::Encode::undefined();
+}
 
 int main(int argc, char *argv[])
 {
@@ -46,10 +54,12 @@ int main(int argc, char *argv[])
         QCoreApplication::translate("main", "Speficy output file."),
         QCoreApplication::translate("main", "file name"));
     parser.addOption(outputOption);
+    QCommandLineOption nameOption("n",
+        QCoreApplication::translate("main", "File name for debug info."),
+        QCoreApplication::translate("main", "source name"));
+    parser.addOption(nameOption);
 
     parser.process(app);
-    bool debug = parser.isSet(debugOption);
-
     // Input and output file names.
     const QStringList inputNames = parser.positionalArguments();
     if (inputNames.size() != 1) {
@@ -73,6 +83,10 @@ int main(int argc, char *argv[])
         QFileInfo oname(parser.value(outputOption));
         outputFileName = oname.absoluteFilePath();
     }
+    QString debugName = fileName;
+    if (parser.isSet(nameOption)) {
+        debugName = parser.value(nameOption);
+    }
     QFileInfo iname(fileName);
     QDir dir = iname.dir();
     QDir::setCurrent(dir.path());
@@ -80,7 +94,17 @@ int main(int argc, char *argv[])
     // A side effect is that compiler error messages lose path in file name.
     // Add original file name to Comp if this is a problem.
 
+    CompilerOptions options;
+    if (parser.isSet(debugOption)) {
+        options.debug = new QmcDebugInfo(debugName);
+    }
+
     QQmlEngine *engine = new QQmlEngine;
+    // Technically might not be needed but added just to be on the safe side.
+    if (options.debug) {
+        QV4::Object *go = QV8Engine::getV4(engine)->globalObject;
+        go->defineDefaultProperty(QStringLiteral("checkBreakpoint"), checkBreakpoint);
+    }
 
     // update import path to include .
     // engine->addImportPath(".");  doesn't work?
@@ -101,9 +125,9 @@ int main(int argc, char *argv[])
     // TODO: pass debug flag presence to compilers.
     Compiler *compiler = NULL;
     if (fileName.endsWith(".js")) {
-        compiler = new ScriptC(engine);
+        compiler = new ScriptC(engine, &options);
     } else if (fileName.endsWith(".qml")) {
-        compiler = new QmlC(engine);
+        compiler = new QmlC(engine, &options);
     } else {
         qWarning() << "Error: Supported filetypes include .js and .qml";
         return EXIT_FAILURE;
@@ -114,6 +138,11 @@ int main(int argc, char *argv[])
     comp.outputFileName = outputFileName;
 
     comp.compile();
+
+    if (options.debug && !options.debug->append(comp.outputFileName)) {
+        qWarning() << "Appending debug info failed.";
+        return EXIT_FAILURE; // Technically file would execute properly.
+    }
 
     delete compiler;
     delete engine;

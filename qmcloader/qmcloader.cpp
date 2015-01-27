@@ -26,18 +26,56 @@
 #include <private/qqmlcompiler_p.h>
 #include <private/qqmlcomponent_p.h>
 #include <private/qv4compileddata_p.h>
+#include <private/qv4context_p.h>
+#include <private/qv4debugging_p.h>
 
 #include "qmcloader.h"
 #include "qmcfile.h"
 #include "qmcunit.h"
 #include "qmctypeunit.h"
+#include "qmcdebugdata.h"
+#include "qmcscriptunit.h"
 
 static int DEPENDENCY_MAX_RECURSION_DEPTH = 10;
+
+// Used when not debugging QML. Needed because compiled code may still call it.
+QV4::ReturnedValue doNothing(QV4::CallContext *ctx)
+{
+    Q_UNUSED(ctx)
+    return QV4::Encode::undefined();
+}
+
+QV4::ReturnedValue checkBreakpoint(QV4::CallContext *ctx)
+{
+#if defined(DEBUG)
+    // Should be redundant as the compiler does the calls. All ok or none ok.
+    if (ctx->callData->argc != 2)
+        V4THROW_ERROR("checkBreakpoint() requires two arguments");
+    if (!ctx->callData->args[0].isInteger())
+        V4THROW_ERROR("checkBreakpoint(): first argument (line number) must be an integer");
+    if (!ctx->callData->args[1].isInteger())
+        V4THROW_ERROR("checkBreakpoint(): second argument (identifier) must be an integer");
+    ctx->lineNumber = ctx->callData->args[0].integerValue();
+    int sourceId = ctx->callData->args[1].integerValue();
+    QTextStream out(stdout);
+    out << "Break check: " << ctx->lineNumber << " " << sourceId;
+    QmcDebug* debug = debugData(sourceId);
+    if (debug) {
+        out << " " << debug->sourceName;
+    }
+    out << "\n";
+    out.flush();
+#endif
+    // ctx is accessible via engine so let QmcDebugger get the call args.
+    ctx->engine->debugger->maybeBreakAtInstruction();
+    return QV4::Encode::undefined();
+}
 
 /* This takes care when the user calls Qt.createComponent in javascript to load
  * the .qmc in place of creating a component from the .qml */
 static QQmlComponent *loadCallback(QQmlEngine *engine, QUrl url, void *data)
 {
+    Q_UNUSED(engine);
     QmcLoader *loader = static_cast<QmcLoader*>(data);
     QString dotqml = ".qml";
     QString qmcfile = url.toString().replace("file://", "");
@@ -45,6 +83,32 @@ static QQmlComponent *loadCallback(QQmlEngine *engine, QUrl url, void *data)
     qDebug() << "Loading Component" << qmcfile;
     return loader->loadComponent(qmcfile);
 }
+
+static bool jscLoadCallback(QV4::CallContext *ctx)
+{
+    if (!ctx->parent || !ctx->parent->compilationUnit || !ctx->parent->compilationUnit->data)
+        return false; // Does not look like we can handle this.
+    QmcUnit* includer = QmcUnit::findUnit(ctx->parent->compilationUnit->data);
+    if (!includer) {
+        qDebug() << "No corresponding QmcUnit found.";
+        return false;
+    }
+    QmcScriptUnit *qsu = dynamic_cast<QmcScriptUnit*>(includer->blob);
+    if (includer->loadedUrl.scheme() == "qrc") {
+        qsu->setCacheBaseUrl(includer->url, includer->urlString);
+    } else if (includer->loadedUrl.isLocalFile()) {
+        qsu->setCacheBaseUrl(QUrl(includer->loadedUrl), includer->loadedUrl.toString());
+    } else
+        return false; // We do not load from network now.
+    QString jscname = ctx->callData->args[0].toQStringNoThrow();
+    jscname.append("c");
+    QmcScriptUnit* script = includer->loader->getScript(jscname, includer->loadedUrl);
+    if (!script)
+        return false;
+    script->initialize(includer);
+    return true;
+}
+
 
 class QmcLoaderPrivate : public QObjectPrivate
 {
@@ -66,6 +130,16 @@ QmcLoaderPrivate::QmcLoaderPrivate(QQmlEngine *engine)
       loadDependenciesAutomatically(true),
       dependencyRecursionDepth(0)
 {
+    // Must add always since code compiled for debugging can be run without
+    // -qmljsdebugger parameter.
+    QV4::Object *go = QV8Engine::getV4(engine)->globalObject;
+    QString checkName("checkBreakpoint");
+    if (QV8Engine::getV4(engine)->debugger) {
+        go->defineDefaultProperty(checkName, checkBreakpoint);
+    } else {
+        go->defineDefaultProperty(checkName, doNothing);
+    }
+    QV8Engine::getV4(engine)->setJscLoadCallback(jscLoadCallback);
 }
 
 QmcLoaderPrivate::~QmcLoaderPrivate()
@@ -188,7 +262,7 @@ QQmlComponent *QmcLoader::loadComponent(QDataStream &stream, const QUrl &loadedU
     // TBD: where to put unit
     d->unit = typeUnit;
     d->unit->addref();
-
+    storeDebugData(stream);
     return component;
 }
 
@@ -273,6 +347,8 @@ QmcScriptUnit *QmcLoader::getScript(const QString &url, const QUrl &loaderUrl)
 {
     QString newUrl;
     if(url.startsWith("file:")){
+        newUrl = url;
+    } else if (url.startsWith("qrc:")) {
         newUrl = url;
     }else{
         newUrl = getBaseUrl(loaderUrl);
@@ -372,6 +448,7 @@ QmcUnit *QmcLoader::doloadDependency(QDataStream &stream, const QUrl &loadedUrl)
         return NULL;
     }
 
+    storeDebugData(stream);
     // add to dependencies
     d->dependencies[unit->loadedUrl.toString()] = unit;
     unit->blob->addref();

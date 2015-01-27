@@ -13,12 +13,20 @@
  * give you certain additional rights.  These rights are described in
  * the Digia Qt LGPL Exception version 1.1, included in the file
  * LGPL_EXCEPTION.txt in this package.
+ *
+ * Author: Ismo Karkkainen <ismo.karkkainen@nomovok.com>
  */
 
-import QtQuick 2.0
+#ifndef QMCDEBUGDATA_H
+#define QMCDEBUGDATA_H
 
-Rectangle {
-    width: 100
-    height: 100
-    Component.onCompleted: console.log("QmlSubItem completed")
-}
+#include "qmcfile.h"
+
+#include <QDataStream>
+
+
+void storeDebugData(QDataStream &input);
+QmcDebug *debugData(quint32 key);
+
+
+#endif // QMCDEBUGDATA_H

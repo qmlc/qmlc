@@ -20,6 +20,8 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#include "compileroptions.h"
+
 #include <QObject>
 #include <QQmlError>
 #include <QList>
@@ -68,9 +70,11 @@ public:
     QList<QQmlError> errors() const;
     bool isError() const;
     const QList<QQmlError>& compileErrors() const;
+
     QQmlTypeLoader *typeLoader();
+    CompilerOptions *options();
 protected:
-    Compiler(QQmlEngine *engine, QObject *parent = 0);
+    Compiler(QQmlEngine *engine, CompilerOptions *options, QObject *parent = 0);
     bool compile(const QString &url);
     virtual bool compileData() = 0;
     virtual bool createExportStructures() = 0;

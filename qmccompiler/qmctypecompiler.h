@@ -33,11 +33,12 @@ class QQmlCompiledData;
 class QQmlCustomParser;
 
 #include "qmlcompilation.h"
+#include "compileroptions.h"
 
 class QmcTypeCompiler
 {
 public:
-    QmcTypeCompiler(QmlCompilation *compilation);
+    QmcTypeCompiler(QmlCompilation *compilation, CompilerOptions *options);
     bool precompile();
     QList<QQmlError> compilationErrors() const;
     void recordError(const QQmlError& error);
@@ -90,6 +91,7 @@ private:
     QQmlCompiledData *compiledData;
     QList<QQmlError> errors;
     QHash<int, QQmlCustomParser *> customParsers;
+    CompilerOptions *options;
 };
 
 #endif // QMCTYPECOMPILER_H

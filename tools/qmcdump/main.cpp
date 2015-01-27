@@ -95,6 +95,8 @@ int main(int argc, char *argv[])
 }
 
 
+static const QList<QString>* strs = NULL;
+
 QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
 {
     // QV4::CompiledData::QmlUnit dump.
@@ -106,10 +108,12 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
     stream << " nObjects " << unit.qmlUnit->nObjects << "\n";
     stream << " offsetToObjects " << unit.qmlUnit->offsetToObjects << "\n";
     stream << " indexOfRootObject " << unit.qmlUnit->indexOfRootObject << "\n";
+    strs = &(unit.strings);
     stream << *unit.compilationUnit;
     stream << "Strings:\n";
+    int counter = 0;
     foreach (const QString &s, unit.strings)
-        stream << " " << s << "\n";
+        stream << " " << counter++ << ": " << s << "\n";
     stream << "Imports:\n";
     foreach (const QV4::CompiledData::Import &import, unit.imports)
         stream << unit.strings[import.uriIndex] << " " << unit.strings[import.qualifierIndex] << "\n";
@@ -212,13 +216,27 @@ QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::Compilatio
     for (int k = 0; k < unit.data->functionTableSize; ++k) {
         const QV4::CompiledData::Function *f = unit.data->functionAt(k);
         stream << " index " << f->index << "\n";
-        stream << "  nameIndex " << f->nameIndex << "\n";
-        stream << "  flags " << f->flags << "\n";
-        stream << "  nFormals " << f->nFormals << "\n";
+        stream << "  nameIndex " << f->nameIndex;
+        if (strs)
+            stream << ": " << (*strs)[f->nameIndex];
+        stream << "\n";
+        stream << "  flags (" << f->flags << ")";
+        if (f->flags & QV4::CompiledData::Function::HasDirectEval)
+            stream << " HasDirectEval";
+        if (f->flags & QV4::CompiledData::Function::UsesArgumentsObject)
+            stream << " UsesArgumentsObject";
+        if (f->flags & QV4::CompiledData::Function::IsStrict)
+            stream << " IsStrict";
+        if (f->flags & QV4::CompiledData::Function::IsNamedExpression)
+            stream << " IsNamedExpression";
+        if (f->flags & QV4::CompiledData::Function::HasCatchOrWith)
+            stream << " HasCatchOrWith";
+        stream << "\n";
+        stream << "  nFormals " << f->nFormals;
         stream << "  formalsOffset " << f->formalsOffset << "\n";
-        stream << "  nLocals " << f->nLocals << "\n";
+        stream << "  nLocals " << f->nLocals;
         stream << "  localsOffset " << f->localsOffset << "\n";
-        stream << "  nInnerFunctions " << f->nInnerFunctions << "\n";
+        stream << "  nInnerFunctions " << f->nInnerFunctions;
         stream << "  innerFunctionsOffset " << f->innerFunctionsOffset << "\n";
         stream << "  location (row, col) " << f->location.line << ", " << f->location.column << "\n";
     }

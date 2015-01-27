@@ -27,6 +27,7 @@
 #include <QVector>
 
 #include "compiler.h"
+#include "compileroptions.h"
 #include "qmccompiler_global.h"
 
 class QQmlEngine;
@@ -36,7 +37,7 @@ class QMCCOMPILERSHARED_EXPORT QmlC : public Compiler
     Q_OBJECT
 
 public:
-    QmlC(QQmlEngine *engine, QObject *parent = 0);
+    QmlC(QQmlEngine *engine, CompilerOptions *options = 0, QObject *parent = 0);
     virtual ~QmlC();
 
 protected:
@@ -44,7 +45,7 @@ protected:
     virtual bool createExportStructures();
 
 private:
-    QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, QObject *parent = 0);
+    QmlC(QQmlEngine *engine, QHash<QString, QmlCompilation *> *components, CompilerOptions *options, QObject *parent = 0);
     bool compileComponent(int recursion);
     bool dataReceived();
     bool continueLoadFromIR();

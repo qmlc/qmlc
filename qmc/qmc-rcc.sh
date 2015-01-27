@@ -74,12 +74,12 @@ do
             if [ $T == $L ]; then
                 cp $SF $TF
             else
-                qmc $QMCFLAGS $SF -o $TF
+                qmc $QMCFLAGS $SF -o $TF -n $L
             fi
         else
             # Not a shadow build. Delete only files we generate.
             if [ $T != $L ]; then
-                qmc $QMCFLAGS $SF -o $TF
+                qmc $QMCFLAGS $SF -o $TF -n $L
                 RMFILES=$(echo " "$RMFILES" "$TF" ")
             fi
         fi
