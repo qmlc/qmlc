@@ -83,7 +83,7 @@ git clone https://github.com/qmlc/qtdeclarative.git
 * Configure and build
 
 <pre>
-./configure -developer-build -debug -opensource -confirm-license
+./configure -developer-build -nomake tests -debug -opensource -confirm-license
 make # use makes -j.. option for faster builds
 </pre>
 
