@@ -95,9 +95,12 @@ bool QmcTypeUnit::link()
     compiledData->compilationUnit->ref();
     compiledData->qmlUnit = unit->qmlUnit;
     compiledData->name = unit->name;
+    if (compiledData->name.isEmpty())
+        compiledData->name = compiledData->url.fileName();
 
     setStatus(Complete);
 
+    QQmlCompilingProfiler prof(QQmlEnginePrivate::get(unit->engine)->profiler, compiledData->name);
     // create imports
     if (!addImports())
         return false;
