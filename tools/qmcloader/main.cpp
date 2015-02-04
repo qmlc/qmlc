@@ -45,20 +45,29 @@
 #include <QQmlComponent>
 #include <QQuickView>
 #include <QFile>
+#include <QCommandLineParser>
 #include <QDebug>
 
 #include "qmcloader.h"
 
 int main(int argc, char *argv[])
 {
-    int ret;
-
-    if(argc != 2 || !QFile::exists(argv[1])){
-        qWarning() << argv[0] << "filename";
+    QGuiApplication app(argc, argv);
+    QCommandLineParser parser;
+    parser.setApplicationDescription("QMC file loader.");
+    parser.addHelpOption();
+    parser.addPositionalArgument("file",
+        QCoreApplication::translate("main", "QMC file."));
+    parser.process(app);
+    const QStringList inputNames = parser.positionalArguments();
+    if (inputNames.size() != 1) {
+        qWarning() << "Input qmc file must be give.";
         return 1;
     }
-
-    QGuiApplication app(argc, argv);
+    if (!QFile::exists(inputNames[0])) {
+        qWarning() << "Input qmc file does not exist.";
+        return 2;
+    }
 
     QQuickView view;
 
@@ -67,12 +76,8 @@ int main(int argc, char *argv[])
 
     QQmlEngine *engine = view.engine();
 
-#if 1
     QmcLoader loader(engine);
-    QQmlComponent *component = loader.loadComponent(argv[1]);
-#else
-    QQmlComponent *component = new QQmlComponent(engine, QUrl("qml/multipleitems.qml"));
-#endif
+    QQmlComponent *component = loader.loadComponent(inputNames[0]);
 
     if (!component) {
         qDebug() << "Could not load component";
@@ -97,7 +102,7 @@ int main(int argc, char *argv[])
 
     view.show();
 
-    ret = app.exec();
+    int ret = app.exec();
     delete rootObject;
     delete component;
     return ret;
