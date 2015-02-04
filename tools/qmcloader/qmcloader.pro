@@ -2,6 +2,8 @@
 include(../../config.pri)
 
 QT += qml quick
+# To enable -qmljsdebugger parameter.
+CONFIG += qml_debug
 
 QMLCBASEPATH = ../../
 
