@@ -77,9 +77,10 @@ static QQmlComponent *loadCallback(QQmlEngine *engine, QUrl url, void *data)
 {
     Q_UNUSED(engine);
     QmcLoader *loader = static_cast<QmcLoader*>(data);
-    QString dotqml = ".qml";
     QString qmcfile = url.toString().replace("file://", "");
-    qmcfile = qmcfile.replace(qmcfile.size() - dotqml.size(), dotqml.size(), ".qmc");
+    if (!qmcfile.endsWith(".qml"))
+        qWarning() << "File name does not have .qml ending: " << url;
+    qmcfile = qmcfile.replace(qmcfile.size() - 1, 1, "c");
     qDebug() << "Loading Component" << qmcfile;
     return loader->loadComponent(qmcfile);
 }

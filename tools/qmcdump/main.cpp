@@ -53,15 +53,14 @@
 
 QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit);
 QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::Unit &unit);
+QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::QmlUnit &unit);
 QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::CompilationUnit &unit);
 QTextStream &operator<<(QTextStream &stream, const QQmlTypeData::ScriptReference &script);
 
 int main(int argc, char *argv[])
 {
-    int ret;
-
-    if (argc != 2 || !QFile::exists(argv[1])){
-        qWarning() << argv[0] << "filename";
+    if (argc < 2) {
+        qWarning() << argv[0] << "filenames";
         return 1;
     }
 
@@ -72,30 +71,50 @@ int main(int argc, char *argv[])
     QQmlEngine *engine = view.engine();
 
     QmcLoader loader(engine);
-    QString file(argv[1]);
-    QFile f(file);
-    if (!f.open(QFile::ReadOnly)) {
-        qWarning() << "Could not open file for reading: " << file;
-        return 2;
-    }
-    QDataStream in(&f);
-    QmcUnit *unit = QmcUnit::loadUnit(in, engine, &loader, QUrl(argv[1]));
-    f.close();
-
-    if (unit == NULL) {
-         qWarning() << "Could not load QmcUnit object: " << file;
-         return 3;
-    }
-
     QTextStream out(stdout);
-    out << *unit;
-    
-    delete unit;
+    for (int k = 1; k < argc; ++k) {
+        QString file(argv[k]);
+        QFile f(file);
+        if (!f.open(QFile::ReadOnly)) {
+            qWarning() << "Could not open file for reading: " << file;
+            if (argc > 2)
+                continue;
+            return 2;
+        }
+        QDataStream in(&f);
+        QmcUnit *unit = QmcUnit::loadUnit(in, engine, &loader, QUrl(argv[k]));
+        f.close();
+
+        if (unit == NULL) {
+            qWarning() << "Could not load QmcUnit object: " << file;
+            if (argc > 2)
+                continue;
+            return 3;
+        }
+
+        if (argc > 2)
+            out << file << ":\n";
+        out << *unit;
+        if (argc > 2 && k + 1 < argc)
+            out << "\n";
+        delete unit;
+    }
     return 0;
 }
 
 
+QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::Location &loc)
+{
+    stream << loc.line << ", " << loc.column;
+    return stream;
+}
+
 static const QList<QString>* strs = NULL;
+static void printString(QTextStream &stream, int index)
+{
+    if (strs)
+        stream << " (" << (*strs)[index] << ")";
+}
 
 QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
 {
@@ -109,14 +128,12 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
     stream << " offsetToObjects " << unit.qmlUnit->offsetToObjects << "\n";
     stream << " indexOfRootObject " << unit.qmlUnit->indexOfRootObject << "\n";
     strs = &(unit.strings);
+    stream << *unit.qmlUnit;
     stream << *unit.compilationUnit;
     stream << "Strings:\n";
     int counter = 0;
     foreach (const QString &s, unit.strings)
         stream << " " << counter++ << ": " << s << "\n";
-    stream << "Imports:\n";
-    foreach (const QV4::CompiledData::Import &import, unit.imports)
-        stream << unit.strings[import.uriIndex] << " " << unit.strings[import.qualifierIndex] << "\n";
     stream << "Namespaces:\n";
     foreach (const QString &s, unit.namespaces)
         stream << s << "\n";
@@ -124,10 +141,14 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
     foreach (const QString &s, unit.scriptReferences)
         stream << " " << s << "\n";
     stream << "Type references:\n";
-    foreach (const QmcUnitTypeReference& r, unit.typeReferences)
-        stream << " index: " << r.index
-            << " syntheticComponent: " << r.syntheticComponent
-            << " composite: " << r.composite << "\n";
+    QStringList types;
+    foreach (const QmcUnitTypeReference& r, unit.typeReferences) {
+        types << QString(" index: %1 syntheticComponent: %2 composite: %3\n").
+            arg(r.index, 2).arg(r.syntheticComponent).arg(r.composite);
+    }
+    types.sort();
+    foreach (const QString& s, types)
+        stream << s;
     for (int k = 0; k < unit.codeRefData.size(); ++k) {
         stream << "Code ref " << k << "\n";
         stream << "codeRefData:\n";
@@ -157,10 +178,13 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
         }
     }
     stream << "QmcUnitObjectIndexToId:\n";
+    QStringList ids;
     foreach (const QmcUnitObjectIndexToId &tmp, unit.objectIndexToIdRoot) {
-        stream << "index: " << tmp.index
-            << " id: " << tmp.id << "\n";
+        ids << QString(" index: %1 id: %2\n").arg(tmp.index, 2).arg(tmp.id);
     }
+    ids.sort();
+    foreach (const QString& s, ids)
+        stream << s;
     stream << "QmcUnitObjectIndexToIdComponent (QmcUnitObjectIndexToId):\n";
     foreach (const QmcUnitObjectIndexToIdComponent &tmp, unit.objectIndexToIdComponent) {
         stream << tmp.componentIndex;
@@ -179,6 +203,14 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
             << "  propertyType: " << tmp.propertyType
             << "  flags: " << tmp.flags
             << "  notifySignal: " << tmp.notifySignal << "\n";
+    }
+    stream << "customParsers: " << unit.customParsers.size() << "\n";
+    stream << "customParserBindings: " << unit.customParserBindings.size() << "\n";
+    stream << "deferredBindings: " << unit.deferredBindings.size() << "\n";
+    stream << "singletonReferences: " << unit.compositeSingletons.size() << "\n";
+    foreach (const QmcSingletonTypeReference &ref, unit.compositeSingletons) {
+        stream << " typeName: " << ref.typeName
+            << " prefix: " << ref.prefix << "\n";
     }
     return stream;
 }
@@ -208,17 +240,160 @@ QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::Unit &unit
     return stream;
 }
 
+QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::QmlUnit &unit)
+{
+    stream << "QmlUnit:\n";
+    stream << " isSingleton: " << unit.isSingleton();
+    stream << "\nObjects:" << unit.nObjects;
+    for (unsigned k = 0; k < unit.nObjects; ++k) {
+        const QV4::CompiledData::Object *obj = unit.objectAt(k);
+        stream << "\nObject " << k << ":";
+        stream << "\n inheritedTypeNameIndex: " << obj->inheritedTypeNameIndex;
+        printString(stream, obj->inheritedTypeNameIndex);
+        stream << "\n idIndex: " << obj->idIndex;
+        printString(stream, obj->idIndex);
+        stream << "\n indexOfDefaultProperty: " << obj->indexOfDefaultProperty;
+        stream << "\n nFunctions: " << obj->nFunctions;
+        stream << "  offsetToFunctions: " << obj->offsetToFunctions;
+        stream << "\n nProperties: " << obj->nProperties;
+        stream << "  offsetToProperties: " << obj->offsetToProperties;
+        stream << "\n nSignals: " << obj->nSignals;
+        stream << "  offsetToSignals: " << obj->offsetToSignals;
+        stream << "\n nBindings: " << obj->nBindings;
+        stream << "  offsetToBindings: " << obj->offsetToBindings;
+        stream << "\n location: " << obj->location;
+        stream << "\n locationOfIdProperty: " << obj->locationOfIdProperty;
+        stream << "\n Properties: " << obj->nProperties;
+        for (unsigned n = 0; n < obj->nProperties; ++n) {
+            const QV4::CompiledData::Property &prop = obj->propertyTable()[n];
+            stream << "\n  Property " << n << ":";
+            stream << "\n   nameIndex: " << prop.nameIndex;
+            printString(stream, prop.nameIndex);
+            stream << "\n   type: ";
+            switch (prop.type) {
+            case QV4::CompiledData::Property::Var: stream << "Var"; break;
+            case QV4::CompiledData::Property::Variant: stream << "Variant"; break;
+            case QV4::CompiledData::Property::Int: stream << "Int"; break;
+            case QV4::CompiledData::Property::Bool: stream << "Bool"; break;
+            case QV4::CompiledData::Property::Real: stream << "Real"; break;
+            case QV4::CompiledData::Property::String: stream << "String"; break;
+            case QV4::CompiledData::Property::Url: stream << "Url"; break;
+            case QV4::CompiledData::Property::Color: stream << "Color"; break;
+            case QV4::CompiledData::Property::Font: stream << "Font"; break;
+            case QV4::CompiledData::Property::Time: stream << "Time"; break;
+            case QV4::CompiledData::Property::Date: stream << "Date"; break;
+            case QV4::CompiledData::Property::DateTime: stream << "DateTime"; break;
+            case QV4::CompiledData::Property::Rect: stream << "Rect"; break;
+            case QV4::CompiledData::Property::Point: stream << "Point"; break;
+            case QV4::CompiledData::Property::Size: stream << "Size"; break;
+            case QV4::CompiledData::Property::Vector2D: stream << "Vector2D"; break;
+            case QV4::CompiledData::Property::Vector3D: stream << "Vector3D"; break;
+            case QV4::CompiledData::Property::Vector4D: stream << "Vector4D"; break;
+            case QV4::CompiledData::Property::Matrix4x4: stream << "Matrix4x4"; break;
+            case QV4::CompiledData::Property::Quaternion: stream << "Quaternion"; break;
+            case QV4::CompiledData::Property::Alias: stream << "Alias\n  aliasIdValueIndex: " << prop.aliasIdValueIndex; break;
+            case QV4::CompiledData::Property::Custom: stream << "Custom\n  customTypeNameIndex: " << prop.customTypeNameIndex; break;
+            case QV4::CompiledData::Property::CustomList: stream << "CustomList"; break;
+            default: stream << "*** Unknown type, error? ***"; break;
+            }
+            stream << "\n   aliasPropertyValueIndex: " << prop.aliasPropertyValueIndex;
+            stream << "\n   flags: " << prop.flags;
+            stream << "\n   location: " << prop.location;
+            if (prop.type == QV4::CompiledData::Property::Alias)
+                stream << "\n   aliasLocation: " << prop.aliasLocation;
+        }
+        stream << "\n Bindings: " << obj->nBindings;
+        for (unsigned n = 0; n < obj->nBindings; ++n) {
+            const QV4::CompiledData::Binding &b = obj->bindingTable()[n];
+            stream << "\n  Binding " << n << ":";
+            stream << "\n   propertyNameIndex: " << b.propertyNameIndex;
+            printString(stream, b.propertyNameIndex);
+            stream << "\n   flags: (" << b.flags << ")";
+            if (b.flags & QV4::CompiledData::Binding::IsSignalHandlerExpression)
+                stream << " IsSignalHandlerExpression";
+            if (b.flags & QV4::CompiledData::Binding::IsSignalHandlerObject)
+                stream << " IsSignalHandlerObject";
+            if (b.flags & QV4::CompiledData::Binding::IsOnAssignment)
+                stream << " IsOnAssignment";
+            if (b.flags & QV4::CompiledData::Binding::InitializerForReadOnlyDeclaration)
+                stream << " InitializerForReadOnlyDeclaration";
+            if (b.flags & QV4::CompiledData::Binding::IsResolvedEnum)
+                stream << " IsResolvedEnum";
+            if (b.flags & QV4::CompiledData::Binding::IsListItem)
+                stream << " IsListItem";
+            if (b.flags & QV4::CompiledData::Binding::IsBindingToAlias)
+                stream << " IsBindingToAlias";
+            stream << "\n   type: ";
+            switch (b.type) {
+            case QV4::CompiledData::Binding::Type_Invalid: stream << "Type_Invalid"; break;
+            case QV4::CompiledData::Binding::Type_Boolean: stream << "Type_Boolean\n   value: " << b.valueAsBoolean(); break;
+            case QV4::CompiledData::Binding::Type_Number: stream << "Type_Number\n   value: " << b.valueAsNumber(); break;
+            case QV4::CompiledData::Binding::Type_String: stream << "Type_String\n   stringIndex: "<< b.stringIndex; break;
+            case QV4::CompiledData::Binding::Type_Translation:
+                stream << "Type_Translation\n   stringIndex: "<< b.stringIndex;
+                stream << "\n   value.translationData (commentIndex, number): "                     << b.value.translationData.commentIndex << " "
+                    << b.value.translationData.number;
+                break;
+            case QV4::CompiledData::Binding::Type_TranslationById: stream << "Type_TranslationById"; break;
+            case QV4::CompiledData::Binding::Type_Script: stream << "Type_Script\n   stringIndex: "<< b.stringIndex; break;
+            case QV4::CompiledData::Binding::Type_Object: stream << "Type_Object"; break;
+            case QV4::CompiledData::Binding::Type_AttachedProperty: stream << "Type_AttachedProperty"; break;
+            case QV4::CompiledData::Binding::Type_GroupProperty: stream << "Type_GroupProperty"; break;
+            default: stream << "*** Unknown type, error? ***"; break;
+            }
+            stream << "\n   location: " << b.location;
+            stream << "\n   valueLocation: " << b.valueLocation;
+        }
+        stream << "\n Signals: " << obj->nSignals;
+        for (unsigned n = 0; n < obj->nSignals; ++n) {
+            const QV4::CompiledData::Signal *s = obj->signalAt(n);
+            stream << "\n  Signal " << n << ":";
+            stream << "\n   nameIndex: " << s->nameIndex;
+            stream << "\n   nParameters: " << s->nParameters;
+            for (unsigned p = 0; p < s->nParameters; ++p) {
+                const QV4::CompiledData::Parameter *par = s->parameterAt(p);
+                stream << "\n   Parameter " << p << ":";
+                stream << "\n    nameIndex: " << par->nameIndex;
+                stream << "\n    type: " << par->type;
+                stream << "\n    customTypeNameIndex: " << par->customTypeNameIndex;
+                stream << "\n    reserved: " << par->reserved;
+                stream << "\n    location: " << par->location;
+            }
+            stream << "\n   location: " << s->location;
+        }
+    }
+    stream << "\nImports: " << unit.nImports;
+    for (unsigned k = 0; k < unit.nImports; ++k) {
+        const QV4::CompiledData::Import *imp = unit.importAt(k);
+        stream << "\n Import " << k << ":";
+        stream << "\n  type: ";
+        switch (imp->type) {
+        case QV4::CompiledData::Import::ImportLibrary: stream << "ImportLibrary"; break;
+        case QV4::CompiledData::Import::ImportFile: stream << "ImportFile"; break;
+        case QV4::CompiledData::Import::ImportScript: stream << "ImportScript"; break;
+        default: stream << "*** Unknwon type, error? ***"; break;
+        }
+        stream << "\n  uriIndex: " << imp->uriIndex;
+        printString(stream, imp->uriIndex);
+        stream << "\n  qualifierIndex: " << imp->qualifierIndex;
+        printString(stream, imp->qualifierIndex);
+        stream << "\n  majorVersion, minorVersion: " << imp->majorVersion << ", " << imp->minorVersion;
+        stream << "\n  location:" << imp->location;
+    }
+    stream << "\n";
+    return stream;
+}
+
 QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::CompilationUnit &unit)
 {
     stream << "CompilationUnit:\n";
     //stream << *unit.data; Same as previous unit so no need to print.
     stream << " data->functionTableSize: " << unit.data->functionTableSize << "\n";
-    for (int k = 0; k < unit.data->functionTableSize; ++k) {
+    for (unsigned k = 0; k < unit.data->functionTableSize; ++k) {
         const QV4::CompiledData::Function *f = unit.data->functionAt(k);
         stream << " index " << f->index << "\n";
         stream << "  nameIndex " << f->nameIndex;
-        if (strs)
-            stream << ": " << (*strs)[f->nameIndex];
+        printString(stream, f->nameIndex);
         stream << "\n";
         stream << "  flags (" << f->flags << ")";
         if (f->flags & QV4::CompiledData::Function::HasDirectEval)
@@ -238,15 +413,16 @@ QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::Compilatio
         stream << "  localsOffset " << f->localsOffset << "\n";
         stream << "  nInnerFunctions " << f->nInnerFunctions;
         stream << "  innerFunctionsOffset " << f->innerFunctionsOffset << "\n";
-        stream << "  location (row, col) " << f->location.line << ", " << f->location.column << "\n";
+        stream << "  location (row, col) " << f->location << "\n";
     }
+
     return stream;
 }
 
 QTextStream &operator<<(QTextStream &stream, const QQmlTypeData::ScriptReference &script)
 {
     stream << "ScriptReference:\n";
-    stream << " location: " << script.location.line << " " << script.location.column << "\n";
+    stream << " location: " << script.location << "\n";
     stream << " qualifier: " << script.qualifier << "\n";
     stream << " script: " << script.script << "\n";
     return stream;

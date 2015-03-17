@@ -136,6 +136,8 @@ bool QmcTypeUnit::addImports()
         m_importCache.setBaseUrl(QUrl(unit->loadedUrl), unit->loadedUrl.toString());
     }else if (unit->url.toLocalFile().startsWith(":/") || unit->urlString.startsWith("qrc:/")){
         m_importCache.setBaseUrl(unit->url, unit->urlString);
+    } else if (unit->loadedUrl.toString().startsWith(":/") || unit->loadedUrl.toString().startsWith("qrc:/")) {
+        m_importCache.setBaseUrl(unit->loadedUrl, unit->loadedUrl.toString());
     }else{
         QDir dd;
         QString newUrl = "file://" + dd.absolutePath() + "/" + unit->loadedUrl.toLocalFile();
@@ -168,7 +170,6 @@ bool QmcTypeUnit::addImports()
             ref.script = scriptUnit;
             scripts.append(ref);
         } else if (p->type == QV4::CompiledData::Import::ImportLibrary) {
-
             QString qmldirFilePath;
             QString qmldirUrl;
             const QString &importUri = stringAt(p->uriIndex);
@@ -297,7 +298,9 @@ bool QmcTypeUnit::addImports()
 
         // component creation, see qqmltypecompiler.cpp:87
         // and qqmltypeloader.cpp:2456
-        if (typeRef.composite && !ref->component) {
+        // CppType with placeholder during compilation shows up as composite
+        // though it really is not.
+        if (typeRef.composite && !ref->component && (qmlType ? qmlType->isComposite() : true)) {
             // extract name of the source url
             Q_ASSERT(qmlType);
             QString sourceName;
