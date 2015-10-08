@@ -27,6 +27,9 @@ public:
     ~CompilerOptions();
 
     QmcDebugInfo* debug;
+#if defined(DEBUG_QMC)
+    bool debugOutput;
+#endif
 };
 
 #endif // COMPILEROPTIONS_H

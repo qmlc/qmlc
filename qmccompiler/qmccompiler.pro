@@ -10,6 +10,7 @@ QT       -= gui
 
 VERSION = 0.0.1
 CONFIG += create_pc create_prl no_install_prl
+QT       += gui quick
 
 TARGET = qmccompiler
 TEMPLATE = lib
@@ -24,6 +25,7 @@ INCLUDEPATH += ../3rdparty/masm/disassembler
 INCLUDEPATH += ../include
 
 include(../3rdparty/masm/masm-defs.pri)
+include(../placeholders/placeholders.pri)
 
 DEFINES += ENABLE_JIT ASSERT_DISABLED=1
 

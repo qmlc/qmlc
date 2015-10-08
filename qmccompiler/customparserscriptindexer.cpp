@@ -48,6 +48,10 @@ void CustomParserScriptIndexer::scanObjectRecursively(int objectIndex, bool anno
         if (!annotateScriptBindings)
             continue;
         const QString script = compiler->bindingAsString(obj, binding->value.compiledScriptIndex);
-        binding->stringIndex = compiler->registerString(script);
+        QString tmp = script.trimmed();
+        if (!tmp.startsWith("{"))
+            binding->stringIndex = compiler->registerString(script);
+        else
+            binding->stringIndex = 0;
     }
 }

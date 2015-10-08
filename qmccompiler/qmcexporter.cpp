@@ -35,7 +35,7 @@ bool QmcExporter::exportQmc(QDataStream &stream)
 void QmcExporter::createHeader(QmcUnitHeader &header, QmlCompilation *c)
 {
     memset(&header, 0, sizeof(QmcUnitHeader));
-    strcpy(header.magic, QMC_UNIT_MAGIC_STR);
+    memcpy(header.magic, QMC_UNIT_MAGIC_STR, strlen(QMC_UNIT_MAGIC_STR));
     header.architecture = 0;
     header.version = QMC_UNIT_VERSION;
     header.type = (quint32)c->type;

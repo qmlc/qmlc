@@ -19,6 +19,9 @@
 
 CompilerOptions::CompilerOptions()
     : debug(NULL)
+#if defined(DEBUG_QMC)
+    , debugOutput(false)
+#endif
 {
 }
 

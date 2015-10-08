@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="qml/External2.txt">qml/External.txt</file>
+    </qresource>
+</RCC>

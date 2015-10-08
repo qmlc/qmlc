@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>original.qml</file>
+        <file>RevOne.qml</file>
+        <file>RevTwo.qml</file>
+    </qresource>
+</RCC>

@@ -143,8 +143,12 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
     stream << "Type references:\n";
     QStringList types;
     foreach (const QmcUnitTypeReference& r, unit.typeReferences) {
-        types << QString(" index: %1 syntheticComponent: %2 composite: %3\n").
-            arg(r.index, 2).arg(r.syntheticComponent).arg(r.composite);
+        if (strs)
+            types << QString(" index: %1 syntheticComponent: %2 composite: %3 (%4)\n").
+                arg(r.index, 3).arg(r.syntheticComponent).arg(r.composite).arg((*strs)[r.index]);
+        else
+            types << QString(" index: %1 syntheticComponent: %2 composite: %3\n").
+                arg(r.index, 3).arg(r.syntheticComponent).arg(r.composite);
     }
     types.sort();
     foreach (const QString& s, types)
@@ -160,7 +164,7 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
             ++count;
             if (count % 8 == 0) stream << "\n";
         }
-        if ((count - 1) & 7) stream << "\n";
+        if (((count - 1) & 7) != 7) stream << "\n";
         stream << "linkCalls:\n";
         foreach (const QmcUnitCodeRefLinkCall &r, unit.linkCalls[k])
             stream << " index: " << r.index
@@ -205,8 +209,46 @@ QTextStream &operator<<(QTextStream &stream, const QmcUnit &unit)
             << "  notifySignal: " << tmp.notifySignal << "\n";
     }
     stream << "customParsers: " << unit.customParsers.size() << "\n";
+    foreach (int key, unit.customParsers.keys()) {
+        const QQmlCompiledData::CustomParserData &p = unit.customParsers[key];
+        stream << " " << key << ": "
+            << " compilationArtifact: " << p.compilationArtifact.size();
+        if (p.compilationArtifact.size()) {
+            stream << " \"";
+            for (int idx = 0; idx < p.compilationArtifact.size() && idx < 128; idx += 2) {
+                int code = p.compilationArtifact[idx];
+                if (idx + 1 < p.compilationArtifact.size())
+                    code = 256 * code + p.compilationArtifact[idx + 1];
+                QChar c(code);
+                if (c.isPrint())
+                    stream << c;
+                else
+                    stream << "<" << c.row() * 256 + c.cell() << ">";
+            }
+            if (128 < p.compilationArtifact.size())
+                stream << "...";
+            stream << "\"\n ";
+        }
+        stream << " bindings: " << p.bindings.size();
+        if (p.bindings.size()) {
+            stream << ":";
+            for (int idx = 0; idx < p.bindings.size() && idx < 64; ++idx)
+                stream << " " << (p.bindings[idx] ? 1 : 0);
+            if (64 < p.bindings.size())
+                stream << "...";
+        }
+        stream << "\n";
+    }
     stream << "customParserBindings: " << unit.customParserBindings.size() << "\n";
+    if (unit.customParserBindings.size()) {
+        foreach (int b, unit.customParserBindings)
+            stream << " " << b;
+        stream << "\n";
+    }
     stream << "deferredBindings: " << unit.deferredBindings.size() << "\n";
+    foreach (int key, unit.deferredBindings.keys()) {
+        stream << " " << key << ": size: " << unit.deferredBindings[key].size() << "\n";
+    }
     stream << "singletonReferences: " << unit.compositeSingletons.size() << "\n";
     foreach (const QmcSingletonTypeReference &ref, unit.compositeSingletons) {
         stream << " typeName: " << ref.typeName
@@ -409,13 +451,31 @@ QTextStream &operator<<(QTextStream &stream, const QV4::CompiledData::Compilatio
         stream << "\n";
         stream << "  nFormals " << f->nFormals;
         stream << "  formalsOffset " << f->formalsOffset << "\n";
+        if (f->nFormals && strs) {
+            stream << "  ";
+            for (uint k = 0; k < f->nFormals; ++k)
+                stream << " " << (*strs)[f->formalsTable()[k]];
+            stream << "\n";
+        }
         stream << "  nLocals " << f->nLocals;
         stream << "  localsOffset " << f->localsOffset << "\n";
+        if (f->nLocals && strs) {
+            stream << "  ";
+            for (uint k = 0; k < f->nLocals; ++k)
+                stream << " " << (*strs)[f->localsTable()[k]];
+            stream << "\n";
+        }
         stream << "  nInnerFunctions " << f->nInnerFunctions;
         stream << "  innerFunctionsOffset " << f->innerFunctionsOffset << "\n";
+        if (f->nInnerFunctions && strs) {
+            const quint32 *table = f->localsTable() + (f->innerFunctionsOffset - f->localsOffset);
+            stream << "  ";
+            for (uint k = 0; k < f->nInnerFunctions; ++k)
+                stream << " " << table[k];
+            stream << "\n";
+        }
         stream << "  location (row, col) " << f->location << "\n";
     }
-
     return stream;
 }
 

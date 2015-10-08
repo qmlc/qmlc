@@ -24,14 +24,18 @@
 #include <QCommandLineParser>
 #include <QFileInfo>
 #include <QDir>
+#include <QGuiApplication>
 #include <private/qv4context_p.h>
 #include <private/qv8engine_p.h>
+#include <QLibrary>
 
 #include <iostream>
 #include "qmlc.h"
 #include "scriptc.h"
 #include "comp.h"
 #include "qmcdebuginfo.h"
+
+typedef bool (*TypeRegisterer)();
 
 QV4::ReturnedValue checkBreakpoint(QV4::CallContext *ctx)
 {
@@ -40,7 +44,14 @@ QV4::ReturnedValue checkBreakpoint(QV4::CallContext *ctx)
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);
+    int i;
+    bool bCoreApp = true;
+
+    for (i=0;i<argc;i++) {
+        if (strcmp(argv[i], "-u") == 0) {
+            bCoreApp = false;
+        }
+    }
 
     QCommandLineParser parser;
     parser.setApplicationDescription("QML/JS compiler.");
@@ -58,8 +69,28 @@ int main(int argc, char *argv[])
         QCoreApplication::translate("main", "File name for debug info."),
         QCoreApplication::translate("main", "source name"));
     parser.addOption(nameOption);
+    QCommandLineOption guiOption("u",
+        QCoreApplication::translate("main", "Use QGuiApplication."));
+    parser.addOption(guiOption);
+    QCommandLineOption typelibOption("t",
+        QCoreApplication::translate("main", "Type library to load."),
+        QCoreApplication::translate("main", "libraryfile[,...]"));
+    parser.addOption(typelibOption);
 
-    parser.process(app);
+#if defined(DEBUG_QMC)
+    QCommandLineOption debugOutput("debug",
+        QCoreApplication::translate("main", "Compiler debug output."));
+    parser.addOption(debugOutput);
+#endif
+
+    QCoreApplication *app = NULL;
+    if (bCoreApp == true) {
+        app = new QCoreApplication(argc, argv);
+    } else {
+        app = new QGuiApplication(argc, argv);
+    }
+    parser.process(app->arguments());
+
     // Input and output file names.
     const QStringList inputNames = parser.positionalArguments();
     if (inputNames.size() != 1) {
@@ -75,6 +106,34 @@ int main(int argc, char *argv[])
         qWarning() << "Error:" << fileName << "doesn't exist";
         return EXIT_FAILURE;
     }
+
+    // Load type libraries before current path changes.
+    if (parser.isSet(typelibOption)) {
+        bool error = false;
+        QStringList allLibs = parser.value(typelibOption).split(",", QString::SkipEmptyParts);
+        foreach (const QString &name, allLibs) {
+            QLibrary *lib = new QLibrary(name, app);
+            lib->setLoadHints(QLibrary::ResolveAllSymbolsHint);
+            if (!lib->load()) {
+                qWarning() << lib->errorString();
+                error = true;
+                continue;
+            }
+            TypeRegisterer func = (TypeRegisterer)lib->resolve("registerQmlTypes");
+            if (!func) {
+                qWarning() << lib->errorString();
+                error = true;
+                continue;
+            }
+            if (!func()) {
+                qWarning() << "Register problem in:" << name;
+                error = true;
+            }
+        }
+        if (error)
+            return EXIT_FAILURE;
+    }
+
     // Compilation sometimes need to happen in the same directory as the source
     // file. Therefore change to source directory and adjust the output file
     // path accordingly, if it has been given.
@@ -98,6 +157,12 @@ int main(int argc, char *argv[])
     if (parser.isSet(debugOption)) {
         options.debug = new QmcDebugInfo(debugName);
     }
+
+#if defined(DEBUG_QMC)
+    if (parser.isSet(debugOutput)) {
+        options.debugOutput = true;
+    }
+#endif
 
     QQmlEngine *engine = new QQmlEngine;
     // Technically might not be needed but added just to be on the safe side.

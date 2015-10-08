@@ -45,6 +45,7 @@ RCCFLAGS=$*
 RMDIRS=
 RMFILES=
 CINS=
+FAIL=0
 TMP=$(echo $DEST/tmp$$)
 for F in $INS
 do
@@ -66,20 +67,39 @@ do
             # Shadow build. Later delete directories and files we create.
             if [ "x$TD" == "x$DEST" ]; then
                 RMFILES=$(echo " "$RMFILES" "$TF" ")
+            elif [ ! -d "$TD" ]; then
+                # Make the directory and mark it for deletion later.
+                mkdir -p $TD
+                if [ $? -ne 0 ]; then
+                    # There was a file by that name?
+                    echo "Error: failed to make directory $TD"
+                    FAIL=1
+                    break
+                fi
+                RMDIRS=$(echo " "$RMDIRS" "$TD" ")
             else
-                # Assumes that there will be nothing else in these directories.
-                contains "$RMDIRS" " $TD " || RMDIRS=$(echo " "$RMDIRS" "$TD" ")
+                # If the directory is not to be removed, remove the file only.
+                contains "$RMDIRS" " $TD " || RMFILES=$(echo " "$RMFILES" "$TF" ")
             fi
-            mkdir -p $TD
             if [ $T == $L ]; then
                 cp $SF $TF
             else
+                echo "qmc $SF"
                 qmc $QMCFLAGS $SF -o $TF -n $L
+                if [ $? -ne 0 ]; then
+                    FAIL=2
+                    break
+                fi
             fi
         else
             # Not a shadow build. Delete only files we generate.
             if [ $T != $L ]; then
+                echo "qmc $SF"
                 qmc $QMCFLAGS $SF -o $TF -n $L
+                if [ $? -ne 0 ]; then
+                    FAIL=2
+                    break
+                fi
                 RMFILES=$(echo " "$RMFILES" "$TF" ")
             fi
         fi
@@ -87,11 +107,14 @@ do
     rm -f $TMP
 done
 
-cd $DEST
-rcc $RCCFLAGS -name res $CINS -o $(basename $OUT)
-# Cleaning could be done for full file list and only empty directories removed.
-# Technically, could leave files to be and check if there is need to compile or
-# copy as that would save time during build. Later.
+if [ $FAIL -eq 0 ]; then
+    ORIG=$(pwd)
+    cd $DEST
+    rcc $RCCFLAGS -name res $CINS -o $(basename $OUT)
+    FAIL=$?
+    cd $ORIG
+fi
 rm -rf $RMDIRS
 rm -f $RMFILES $CINS
+exit $FAIL
 
