@@ -229,7 +229,6 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
         newClassName.append("_QML_");
         newClassName.append(QByteArray::number(classIndexCounter.fetchAndAddRelaxed(1)));
     }
-
     cache->_dynamicClassName = newClassName;
 
     int aliasCount = 0;
@@ -489,6 +488,7 @@ bool PropertyCacheCreator::createMetaObject(int objectIndex, const QmlIR::Object
         ((QQmlVMEMetaData *)dynamicData.data())->varPropertyCount++;
 
         QString propertyName = stringAt(p->nameIndex);
+
         if (propertyIdx == obj->indexOfDefaultProperty) cache->_defaultPropertyName = propertyName;
         cache->appendProperty(propertyName, propertyFlags, effectivePropertyIndex++,
                               QMetaType::QVariant, effectiveSignalIndex);

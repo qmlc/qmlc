@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>app.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>qml/QmlJSItems.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>qml/content/QmlSubItem.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>qml/content/testscript1.js</file>
+    </qresource>
+</RCC>

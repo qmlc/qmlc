@@ -375,7 +375,7 @@ bool QmlC::createExportStructures()
         QmcUnitTypeReference typeRef;
         typeRef.syntheticComponent = 0;
         typeRef.composite = 1;
-        for (ii=0;ii<compilation()->unit->data->stringTableSize;ii++) {
+        for (ii=0;ii<int(compilation()->unit->data->stringTableSize);ii++) {
             if (compilation()->unit->data->stringAt(ii) == compilation()->m_compositeSingletons[i].name) {
                 typeRef.index  = ii;
                 compilation()->exportTypeRefs.append(typeRef);

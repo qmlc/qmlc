@@ -58,7 +58,7 @@ public:
     QQmlImportDatabase* importDatabase;
 
     struct TypeReference {
-        TypeReference() : type(0), majorVersion(0), minorVersion(0), typeData(0), needsCreation(true) {}
+        TypeReference() : needsCreation(true), majorVersion(0), minorVersion(0), type(0), typeData(0) {}
 
         QString name;
         QV4::CompiledData::Location location;

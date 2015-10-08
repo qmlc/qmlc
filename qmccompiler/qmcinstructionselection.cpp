@@ -29,6 +29,10 @@
 #include "ARMv7Assembler.h"
 #endif
 
+#if defined(DEBUG_QMC)
+#include <QTextStream>
+#endif
+
 using namespace QV4;
 using namespace QV4::IR;
 using namespace QV4::JIT;
@@ -176,6 +180,9 @@ void QmcInstructionSelection::run(int functionIndex)
     _as->addPtr(Assembler::TrustedImm32(sizeof(QV4::Value)*locals), Assembler::LocalsRegister);
     _as->storePtr(Assembler::LocalsRegister, Address(Assembler::ScratchRegister, qOffsetOf(ExecutionEngine, jsStackTop)));
 
+#if defined(DEBUG_QMC)
+    QTextStream out(stdout);
+#endif
     int lastLine = 0;
 #if QT_VERSION > QT_VERSION_CHECK(5,3,0)
     for (int i = 0, ei = _function->basicBlockCount(); i != ei; ++i) {
@@ -189,6 +196,10 @@ void QmcInstructionSelection::run(int functionIndex)
         _block = _function->basicBlocks[i];
 #endif
         _as->registerBlock(_block, nextBlock);
+#if defined(DEBUG_QMC)
+        if (options->debugOutput)
+            out << _block->index << " " << *(_block->function->name) << " (" << _block->function->line << ", " << _block->function->column << ")\n";
+#endif
 
 #if QT_VERSION > QT_VERSION_CHECK(5,3,0)
         foreach (IR::Stmt *s, _block->statements()) {
@@ -221,9 +232,20 @@ void QmcInstructionSelection::run(int functionIndex)
                     statement->accept(this);
                 }
             }
+#if defined(DEBUG_QMC)
+            if (options->debugOutput) {
+                out << "  ";
+                s->dump(out);
+                out << "\n";
+            }
+#endif
             s->accept(this);
         }
     }
+#if defined(DEBUG_QMC)
+    if (options->debugOutput)
+        out.flush();
+#endif
 
     if (!_as->exceptionReturnLabel.isSet())
         visitRet(0);

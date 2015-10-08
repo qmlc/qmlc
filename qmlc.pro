@@ -9,6 +9,7 @@ SUBDIRS = \
 	qmcloader \
     qmcdebugger \
 	qmc \
+    placeholdercreator \
     tools \
 	compiletest \
 	examples \

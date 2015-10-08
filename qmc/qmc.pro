@@ -6,7 +6,7 @@
 include(../config.pri)
 
 QT       += core qml qml-private core-private
-QT       -= gui
+QT       += gui quick
 
 TARGET = qmc
 CONFIG   += console
@@ -24,6 +24,7 @@ INCLUDEPATH += ../include
 
 include(../3rdparty/masm/masm-defs.pri)
 DEFINES += ENABLE_JIT ASSERT_DISABLED=1
+DEFINES += DEBUG_QMC
 
 LIBS += -L../qmccompiler
 LIBS += -lqmccompiler
@@ -38,6 +39,12 @@ unix {
     qmcrcc.files = qmc-rcc.sh
     qmcrcc.path = $$BINDIR
 
+    qmcrccpro.files = qmc-rccpro.py
+    qmcrccpro.path = $$BINDIR
+
+    qmccpptype.files = qmc-typelibpro.py
+    qmccpptype.path = $$BINDIR
+
     target.path = $$BINDIR
-    INSTALLS += target qmcrcc
+    INSTALLS += target qmcrcc qmccpptype qmcrccpro
 }

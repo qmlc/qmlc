@@ -60,7 +60,7 @@ qmc {
        # compile
        QMAKE_POST_LINK += cd ./$$dirname(qmlfile);
        QMAKE_POST_LINK += echo + Compiling $$qmlfile;
-       QMAKE_POST_LINK += qmc $$basename(qmlfile);
+       QMAKE_POST_LINK += qmc $$QMCFLAGS $$basename(qmlfile);
 
        !equals(QMLC_EXIT_ON_ERROR, "false"){
             QMAKE_POST_LINK += if [ $${DOLLAR}$? != 0 ]; then exit; fi;
