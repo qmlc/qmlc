@@ -65,7 +65,7 @@ tar zxvf qt-everywhere-opensource-src-5.3.1.tar.gz
 cd qt-everywhere-opensource-src-5.3.1/
 </pre>
 
-* Move QtWebkit things so it doesn't get build. It takes very long to build, prone to errors and we don't need it:
+* Move QtWebkit things so it excluded from the build process. It takes very long to build, prone to errors and we don't need it:
 
 <pre>
 mkdir bak
@@ -272,4 +272,3 @@ implementation.
 
 List of current issues can be found at:
 https://github.com/qmlc/qmlc/issues
-
